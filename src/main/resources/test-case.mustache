@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dochiar Report</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="nav-header">
+        <div class="nav-content">
+            <div class="nav-brand">
+                <img src="assets/logo_4.svg" alt="Dochia" class="nav-logo">
+                <div class="nav-title">
+                    <h1>Dochia</h1>
+                    <span class="nav-subtitle">Execution Report</span>
+                </div>
+            </div>
+            <div class="nav-meta">
+                {{#JS}}
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+                    <img src="assets/white-mode-icon.svg" alt="Light mode" class="theme-icon light-icon">
+                    <img src="assets/dark-mode-icon.svg" alt="Dark mode" class="theme-icon dark-icon">
+                </button>
+                {{/JS}}
+                <div class="report-badge">{{VERSION}}</div>
+                <div class="report-timestamp">Generated: {{TIMESTAMP}}</div>
+            </div>
+        </div>
+    </nav>
+{{#TEST_CASE}}
+    <!-- Breadcrumb -->
+    <section class="summary-bar" style="padding: 0.5rem 0;">
+        <div class="summary-content" style="display: flex; justify-content: flex-start; align-items: center; text-align: left;">
+            <a href="index.html" class="test-link">← All Tests</a>
+            <span style="margin: 0 0.5rem; color: var(--gray-400);"> / </span>
+            <span style="color: var(--gray-600); font-weight: 500;">{{testId}}</span>
+        </div>
+    </section>
+
+
+
+    <!-- Dashboard Layout -->
+    <div class="test-dashboard">
+        <!-- Sidebar -->
+        <aside class="test-sidebar">
+            <div class="sidebar-header">
+                <div class="test-status-icon">⚠</div>
+                <div>
+                    <h2 class="sidebar-title">{{testId}}</h2>
+                    <div class="test-meta">{{playbook}} • {{httpMethod}}</div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Test Info</h3>
+                <div class="sidebar-item">
+                    <span class="sidebar-label">Test ID</span>
+                    <span class="sidebar-value">{{testId}}</span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="sidebar-label">Playbook</span>
+                    <span class="sidebar-value">{{playbook}}</span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="sidebar-label">Method</span>
+                    <span class="method-badge {{httpMethod}}">{{httpMethod}}</span>
+                </div>
+                <div class="sidebar-item sidebar-item-stacked">
+                    <span class="sidebar-label">Full Request Path</span>
+                    <div class="sidebar-value-full">{{fullRequestPath}}</div>
+                </div>
+                 <div class="sidebar-item sidebar-item-stacked">
+                    <span class="sidebar-label">Contract Path</span>
+                    <div class="sidebar-value-full">{{contractPath}}</div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Execution</h3>
+                <div class="sidebar-item">
+                    <span class="sidebar-label">Status</span>
+                    <span class="sidebar-value {{result}}" >{{result}}</span>
+                </div>
+                <div class="sidebar-item">
+                    <span class="sidebar-label">Timestamp</span>
+                    <span class="sidebar-value">{{request.timestamp}}</span>
+                </div>
+                <div class="sidebar-item sidebar-item-stacked">
+                    <span class="sidebar-label">Trace ID</span>
+                    <div class="command-display">
+                        <code class="replay-command">{{traceId}}</code>
+                        <button class="command-copy-btn" onclick="copyTraceId(event)" title="Copy trace ID">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-section-title">Replay Command</h3>
+                <div class="command-display">
+                    <code class="replay-command">{{replayCommand}}</code>
+                    <button class="command-copy-btn" onclick="copyReplayCommand(event)" title="Copy command">
+                        Copy
+                    </button>
+                </div>
+            </div>
+
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="test-main">
+            <div class="content-header">
+                <h1 class="content-title">Test Execution Details</h1>
+            </div>
+
+            <div class="main-section">
+                <div class="scenario-content">
+                    <div class="scenario-item">
+                        <div class="scenario-label">
+                            Test Scenario
+                        </div>
+                        <div class="scenario-text">{{scenario}}</div>
+                    </div>
+                    <div class="scenario-results">
+                        <div class="scenario-item">
+                            <div class="scenario-label">
+                                Expected Result
+                            </div>
+                            <div class="scenario-text">{{expectedResult}}</div>
+                        </div>
+
+                        <div class="scenario-item {{result}}">
+                            <div class="scenario-label">
+                                Actual Result
+                            </div>
+                            <div class="scenario-text {{result}}">{{resultDetailsForHtml}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request Terminal -->
+            <div style="margin-top: 2rem;"></div>
+            <div class="terminal-block">
+                <div class="terminal-header">
+                    <div class="terminal-title">
+                        Request Details
+                    </div>
+                    <div class="terminal-controls">
+                        <button class="terminal-tab active" onclick="showRequestTab('payload')">Payload</button>
+                        <button class="terminal-tab" onclick="showRequestTab('headers')">Headers</button>
+                        <button class="terminal-tab" onclick="showRequestTab('curl')">cURL</button>
+                        <button class="terminal-copy" onclick="copyRequestCode(event)">Copy</button>
+                    </div>
+                </div>
+                <div class="terminal-content">
+                    <div id="term-payload" class="code-section active">
+                        <pre>{{requestJson}}</pre>
+                    </div>
+                    <div id="term-headers" class="code-section">
+                        <pre>{{headers}}</pre>
+                    </div>
+                    <div id="term-curl" class="code-section">
+                        <pre>{{curl}}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Response Terminal -->
+            <div class="terminal-block">
+                <div class="terminal-header">
+                    <div class="terminal-title">
+                        Response Details
+                    </div>
+                    <div class="terminal-controls">
+                        <button class="terminal-copy" onclick="copyResponseCode(event)">Copy</button>
+                    </div>
+                </div>
+                <div class="terminal-content">
+                    <pre>{{responseJson}}</pre>
+                </div>
+            </div>
+        </main>
+    </div>
+{{/TEST_CASE}}
+    <footer class="report-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <img src="assets/logo_4.svg" alt="Dochia" class="footer-logo">
+                <span>Powered by Dochia</span>
+            </div>
+            <div class="footer-info">Report generated on {{TIMESTAMP}}</div>
+        </div>
+    </footer>
+{{#JS}}
+    <script src="scripts.js"></script>
+{{/JS}}
+</body>
+</html>

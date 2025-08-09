@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dochia - Execution Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        const totalErr = parseInt('{{ERRORS}}'.replace(/ /g, ''));
+        const totalWrn = parseInt('{{WARNINGS}}'.replace(/ /g, ''));
+        const totalScs = parseInt('{{SUCCESS}}'.replace(/ /g, ''));
+    </script>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="nav-header">
+        <div class="nav-content">
+            <div class="nav-brand">
+                <img src="assets/logo_4.svg" alt="Dochia" class="nav-logo">
+                <div class="nav-title">
+                    <h1>Dochia</h1>
+                    <span class="nav-subtitle">Execution Report</span>
+                </div>
+            </div>
+            <div class="nav-meta">
+                {{#JS}}
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+                    <img src="assets/white-mode-icon.svg" alt="Light mode" class="theme-icon light-icon">
+                    <img src="assets/dark-mode-icon.svg" alt="Dark mode" class="theme-icon dark-icon">
+                </button>
+                {{/JS}}
+                <div class="report-badge">{{VERSION}}</div>
+                <div class="report-timestamp">Generated: {{TIMESTAMP}} on {{OS}}</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Compact Summary Section -->
+    <section class="summary-bar">
+        <div class="summary-content">
+            <div class="test-overview">
+                <div class="overview-stats">
+                    <div class="stat-item primary">
+                        <span class="stat-value">{{TOTAL}}</span>
+                        <span class="stat-label">Tests</span>
+                    </div>
+                    <div class="stat-item success">
+                        <span class="stat-value">{{SUCCESS}}</span>
+                        <span class="stat-label">Passed</span>
+                    </div>
+                    <div class="stat-item warning">
+                        <span class="stat-value">{{WARNINGS}}</span>
+                        <span class="stat-label">Warnings</span>
+                    </div>
+                    <div class="stat-item error">
+                        <span class="stat-value">{{ERRORS}}</span>
+                        <span class="stat-label">Failed</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="success-rate-compact">
+                        <span class="rate-value">{{SUCCESS_PERCENTAGE}}%</span>
+                        <span class="rate-label">Success</span>
+                    </div>
+                </div>
+            </div>
+            <div class="test-config">
+                <div class="config-compact">
+                    <div class="config-row">
+                        <span class="config-label">API:</span>
+                        <code class="config-value" data-type="filename" title="{{CONTRACT_NAME}}">{{CONTRACT_NAME}}</code>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Base:</span>
+                        <code class="config-value" data-type="url" title="{{BASE_URL}}">{{BASE_URL}}</code>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Execution:</span>
+                        <code class="config-value" title="{{EXECUTION}} (avg: {{AVERAGE_RESPONSE_TIME}}ms)">{{EXECUTION}} (avg: {{AVERAGE_RESPONSE_TIME}}ms)</code>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Coverage:</span>
+                        <code class="config-value" title="{{PLAYBOOKS}}/{{TOTAL_PLAYBOOKS}} playbooks, {{PATHS}}/{{TOTAL_PATHS}} paths">{{PLAYBOOKS}}/{{TOTAL_PLAYBOOKS}} playbooks, {{PATHS}}/{{TOTAL_PATHS}} paths</code>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-mini">
+                <canvas id="heroChart" width="80" height="80"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard -->
+    <main class="dashboard">
+
+        <!-- Test Results -->
+        <section class="results-section">
+            <div class="section-header">
+                <h2>Test Results</h2>
+            </div>
+            <div class="results-controls">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">All <span class="filter-count">{{TOTAL}}</span></button>
+                    <button class="filter-btn success" data-filter="success">Passed <span class="filter-count">{{SUCCESS}}</span></button>
+                    <button class="filter-btn warning" data-filter="warning">Warnings <span class="filter-count">{{WARNINGS}}</span></button>
+                    <button class="filter-btn error" data-filter="error">Failed <span class="filter-count">{{ERRORS}}</span></button>
+                </div>
+                <div class="search-group">
+                    <input type="text" class="search-input" placeholder="Search tests...">
+                    <button class="search-clear">Clear</button>
+                </div>
+            </div>
+
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Playbook</th>
+                            <th>Scenario</th>
+                            <th>Status</th>
+                            <th>Result Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {{#TEST_CASES}}
+                        <tr onclick="window.open('{{key}}.html','_blank')" data-status="{{result}}">
+                            <td><a href="{{key}}.html" target="_blank" class="test-link">{{idFormatted}}</a></td>
+                            <td><div class="fuzzer-name">{{playbook}}</div></td>
+                            <td>
+                                <div class="scenario-header">
+                                    <span class="method-badge {{httpMethod}}">{{httpMethod}}</span>
+                                    <code class="endpoint-path">{{path}}</code>
+                                </div>
+                                <div class="scenario-description">
+                                    {{scenario}}
+                                </div>
+                            </td>
+                            <td><span class="status-badge {{result}}">{{result}}</span></td>
+                            <td><span class="result-text {{result}}">{{resultReason}}</span></td>
+                        </tr>
+                    {{/TEST_CASES}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="report-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <img src="assets/logo_4.svg" alt="Dochia" class="footer-logo">
+                <span>Powered by Dochia</span>
+            </div>
+            <div class="footer-info">Report generated on {{TIMESTAMP}}</div>
+        </div>
+    </footer>
+
+    <script src="scripts.js"></script>
+
+</body>
+</html>

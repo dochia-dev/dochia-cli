@@ -1,0 +1,6 @@
+/pets:
+  field: "newValue"
+  name: "dochia_remove_field"
+all:
+  allField: "allValue"
+  anotherAllField: "anotherAllValue"

@@ -1,0 +1,225 @@
+name: GraalVM Native Image builds on All platforms
+on:
+  workflow_dispatch:
+    inputs:
+      releaseversion:
+        description: 'Release version'
+        required: true
+        default: 'X.X.X'
+
+jobs:
+  release:
+    name: Creating Release for dochia ${{ github.event.inputs.releaseversion }}
+    runs-on: ubuntu-latest
+    outputs:
+      release_upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: dochia-${{ github.event.inputs.releaseversion }}
+
+      - name: Get Previous Tag
+        id: get_previous_tag
+        run: |
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -E '^dochia-[0-9]+\.[0-9]+(\.[0-9]+)?$' | grep -v "dochia-${{ github.event.inputs.releaseversion }}" | head -n 1)
+          echo "PREVIOUS_TAG=$PREVIOUS_TAG"
+          echo "PREVIOUS_TAG=$PREVIOUS_TAG" >> $GITHUB_ENV
+
+      - name: Generate Changelog
+        id: generate_changelog
+        run: |
+          echo "Generating changelog from ${{ env.PREVIOUS_TAG }} to ${{ github.ref_name }}"
+          CHANGELOG=$(git log ${{ env.PREVIOUS_TAG }}..dochia-${{ github.event.inputs.releaseversion }} --pretty=format:"* %s" --no-merges | grep -vE "\[maven-release-plugin\]|chore:|docs:|test:|ci:|build:")
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: dochia-${{ github.event.inputs.releaseversion }}
+          release_name: dochia-${{ github.event.inputs.releaseversion }}
+          draft: false
+          prerelease: false
+          body: ${{ env.CHANGELOG}}
+
+      - name: Print Release URL
+        id: print_release_url
+        run: |
+          echo "Release URL: ${{ steps.create_release.outputs.upload_url }}"
+
+  build_linux_arm64:
+    name: Building Linux arm64 for dochia ${{ github.event.inputs.releaseversion }}
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: dochia-${{ github.event.inputs.releaseversion }}
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and run dochia
+        run: |
+          ./mvnw -B clean --file pom.xml
+          ./mvnw clean package -Pnative -Dquarkus.native.remote-container-build=true -DskipTests=true -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:23.1.3.1-Final-java21-arm64
+
+      - name: Tar files for Linux arm64
+        run: |
+          cp target/dochia-runner dochia
+          tar -czf dochia_linux_arm64_${{ github.event.inputs.releaseversion }}.tar.gz dochia
+
+      - name: Upload Tar files for Linux arm64
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_URL: ${{ needs.release.outputs.release_upload_url }}
+        with:
+          upload_url: ${{ env.RELEASE_URL }}
+          asset_path: dochia_linux_arm64_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_name: dochia_linux_arm64_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_content_type: application/gzip
+
+  build_uberjar:
+    name: Building dochia uberjar for release ${{ github.event.inputs.releaseversion }}
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: dochia-${{ github.event.inputs.releaseversion }}
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Uberjar
+        run: |
+          ./mvnw -B clean --file pom.xml
+          ./mvnw -B package --file pom.xml -Dquarkus.package.type=uber-jar -DskipTests=true
+
+      - name: Tar jar file
+        run: |
+          cp target/dochia-runner.jar dochia.jar
+          tar -czf dochia_uberjar_${{ github.event.inputs.releaseversion }}.tar.gz dochia.jar
+
+      - name: Upload Uberjar
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_URL: ${{ needs.release.outputs.release_upload_url }}
+        with:
+          upload_url: ${{ env.RELEASE_URL }}
+          asset_path: dochia_uberjar_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_name: dochia_uberjar_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_content_type: application/gzip
+
+  build:
+    name: Building dochia on ${{ matrix.os }} for release ${{ github.event.inputs.releaseversion }}
+    needs: release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-latest, macos-13, windows-latest, ubuntu-latest ]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: dochia-${{ github.event.inputs.releaseversion }}
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine OS Architecture for Linux and MacOS
+        if: matrix.os != 'windows-latest'
+        id: determine_arch
+        run: |
+          arch=$(uname -p)
+          if [[ "$arch" == "arm" ]]; then
+            echo "OS_ARCH=arm64" >> $GITHUB_ENV
+          else
+            echo "OS_ARCH=amd64" >> $GITHUB_ENV
+          fi
+
+      - name: Determine OS Architecture for Windows
+        if: matrix.os == 'windows-latest'
+        id: determine_arch_windows
+        run: |
+          echo "OS_ARCH=amd64" >> $GITHUB_ENV
+
+      - name: Determine OS Name
+        id: determine_os
+        run: echo "RUNNER_OS=${{ matrix.os }}" | sed -e 's/-[^-]*$//' -e 's/ubuntu/linux/' >> $GITHUB_ENV
+
+      - name: Build and run dochia
+        run: |
+          ./mvnw -B clean --file pom.xml
+          ./mvnw -B package --file pom.xml -Pnative -DskipTests=true
+
+      - name: Tar files for Linux and MacOS
+        if: matrix.os != 'windows-latest'
+        run: |
+          cp target/dochia-runner dochia
+          tar -czf dochia_${{ env.RUNNER_OS }}_${{ env.OS_ARCH}}_${{ github.event.inputs.releaseversion }}.tar.gz dochia
+
+      - name: Upload Tar files for Linux and MacOS
+        if: matrix.os != 'windows-latest'
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_URL: ${{ needs.release.outputs.release_upload_url }}
+        with:
+          upload_url: ${{ env.RELEASE_URL }}
+          asset_path: dochia_${{ env.RUNNER_OS }}_${{ env.OS_ARCH}}_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_name: dochia_${{ env.RUNNER_OS }}_${{ env.OS_ARCH}}_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Zip file for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          copy target\dochia-runner.exe dochia.exe
+          Compress-Archive -Path dochia.exe -Destination dochia_windows_amd64_${{ github.event.inputs.releaseversion }}.zip
+
+      - name: Upload Zip for Windows
+        if: matrix.os == 'windows-latest'
+        id: upload-release-asset-windows
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_URL: ${{ needs.release.outputs.release_upload_url }}
+        with:
+          upload_url: ${{ env.RELEASE_URL }}
+          asset_path: dochia_windows_amd64_${{ github.event.inputs.releaseversion }}.zip
+          asset_name: dochia_windows_amd64_${{ github.event.inputs.releaseversion }}.zip
+          asset_content_type: application/zip
