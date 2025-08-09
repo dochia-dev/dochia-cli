@@ -1,0 +1,43 @@
+package dev.dochia.cli.core.playbook.special.mutators.api;
+
+import dev.dochia.cli.core.model.DochiaHeader;
+
+import java.util.Collection;
+
+/**
+ * The Mutator interface represents an abstraction for mutating input strings.
+ * Implementations of this interface provide methods to apply various types of mutations
+ * to input strings, producing modified output strings.
+ */
+public interface Mutator extends Comparable<Mutator> {
+
+    /**
+     * Applies a mutation to the input string.
+     *
+     * @param inputJson     The input JSON to be mutated
+     * @param selectedField The field within the JSON which is the primary target of mutation
+     * @return The mutated output string
+     */
+    String mutate(String inputJson, String selectedField);
+
+
+    /**
+     * Applies a mutation to one of the headers.
+     *
+     * @param headers the request headers
+     * @return a list of headers with at least one mutated
+     */
+    Collection<DochiaHeader> mutate(Collection<DochiaHeader> headers);
+
+    /**
+     * The name of the mutator.
+     *
+     * @return the description of the mutator
+     */
+    String description();
+
+    @Override
+    default int compareTo(Mutator o) {
+        return this.getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
+    }
+}

@@ -1,0 +1,124 @@
+package dev.dochia.cli.core.model;
+
+import dev.dochia.cli.core.generator.simple.StringGenerator;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+/**
+ * This class represents the HTTP headers from the OpenAPI contract and use them as the data model across all layers.
+ */
+@Builder
+@AllArgsConstructor
+@Getter
+@EqualsAndHashCode(of = "name")
+public class DochiaHeader {
+
+    private final boolean required;
+    private final String name;
+    private String value;
+
+    private DochiaHeader(Parameter param) {
+        this.name = param.getName();
+        this.required = param.getRequired() != null && param.getRequired();
+        this.value = this.generateValue(param.getSchema());
+    }
+
+    private DochiaHeader(String name, String value, Boolean required) {
+        this.name = name;
+        this.required = required != null && required;
+        this.value = value;
+    }
+
+    /**
+     * Creates a new DochiaHeader from a OpenAPI Parameter object.
+     *
+     * @param param the OpenAPI Parameter object
+     * @return a DochiaHeader object created based on the supplied Parameter
+     */
+    public static DochiaHeader fromHeaderParameter(Parameter param) {
+        return new DochiaHeader(param);
+    }
+
+    /**
+     * Creates a new DochiaHeader object.
+     *
+     * @param name     the name of the header
+     * @param value    the value of the header
+     * @param required whether the header is required or not
+     * @return a new DochiaHeader object
+     */
+    public static DochiaHeader from(String name, String value, Boolean required) {
+        return new DochiaHeader(name, value, required);
+    }
+
+    /**
+     * Sets the header's value.
+     *
+     * @param value the value to be set
+     */
+    public void withValue(String value) {
+        this.value = value;
+    }
+
+    /**
+     * Truncates the value if is longer than 50 characters.
+     *
+     * @return a truncated value of the header
+     */
+    public String getTruncatedValue() {
+        if (this.value != null && this.value.length() > 50) {
+            return this.value.substring(0, 20) + "...[Total length:" + this.value.length() + "]";
+        }
+
+        return this.value;
+    }
+
+
+    /**
+     * Creates a copy of the current header.
+     *
+     * @return a copy of the current header
+     */
+    public DochiaHeader copy() {
+        return DochiaHeader.builder().name(this.name).required(this.required).value(this.value).build();
+    }
+
+    private String generateValue(Schema schema) {
+        if (schema.getExample() != null) {
+            return schema.getExample().toString();
+        }
+
+        if ("uuid".equalsIgnoreCase(schema.getFormat())) {
+            return UUID.randomUUID().toString();
+        }
+        if ("date-time".equalsIgnoreCase(schema.getFormat())) {
+            return OffsetDateTime.now(ZoneId.systemDefault()).toString();
+        }
+
+        if ("string".equalsIgnoreCase(schema.getType())) {
+            String pattern = schema.getPattern() != null ? schema.getPattern() : StringGenerator.ALPHANUMERIC_PLUS;
+            int minLength = schema.getMinLength() != null ? schema.getMinLength() : 1;
+            int maxLength = schema.getMaxLength() != null ? schema.getMaxLength() : 30;
+
+            return StringGenerator.generate(pattern, minLength, maxLength);
+        }
+
+        if (schema.getPattern() != null) {
+            return StringGenerator.generate(schema.getPattern(), 1, 200);
+        }
+
+        return this.name;
+    }
+
+    @Override
+    public String toString() {
+        return "{" + "required=" + required + ", name='" + name + '\'' + '}';
+    }
+}

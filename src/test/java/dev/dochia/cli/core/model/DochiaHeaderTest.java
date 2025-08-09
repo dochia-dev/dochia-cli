@@ -1,0 +1,168 @@
+package dev.dochia.cli.core.model;
+
+import io.quarkus.test.junit.QuarkusTest;
+import io.swagger.v3.oas.models.media.NumberSchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+@QuarkusTest
+class DochiaHeaderTest {
+
+    @Test
+    void givenAUUIDParameter_whenCreatingANewDochiaHeaderInstance_thenTheDochiaHeaderInstanceIsProperlyCreatedAccordingToTheParameterData() {
+        Parameter parameter = new Parameter();
+        StringSchema schema = new StringSchema();
+        schema.setFormat("uuid");
+        parameter.setName("header");
+        parameter.setSchema(schema);
+
+        DochiaHeader header = DochiaHeader.fromHeaderParameter(parameter);
+
+        Assertions.assertThat(header.getName()).isEqualTo("header");
+        Assertions.assertThat(UUID.fromString(header.getValue())).isNotNull();
+    }
+
+    @Test
+    void givenADateTimeParameter_whenCreatingANewDochiaHeaderInstance_thenTheDochiaHeaderInstanceIsProperlyCreatedAccordingToTheParameterData() {
+        Parameter parameter = new Parameter();
+        StringSchema schema = new StringSchema();
+        schema.setFormat("date-time");
+        parameter.setName("header");
+        parameter.setSchema(schema);
+
+        DochiaHeader header = DochiaHeader.fromHeaderParameter(parameter);
+
+        Assertions.assertThat(header.getName()).isEqualTo("header");
+        Assertions.assertThat(OffsetDateTime.parse(header.getValue())).isNotNull();
+    }
+
+    @Test
+    void givenAStringParameter_whenCreatingANewDochiaHeaderInstance_thenTheDochiaHeaderInstanceIsProperlyCreatedAccordingToTheParameterData() {
+        Parameter parameter = new Parameter();
+        StringSchema schema = new StringSchema();
+        schema.setFormat("string");
+        parameter.setName("header");
+        parameter.setSchema(schema);
+
+        DochiaHeader header = DochiaHeader.fromHeaderParameter(parameter);
+
+        Assertions.assertThat(header.getName()).isEqualTo("header");
+        Assertions.assertThat(header.getValue()).isNotNull();
+    }
+
+    @Test
+    void givenAStringParameterWithPattern_whenCreatingANewDochiaHeaderInstance_thenTheDochiaHeaderInstanceIsProperlyCreatedAccordingToTheParameterData() {
+        Parameter parameter = new Parameter();
+        ObjectSchema schema = new ObjectSchema();
+        schema.setPattern("[A-Z]");
+        parameter.setName("header");
+        parameter.setSchema(schema);
+
+        DochiaHeader header = DochiaHeader.fromHeaderParameter(parameter);
+
+        Assertions.assertThat(header.getName()).isEqualTo("header");
+        Assertions.assertThat(header.getValue()).isNotNull();
+    }
+
+    @Test
+    void givenAStringParameterWithExample_whenCreatingANewDochiaHeaderInstance_thenTheDochiaHeaderInstanceIsProperlyCreatedAccordingToTheParameterData() {
+        Parameter parameter = new Parameter();
+        StringSchema schema = new StringSchema();
+        schema.setExample("headerValue");
+        parameter.setName("header");
+        parameter.setSchema(schema);
+
+        DochiaHeader header = DochiaHeader.fromHeaderParameter(parameter);
+
+        Assertions.assertThat(header.getName()).isEqualTo("header");
+        Assertions.assertThat(header.getValue()).isEqualTo("headerValue");
+    }
+
+    @Test
+    void givenASimpleParameter_whenCreatingANewDochiaHeaderInstance_thenTheDochiaHeaderInstanceIsProperlyCreatedAccordingToTheParameterData() {
+        Parameter parameter = new Parameter();
+        ObjectSchema schema = new ObjectSchema();
+        parameter.setName("header");
+        parameter.setSchema(schema);
+
+        DochiaHeader header = DochiaHeader.fromHeaderParameter(parameter);
+
+        Assertions.assertThat(header.getName()).isEqualTo("header");
+        Assertions.assertThat(header.getValue()).isEqualTo("header");
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {"true, true", "false, false", "null,false"}, nullValues = "null")
+    void shouldMakeDochiaHeaderRequired(Boolean required, boolean expected) {
+        Parameter parameter = new Parameter();
+        parameter.setRequired(required);
+        parameter.setSchema(new NumberSchema());
+        DochiaHeader header = DochiaHeader.fromHeaderParameter(parameter);
+
+        Assertions.assertThat(header.isRequired()).isEqualTo(expected);
+    }
+
+    @Test
+    void shouldTruncateValue() {
+        DochiaHeader header = DochiaHeader.builder().value(StringUtils.repeat("a", 51)).build();
+        Assertions.assertThat(header.getTruncatedValue()).isEqualTo("aaaaaaaaaaaaaaaaaaaa...[Total length:51]");
+    }
+
+    @Test
+    void shouldNotTruncateValue() {
+        DochiaHeader header = DochiaHeader.builder().value(StringUtils.repeat("a", 50)).build();
+        Assertions.assertThat(header.getTruncatedValue()).isEqualTo(StringUtils.repeat("a", 50));
+    }
+
+    @Test
+    void shouldReturnTruncatedValueAsNull() {
+        DochiaHeader header = DochiaHeader.builder().value(null).build();
+        Assertions.assertThat(header.getTruncatedValue()).isNull();
+    }
+
+    @Test
+    void shouldGetValueMinLengthAsHalfOfMaxLengthWhenMinLengthZero() {
+        Parameter parameter = new Parameter();
+        StringSchema schema = new StringSchema();
+        schema.setMaxLength(10);
+        parameter.setName("header");
+        parameter.setSchema(schema);
+
+        DochiaHeader header = DochiaHeader.fromHeaderParameter(parameter);
+        Assertions.assertThat(header.getValue()).hasSizeLessThanOrEqualTo(10).hasSizeGreaterThanOrEqualTo(1);
+    }
+
+    @Test
+    void shouldGenerateValueBasedOnPattern() {
+        Parameter parameter = new Parameter();
+        Schema schema = new Schema();
+        schema.setPattern("[A-Z]+");
+        parameter.setName("header");
+        parameter.setSchema(schema);
+        DochiaHeader header = DochiaHeader.fromHeaderParameter(parameter);
+
+        Assertions.assertThat(header.getValue()).matches("[A-Z]+").hasSizeGreaterThan(1);
+    }
+
+    @Test
+    void shouldGetNameAndValue() {
+        Parameter parameter = new Parameter();
+        StringSchema schema = new StringSchema();
+        schema.setMaxLength(20);
+        parameter.setName("header");
+        parameter.setSchema(schema);
+        DochiaHeader header = DochiaHeader.fromHeaderParameter(parameter);
+
+        Assertions.assertThat(header.toString()).contains("header", "required", "{", "}", "=");
+    }
+}

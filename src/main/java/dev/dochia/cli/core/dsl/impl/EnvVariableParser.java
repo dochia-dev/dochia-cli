@@ -1,0 +1,18 @@
+package dev.dochia.cli.core.dsl.impl;
+
+import dev.dochia.cli.core.dsl.api.Parser;
+import java.util.Map;
+
+/**
+ * Parser used to retrieve environment variables. The variables are in the {@code $$variable}
+ * format.
+ */
+public class EnvVariableParser implements Parser {
+  private static final String ENV_VARIABLE_NOT_FOUND = "not_found_";
+
+  @Override
+  public String parse(String expression, Map<String, String> context) {
+    String result = System.getenv(expression.replace("$", ""));
+    return result == null ? ENV_VARIABLE_NOT_FOUND + expression : result;
+  }
+}

@@ -1,0 +1,125 @@
+package dev.dochia.cli.core.playbook.executor;
+
+import dev.dochia.cli.core.args.FilesArguments;
+import dev.dochia.cli.core.args.MatchArguments;
+import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
+import dev.dochia.cli.core.io.ServiceCaller;
+import dev.dochia.cli.core.model.HttpResponse;
+import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.report.TestCaseListener;
+import dev.dochia.cli.core.report.TestReportsGenerator;
+import dev.dochia.cli.core.strategy.FuzzingStrategy;
+import io.github.ludovicianul.prettylogger.PrettyLogger;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.mockito.InjectSpy;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mockito;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+@QuarkusTest
+class FieldsIteratorExecutorTest {
+
+    private FieldsIteratorExecutor fieldsIteratorExecutor;
+    private ServiceCaller serviceCaller;
+    @InjectSpy
+    private TestCaseListener testCaseListener;
+    private MatchArguments matchArguments;
+
+    private FilesArguments filesArguments;
+
+    @BeforeEach
+    void setup() {
+        serviceCaller = Mockito.mock(ServiceCaller.class);
+        matchArguments = Mockito.mock(MatchArguments.class);
+        filesArguments = Mockito.mock(FilesArguments.class);
+        ReflectionTestUtils.setField(testCaseListener, "testReportsGenerator", Mockito.mock(TestReportsGenerator.class));
+
+        fieldsIteratorExecutor = new FieldsIteratorExecutor(serviceCaller, testCaseListener, matchArguments, filesArguments);
+    }
+
+    @Test
+    void shouldSkipWhenFieldFilterNotPassing() {
+        fieldsIteratorExecutor.execute(setupContextBuilder().fieldFilter(string -> false).build());
+
+        Mockito.verifyNoInteractions(testCaseListener);
+    }
+
+    @Test
+    void shouldSkipWhenSchemaFilterNotPassing() {
+        fieldsIteratorExecutor.execute(setupContextBuilder().schemaFilter(string -> false).build());
+
+        Mockito.verifyNoInteractions(testCaseListener);
+    }
+
+    @Test
+    void shouldReportResult() {
+        fieldsIteratorExecutor.execute(setupContextBuilder().expectedResponseCode(ResponseCodeFamilyPredefined.FOURXX).build());
+
+        Mockito.verify(testCaseListener, Mockito.times(4)).reportResult(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"true,true", "true,false", "false,false", "false,true"})
+    void shouldReportError(boolean isMatch, boolean isSupplied) {
+        Mockito.when(matchArguments.isMatchResponse(Mockito.any())).thenReturn(isMatch);
+        Mockito.when(matchArguments.isAnyMatchArgumentSupplied()).thenReturn(isSupplied);
+        int times = !isSupplied || isMatch ? 4 : 0;
+        fieldsIteratorExecutor.execute(setupContextBuilder().build());
+
+        Mockito.verify(testCaseListener, Mockito.times(times)).reportResultError(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), Mockito.any());
+    }
+
+    @Test
+    void shouldSkip() {
+        Mockito.when(matchArguments.isMatchResponse(Mockito.any())).thenReturn(false);
+        Mockito.when(matchArguments.isAnyMatchArgumentSupplied()).thenReturn(true);
+        fieldsIteratorExecutor.execute(setupContextBuilder().build());
+
+        Mockito.verify(testCaseListener, Mockito.times(4)).skipTest(Mockito.any(), Mockito.anyString());
+    }
+
+    private FieldsIteratorExecutorContext.FieldsIteratorExecutorContextBuilder setupContextBuilder() {
+        PlaybookData data = Mockito.mock(PlaybookData.class);
+        Map<String, Schema> schemaMap = new HashMap<>();
+        schemaMap.put("field", new StringSchema());
+        Mockito.when(data.getAllFieldsByHttpMethod()).thenReturn(new HashSet<>(Set.of("field", "id")));
+        Mockito.when(data.getRequestPropertyTypes()).thenReturn(schemaMap);
+        Mockito.when(data.getPayload()).thenReturn("""
+                 {
+                    "id": 1,
+                    "field": "dochia"
+                 }
+                """);
+
+        Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(HttpResponse.from(
+                200, "{}", "POST", 20
+        ));
+
+        return FieldsIteratorExecutorContext.builder()
+                .logger(Mockito.mock(PrettyLogger.class))
+                .scenario("Replacing value")
+                .fuzzValueProducer((schema, field) -> List.of("value1", "value2"))
+                .testCasePlaybook(Mockito.mock(TestCasePlaybook.class))
+                .fuzzingStrategy(FuzzingStrategy.replace())
+                .playbookData(data);
+    }
+
+    @Test
+    void shouldNotRunForFieldsRemovedFromRefData() {
+        Mockito.when(filesArguments.getRefData(Mockito.any())).thenReturn(Map.of("id", ServiceCaller.DOCHIA_REMOVE_FIELD));
+        fieldsIteratorExecutor.execute(setupContextBuilder().expectedResponseCode(ResponseCodeFamilyPredefined.FOURXX).build());
+        Mockito.verify(testCaseListener, Mockito.times(2)).reportResult(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
+    }
+}

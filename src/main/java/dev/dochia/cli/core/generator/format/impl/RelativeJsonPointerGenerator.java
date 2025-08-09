@@ -1,0 +1,30 @@
+package dev.dochia.cli.core.generator.format.impl;
+
+import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
+import dev.dochia.cli.core.generator.format.api.ValidDataFormatGenerator;
+import io.swagger.v3.oas.models.media.Schema;
+import jakarta.inject.Singleton;
+
+import java.util.List;
+
+/**
+ * A generator class implementing interfaces for generating valid relative JSON Pointer data formats.
+ * It implements the ValidDataFormatGenerator and OpenAPIFormat interfaces.
+ */
+@Singleton
+public class RelativeJsonPointerGenerator implements ValidDataFormatGenerator, OpenAPIFormat {
+    @Override
+    public Object generate(Schema<?> schema) {
+        return "1/id";
+    }
+
+    @Override
+    public boolean appliesTo(String format, String propertyName) {
+        return "relative-json-pointer".equalsIgnoreCase(format);
+    }
+
+    @Override
+    public List<String> matchingFormats() {
+        return List.of("relative-json-pointer");
+    }
+}

@@ -1,0 +1,42 @@
+package dev.dochia.cli.core.generator.format.impl;
+
+import dev.dochia.cli.core.generator.format.api.InvalidDataFormatGenerator;
+import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
+import dev.dochia.cli.core.generator.format.api.ValidDataFormatGenerator;
+import io.swagger.v3.oas.models.media.Schema;
+import jakarta.inject.Singleton;
+
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * A generator class implementing interfaces for generating valid and invalid password data formats.
+ * It also implements the OpenAPIFormat interface.
+ */
+@Singleton
+public class PasswordGenerator implements ValidDataFormatGenerator, InvalidDataFormatGenerator, OpenAPIFormat {
+    @Override
+    public Object generate(Schema<?> schema) {
+        return "dochiaISc00l?!useIt#";
+    }
+
+    @Override
+    public boolean appliesTo(String format, String propertyName) {
+        return "password".equalsIgnoreCase(format) || propertyName.toLowerCase(Locale.ROOT).endsWith("password");
+    }
+
+    @Override
+    public String getAlmostValidValue() {
+        return "bgZD89DEkl";
+    }
+
+    @Override
+    public String getTotallyWrongValue() {
+        return "abcdefgh";
+    }
+
+    @Override
+    public List<String> matchingFormats() {
+        return List.of("password");
+    }
+}

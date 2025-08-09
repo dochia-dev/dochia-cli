@@ -1,0 +1,112 @@
+package dev.dochia.cli.core.command;
+
+import dev.dochia.cli.core.args.*;
+import dev.dochia.cli.core.command.model.ConfigOptions;
+import dev.dochia.cli.core.command.model.HelpFullOption;
+import dev.dochia.cli.core.http.HttpMethod;
+import dev.dochia.cli.core.util.VersionProvider;
+import io.quarkus.arc.Unremovable;
+import jakarta.inject.Inject;
+import picocli.CommandLine;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Runs continuous fuzzing based on random payloads, rather than pre-defined playbooks.
+ */
+@CommandLine.Command(
+        name = "random",
+        mixinStandardHelpOptions = true,
+        usageHelpAutoWidth = true,
+        description = "Run continuous fuzzing based on random mutators, rather than pre-defined playbooks.",
+        abbreviateSynopsis = true,
+        exitCodeOnInvalidInput = 191,
+        exitCodeOnExecutionException = 192,
+        synopsisHeading = "%nUsage: ",
+        exitCodeListHeading = "%n@|bold,underline Exit Codes:|@%n",
+        exitCodeList = {"@|bold  0|@:Successful program execution",
+                "@|bold 191|@:Usage error: user input for the command was incorrect",
+                "@|bold 192|@:Internal execution error: an exception occurred when executing command",
+                "@|bold ERR|@:Where ERR is the number of errors reported by dochia"},
+        footerHeading = "%n@|bold,underline Examples:|@%n",
+        footer = {"  Run continuous fuzzing for path /my-path for 100 seconds and match 500 http response codes:",
+                "    dochia random -H header=value -X POST -p /my-path -s http://localhost:8080 --mc 500 --stopAfterTimeInSec 100  ",
+                "", "   Run continuous fuzzing for path /my-path and match 500 http response codes and stop after 10 errors:",
+                "    dochia random -H header=value -X POST -p /my-path -s http://localhost:8080 --mc 500 --stopAfterErrors 10"},
+        versionProvider = VersionProvider.class)
+@Unremovable
+public class RandomCommand implements Runnable, CommandLine.IExitCodeGenerator {
+    @CommandLine.Mixin
+    HelpFullOption helpFullOption;
+
+    @CommandLine.Mixin
+    ConfigOptions configOptions;
+
+    @Inject
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline API Options:|@%n", exclusive = false)
+    ApiArguments apiArguments;
+
+    @Inject
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Authentication Options:|@%n", exclusive = false)
+    AuthArguments authArgs;
+
+    @Inject
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Reporting Options:|@%n", exclusive = false)
+    ReportingArguments reportingArguments;
+
+    @Inject
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Match Options:|@%n", exclusive = false, multiplicity = "1")
+    MatchArguments matchArguments;
+
+    @Inject
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Files Options:|@%n", exclusive = false)
+    FilesArguments filesArguments;
+
+    @Inject
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Stop Options:|@%n", exclusive = false, multiplicity = "1")
+    StopArguments stopArguments;
+
+    @CommandLine.Option(names = {"--httpMethod", "-X"}, required = true,
+            description = "The HTTP method. Default: @|bold,underline ${DEFAULT-VALUE}|@")
+    HttpMethod httpMethod = HttpMethod.POST;
+
+    @CommandLine.Option(names = {"--contentType"},
+            description = "A custom mime type if the OpenAPI contract/spec uses content type negotiation versioning")
+    private String contentType;
+    @CommandLine.Option(names = {"--oneOfSelection", "--anyOfSelection"},
+            description = "A @|bold name:value|@ list of discriminator names and values that can be used to filter request payloads when objects use oneOf or anyOf definitions" +
+                    " which result in multiple payloads for a single endpoint and http method")
+    Map<String, String> xxxOfSelections;
+
+    @CommandLine.Option(names = {"--path", "-p"}, required = true,
+            description = "An API path for continuous fuzzing")
+    String path;
+
+    @Inject
+    TestCommand testCommand;
+
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
+
+    @Override
+    public void run() {
+
+        // these are all throwing a ParameterException in case a mandatory argument is not provided
+        apiArguments.validateRequired(spec);
+        apiArguments.validateValidServer(spec);
+
+        testCommand.filterArguments.customFilter("RandomPlaybook");
+        testCommand.filesArguments = filesArguments;
+        testCommand.processingArguments.setContentType(this.contentType);
+        testCommand.processingArguments.setXxxOfSelections(this.xxxOfSelections);
+        testCommand.filterArguments.setPaths(List.of(path));
+        testCommand.filterArguments.setHttpMethods(List.of(httpMethod));
+        testCommand.run();
+    }
+
+    @Override
+    public int getExitCode() {
+        return testCommand.getExitCode();
+    }
+}

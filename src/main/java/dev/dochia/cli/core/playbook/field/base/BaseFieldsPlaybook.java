@@ -1,0 +1,387 @@
+package dev.dochia.cli.core.playbook.field.base;
+
+import dev.dochia.cli.core.args.FilesArguments;
+import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import dev.dochia.cli.core.http.ResponseCodeFamily;
+import dev.dochia.cli.core.io.ServiceCaller;
+import dev.dochia.cli.core.io.ServiceData;
+import dev.dochia.cli.core.model.HttpResponse;
+import dev.dochia.cli.core.model.FuzzingConstraints;
+import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.report.TestCaseListener;
+import dev.dochia.cli.core.strategy.FuzzingStrategy;
+import dev.dochia.cli.core.util.DochiaModelUtils;
+import dev.dochia.cli.core.util.ConsoleUtils;
+import dev.dochia.cli.core.util.FuzzingResult;
+import dev.dochia.cli.core.util.JsonUtils;
+import io.github.ludovicianul.prettylogger.PrettyLogger;
+import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
+import io.swagger.v3.oas.models.media.Schema;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+/**
+ * This class performs the actual fuzzing. It can be extended to provide expected result codes based
+ * on different fuzzing scenarios.
+ */
+public abstract class BaseFieldsPlaybook implements TestCasePlaybook {
+  private static final String DOCHIA_REMOVE_FIELD = "dochia_remove_field";
+
+  /** The logger used by all subclasses. */
+  protected final PrettyLogger logger = PrettyLoggerFactory.getLogger(getClass());
+
+  /** The test case listener to report test events. */
+  protected final TestCaseListener testCaseListener;
+
+  /** Files arguments. */
+  protected final FilesArguments filesArguments;
+
+  private final ServiceCaller serviceCaller;
+
+  /**
+   * Constructor for initializing common dependencies for fuzzing fields.
+   *
+   * @param sc The {@link ServiceCaller} used to make service calls
+   * @param lr The {@link TestCaseListener} for reporting test case events
+   * @param cp The {@link FilesArguments} for file-related arguments
+   */
+  protected BaseFieldsPlaybook(ServiceCaller sc, TestCaseListener lr, FilesArguments cp) {
+    this.serviceCaller = sc;
+    this.testCaseListener = lr;
+    this.filesArguments = cp;
+  }
+
+  @Override
+  public void run(PlaybookData data) {
+    Set<String> allFields = data.getAllFieldsByHttpMethod();
+    logger.debug("All required fields, including subfields: {}", data.getAllRequiredFields());
+    logger.debug("All fields {}", allFields);
+
+    List<String> fieldsToBeRemoved =
+        filesArguments.getRefData(data.getPath()).entrySet().stream()
+            .filter(entry -> String.valueOf(entry.getValue()).equalsIgnoreCase(DOCHIA_REMOVE_FIELD))
+            .map(Map.Entry::getKey)
+            .toList();
+    logger.note(
+        "The following fields marked as [{}] in refData will not be fuzzed: {}",
+            DOCHIA_REMOVE_FIELD,
+        fieldsToBeRemoved);
+
+    fieldsToBeRemoved.forEach(allFields::remove);
+
+    if (allFields.isEmpty()) {
+      logger.skip("Skipped due to: no fields to fuzz!");
+    } else {
+      for (String fuzzedField : allFields) {
+        logger.debug("Fuzzing {}", fuzzedField);
+        for (FuzzingStrategy fuzzingStrategy :
+            this.getFieldFuzzingStrategy(data, fuzzedField).stream()
+                .filter(fuzzingStrategy -> !fuzzingStrategy.isSkip())
+                .toList()) {
+          logger.debug("Running strategy {} for {}", fuzzingStrategy.name(), fuzzedField);
+          logger.debug("Payload {}", data.getPayload());
+          testCaseListener.createAndExecuteTest(
+              logger, this, () -> process(data, fuzzedField, fuzzingStrategy), data);
+        }
+      }
+    }
+  }
+
+  /**
+   * Does the actual fuzzing logic.
+   *
+   * @param data data with all the fuzzing context
+   * @param fuzzedField the field being fuzzed
+   * @param fuzzingStrategy the strategy applied for fuzzing
+   */
+  protected void process(PlaybookData data, String fuzzedField, FuzzingStrategy fuzzingStrategy) {
+    FuzzingConstraints fuzzingConstraints =
+        this.createFuzzingConstraints(data, fuzzingStrategy, fuzzedField);
+
+    if (this.isFuzzingPossible(data, fuzzedField, fuzzingStrategy)) {
+      testCaseListener.addScenario(
+          logger,
+          "Send [{}] in request fields: field [{}], value [{}], is required [{}]",
+          this.typeOfDataSentToTheService(),
+          fuzzedField,
+          fuzzingStrategy.truncatedValue(),
+          fuzzingConstraints.getRequiredString());
+      logger.debug("Fuzzing possible...");
+      FuzzingResult fuzzingResult =
+          FuzzingStrategy.replaceField(data.getPayload(), fuzzedField, fuzzingStrategy);
+      boolean isFuzzedValueMatchingPattern =
+          this.isFuzzedValueMatchingPattern(fuzzingResult.fuzzedValue(), data, fuzzedField);
+
+      ServiceData serviceData =
+          ServiceData.builder()
+              .relativePath(data.getPath())
+              .headers(data.getHeaders())
+              .payload(fuzzingResult.json())
+              .httpMethod(data.getMethod())
+              .contractPath(data.getContractPath())
+              .testedField(fuzzedField)
+              .queryParams(data.getQueryParams())
+              .contentType(data.getFirstRequestContentType())
+              .pathParamsPayload(data.getPathParamsPayload())
+              .build();
+      ResponseCodeFamily expectedResponseCodeBasedOnConstraints =
+          this.getExpectedResponseCodeBasedOnConstraints(
+              isFuzzedValueMatchingPattern, fuzzingConstraints);
+
+      testCaseListener.addExpectedResult(
+          logger, "Should return [{}]", expectedResponseCodeBasedOnConstraints.asString());
+
+      HttpResponse response = serviceCaller.call(serviceData);
+
+      testCaseListener.reportResult(
+          logger,
+          data,
+          response,
+          expectedResponseCodeBasedOnConstraints,
+          this.shouldMatchResponseSchema(data),
+          this.shouldMatchContentType(data));
+    } else {
+      logger.debug("Fuzzing not possible!");
+      FuzzingStrategy strategy = this.createSkipStrategy(fuzzingStrategy);
+      testCaseListener.skipTest(logger, (String) strategy.process(""));
+      logger.info("{} " + strategy.getData().toString(), fuzzedField);
+    }
+  }
+
+  private FuzzingStrategy createSkipStrategy(FuzzingStrategy fuzzingStrategy) {
+    return fuzzingStrategy.isSkip()
+        ? fuzzingStrategy
+        : FuzzingStrategy.skip()
+            .withData(
+                "field could not be fuzzed. Possible reasons: field is not a primitive, is a discriminator, is passed as refData or is not matching the Playbook schemas");
+  }
+
+  /**
+   * Fuzzing is not always possible. We will skip fuzzing if:
+   *
+   * <ol>
+   *   <li>the field is not a JSON primitive
+   *   <li>the field is not marked as skipped
+   *   <li>FuzzingStrategy is marked as skipped. This might happen if there is no boundary defined
+   *       for the field, the Playbook cannot be applied to the current fuzzedField type or the String
+   *       format is not recognized.
+   *   <li>each Playbook can have additional logic to skip its execution
+   * </ol>
+   *
+   * @param data the current FuzzingData object
+   * @param fuzzedField the current fuzzed field
+   * @param fuzzingStrategy the current FuzzingStrategy return by the current playbook
+   * @return true if fuzzing is possible, false otherwise
+   */
+  private boolean isFuzzingPossible(
+          PlaybookData data, String fuzzedField, FuzzingStrategy fuzzingStrategy) {
+    return !fuzzingStrategy.isSkip()
+        && JsonUtils.isPrimitive(data.getPayload(), fuzzedField)
+        && isPlaybookApplicable(data, fuzzedField)
+        && !isSkippedField(fuzzedField);
+  }
+
+  private boolean isSkippedField(String fuzzedField) {
+    return skipForFields().contains(fuzzedField);
+  }
+
+  /**
+   * Compute the expected response code based on various constraints. Each specific Playbook will
+   * override the methods to return what is expected when the following criteria are met:
+   *
+   * <ol>
+   *   <li>what is the expected response code when the fuzzed value is not matching the pattern
+   *       defined inside the contract
+   *   <li>is the fuzzed field mandatory or not
+   * </ol>
+   *
+   * @param isFuzzedValueMatchingPattern is the fuzzed value matching the pattern defined in the
+   *     contract?
+   * @param fuzzingConstraints fuzzing constraints associated to the current fuzzed field
+   * @return the appropriate ResponseCodeFamily based on the supplied conditions
+   */
+  private ResponseCodeFamily getExpectedResponseCodeBasedOnConstraints(
+      boolean isFuzzedValueMatchingPattern, FuzzingConstraints fuzzingConstraints) {
+    if (!isFuzzedValueMatchingPattern) {
+      return this.getExpectedHttpCodeWhenFuzzedValueNotMatchesPattern();
+    }
+    return this.getResultCodeBasedOnMandatoryFieldsFuzzed(
+        fuzzingConstraints.hasMinLengthOrMandatoryFieldsFuzzed());
+  }
+
+  private FuzzingConstraints createFuzzingConstraints(
+          PlaybookData data, FuzzingStrategy strategy, String fuzzedField) {
+    boolean hasMinLength = this.hasMinValue(data, fuzzedField) && strategy.getData() != null;
+    boolean hasRequiredFieldsFuzzed = data.getAllRequiredFields().contains(fuzzedField);
+
+    return FuzzingConstraints.builder()
+        .hasMinlength(hasMinLength)
+        .hasRequiredFieldsFuzzed(hasRequiredFieldsFuzzed)
+        .build();
+  }
+
+  /**
+   * For byte format OpenAPI is expecting a base64 encoded string. We consider this matching any
+   * pattern.
+   *
+   * @param fieldValue the current value of the field
+   * @param data the current FuzzingData object
+   * @param fuzzedField the name of the field being fuzzed
+   * @return true if the fuzzed value matches the pattern, false otherwise
+   */
+  private boolean isFuzzedValueMatchingPattern(
+          Object fieldValue, PlaybookData data, String fuzzedField) {
+    if (this.shouldCheckForFuzzedValueMatchingPattern()) {
+      Schema<?> fieldSchema = data.getRequestPropertyTypes().get(fuzzedField);
+      if (fieldSchema.getPattern() == null || DochiaModelUtils.isByteArraySchema(fieldSchema)) {
+        return true;
+      }
+      Pattern pattern = Pattern.compile(fieldSchema.getPattern());
+
+      return fieldValue == null || pattern.matcher(this.sanitizeString(fieldValue)).matches();
+    }
+    return true;
+  }
+
+  /**
+   * We need to sanitize the fuzzed value before matching it to the pattern as APIs are expected to
+   * also sanitize data before validating it.
+   *
+   * @param fieldValue the initial fuzzed value
+   * @return the initial value with unicode control chars removed
+   */
+  private String sanitizeString(Object fieldValue) {
+    return String.valueOf(fieldValue).replaceAll("\\p{C}", "");
+  }
+
+  private boolean hasMinValue(PlaybookData data, String fuzzedField) {
+    Schema<?> fieldSchema = data.getRequestPropertyTypes().get(fuzzedField);
+    return fieldSchema != null
+        && fieldSchema.getMinLength() != null
+        && fieldSchema.getMinLength() > 0;
+  }
+
+  private ResponseCodeFamily getResultCodeBasedOnMandatoryFieldsFuzzed(
+      boolean mandatoryFieldsFuzzed) {
+    return mandatoryFieldsFuzzed
+        ? this.getExpectedHttpCodeWhenRequiredFieldsAreFuzzed()
+        : this.getExpectedHttpCodeWhenOptionalFieldsAreFuzzed();
+  }
+
+  /**
+   * Checks if the field is skippable for special chars playbooks. This is true if the field is not a
+   * discriminator, does not have an enum defined and is not a reference data field.
+   *
+   * @param data the current fuzzing data context
+   * @param fuzzedField the name of the field being fuzzed
+   * @return true if the field is skippable for special chars playbooks, false otherwise
+   */
+  public boolean isFieldSkippableForSpecialCharsPlaybooks(PlaybookData data, String fuzzedField) {
+    Schema<?> fuzzedFieldSchema = data.getRequestPropertyTypes().get(fuzzedField);
+    boolean isRefDataField = filesArguments.getRefData(data.getPath()).get(fuzzedField) != null;
+    return testCaseListener.isFieldNotADiscriminator(fuzzedField)
+        && fuzzedFieldSchema.getEnum() == null
+        && !isRefDataField;
+  }
+
+  /**
+   * When sending large or malformed values the payload might not reach the application layer, but
+   * rather be rejected by the HTTP server. In those cases response content-type is typically html
+   * which will most likely won't match the OpenAPI spec.
+   *
+   * <p>Override this to return false to avoid content type checking.
+   *
+   * @param data the current fuzzing data context
+   * @return true if the playbook should check if the response content type matches the contract,
+   *     false otherwise
+   */
+  protected boolean shouldMatchContentType(PlaybookData data) {
+    return true;
+  }
+
+  /**
+   * When sending large or malformed values the payload might not reach the application layer, but
+   * rather be rejected by the HTTP server. In those cases response is typically html which will
+   * most likely won't match the OpenAPI spec.
+   *
+   * <p>Override this to return false to avoid response schema checking.
+   *
+   * @param data the current fuzzing data context
+   * @return true if the playbook should check if the response matches the schema from the contract,
+   *     false otherwise
+   */
+  protected boolean shouldMatchResponseSchema(PlaybookData data) {
+    return true;
+  }
+
+  /**
+   * Sometimes you might not want to check if the fuzzed value is still matching field's pattern.
+   * Override this to return false to avoid checking.
+   *
+   * @return true if the playbook should check if the fuzzed values matches field's pattern, false
+   *     otherwise
+   */
+  protected boolean shouldCheckForFuzzedValueMatchingPattern() {
+    return true;
+  }
+
+  /**
+   * A simple description of the current data being sent to the service. This will be used as a
+   * description in the final report.
+   *
+   * @return type of data to be sent to the service
+   */
+  protected abstract String typeOfDataSentToTheService();
+
+  /**
+   * What is the expected HTTP code when a required field is fuzzed with an invalid value
+   *
+   * @return expected HTTP code
+   */
+  protected abstract ResponseCodeFamily getExpectedHttpCodeWhenRequiredFieldsAreFuzzed();
+
+  /**
+   * What is the expected HTTP code when an optional field is fuzzed with an invalid value
+   *
+   * @return expected HTTP code
+   */
+  protected abstract ResponseCodeFamily getExpectedHttpCodeWhenOptionalFieldsAreFuzzed();
+
+  /**
+   * What is the expected HTTP code when the fuzzed value does not match the supplied Schema pattern
+   * (if defined)
+   *
+   * @return expected HTTP code
+   */
+  protected abstract ResponseCodeFamily getExpectedHttpCodeWhenFuzzedValueNotMatchesPattern();
+
+  /**
+   * What is the fuzzing strategy for the implementing Playbook
+   *
+   * @param data contains all details related to the current contract path
+   * @param fuzzedField the name of the current field being fuzzed
+   * @return a list of FuzzingStrategies to be applied by the Playbook
+   */
+  protected abstract List<FuzzingStrategy> getFieldFuzzingStrategy(
+          PlaybookData data, String fuzzedField);
+
+  /**
+   * Override this in order to prevent the playbook from running for context particular to the given
+   * playbook.
+   *
+   * @param data the current FuzzingData object
+   * @param fuzzedField the current field being fuzzed
+   * @return true by default
+   */
+  protected boolean isPlaybookApplicable(PlaybookData data, String fuzzedField) {
+    return true;
+  }
+
+  @Override
+  public String toString() {
+    return ConsoleUtils.sanitizePlaybookName(this.getClass().getSimpleName());
+  }
+}

@@ -1,0 +1,55 @@
+package dev.dochia.cli.core.generator.format.impl;
+
+import dev.dochia.cli.core.generator.format.api.InvalidDataFormatGenerator;
+import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
+import dev.dochia.cli.core.generator.format.api.PropertySanitizer;
+import dev.dochia.cli.core.generator.format.api.ValidDataFormatGenerator;
+import dev.dochia.cli.core.util.CommonUtils;
+import io.swagger.v3.oas.models.media.Schema;
+import jakarta.inject.Singleton;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+/**
+ * A generator class implementing interfaces for generating valid and invalid IPv4 address data formats.
+ * It also implements the OpenAPIFormat interface.
+ */
+@Singleton
+public class IPV4Generator implements ValidDataFormatGenerator, InvalidDataFormatGenerator, OpenAPIFormat {
+    @Override
+    public Object generate(Schema<?> schema) {
+        return IntStream.range(0, 4)
+                .mapToObj(i -> String.valueOf(CommonUtils.random().nextInt(254) + 1))
+                .collect(Collectors.joining("."));
+    }
+
+    @Override
+    public boolean appliesTo(String format, String propertyName) {
+        String[] propertyParts = propertyName.split("#", -1);
+        String partToTest = propertyParts[propertyParts.length - 1];
+
+        return (partToTest.toLowerCase(Locale.ROOT).endsWith("ip") && !partToTest.toLowerCase(Locale.ROOT).startsWith("zip")
+                && !partToTest.toLowerCase(Locale.ROOT).endsWith("citizenship")) ||
+                PropertySanitizer.sanitize(partToTest).endsWith("ipaddress") ||
+                "ip".equalsIgnoreCase(format) ||
+                "ipv4".equalsIgnoreCase(format);
+    }
+
+    @Override
+    public String getAlmostValidValue() {
+        return "10.10.10.300";
+    }
+
+    @Override
+    public String getTotallyWrongValue() {
+        return "255.";
+    }
+
+    @Override
+    public List<String> matchingFormats() {
+        return List.of("ip", "ipv4");
+    }
+}
