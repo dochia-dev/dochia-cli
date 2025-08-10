@@ -4,11 +4,11 @@ import dev.dochia.cli.core.args.*;
 import dev.dochia.cli.core.command.model.ConfigOptions;
 import dev.dochia.cli.core.context.GlobalContext;
 import dev.dochia.cli.core.factory.PlaybookDataFactory;
+import dev.dochia.cli.core.http.HttpMethod;
+import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.playbook.body.HappyPathPlaybook;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
 import dev.dochia.cli.core.playbook.stateful.DeletedResourcesNotAvailablePlaybook;
-import dev.dochia.cli.core.http.HttpMethod;
-import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.report.ExecutionStatisticsListener;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.report.TestReportsGenerator;
@@ -55,7 +55,7 @@ class TestCommandTest {
         filterArguments = Mockito.mock(FilterArguments.class);
         ReflectionTestUtils.setField(testCommand, "filterArguments", filterArguments);
         Mockito.when(filterArguments.getHttpMethods()).thenReturn(HttpMethod.restMethods());
-        ReflectionTestUtils.setField(reportingArguments, "verbosity", ReportingArguments.Verbosity.DETAILED);
+        ReflectionTestUtils.setField(reportingArguments, "verbosity", new boolean[]{true, true});
         ReflectionTestUtils.setField(testCommand, "spec", Mockito.mock(CommandLine.Model.CommandSpec.class));
         ReflectionTestUtils.setField(testCaseListener, "testReportsGenerator", Mockito.mock(TestReportsGenerator.class));
         simpleExecutor = new SimpleExecutor(testCaseListener, Mockito.mock(ServiceCaller.class));
@@ -127,10 +127,7 @@ class TestCommandTest {
     void givenContractAndServerParameter_whenStartingDochia_thenParametersAreProcessedSuccessfully() throws Exception {
         ReflectionTestUtils.setField(apiArguments, "contract", "src/test/resources/petstore.yml");
         ReflectionTestUtils.setField(apiArguments, "server", "http://localhost:8080");
-        ReflectionTestUtils.setField(reportingArguments, "logData", List.of("org.apache.wire:debug", "dev.dochia.cli:warn", "error"));
-        ReflectionTestUtils.setField(reportingArguments, "skipLogs", List.of("complete", "notSkip"));
         ReflectionTestUtils.setField(processingArguments, "useExamples", false);
-        ReflectionTestUtils.setField(reportingArguments, "debug", true);
 
         Mockito.when(filterArguments.getFirstPhasePlaybooksForPath()).thenReturn(List.of("HappyPathPlaybook"));
         Mockito.when(filterArguments.getSuppliedPlaybooks()).thenReturn(List.of("HappyPathPlaybook"));
@@ -159,7 +156,7 @@ class TestCommandTest {
         ReflectionTestUtils.setField(apiArguments, "contract", "src/test/resources/openapi.yml");
         ReflectionTestUtils.setField(apiArguments, "server", "http://localhost:8080");
         ReflectionTestUtils.setField(checkArguments, "includeEmojis", true);
-        ReflectionTestUtils.setField(reportingArguments, "verbosity", ReportingArguments.Verbosity.SUMMARY);
+        ReflectionTestUtils.setField(reportingArguments, "verbosity", new boolean[]{true, true, true});
 
         TestCommand spyMain = Mockito.spy(testCommand);
         Mockito.when(filterArguments.getFirstPhasePlaybooksForPath()).thenReturn(List.of("HappyPathPlaybook"));

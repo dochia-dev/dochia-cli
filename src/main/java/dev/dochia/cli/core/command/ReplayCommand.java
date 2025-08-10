@@ -4,12 +4,12 @@ import dev.dochia.cli.core.args.AuthArguments;
 import dev.dochia.cli.core.command.model.HelpFullOption;
 import dev.dochia.cli.core.dsl.DSLParser;
 import dev.dochia.cli.core.io.ServiceCaller;
-import dev.dochia.cli.core.util.JsonUtils;
 import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.TestCase;
-import dev.dochia.cli.core.util.KeyValuePair;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.util.CommonUtils;
+import dev.dochia.cli.core.util.JsonUtils;
+import dev.dochia.cli.core.util.KeyValuePair;
 import dev.dochia.cli.core.util.VersionProvider;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
@@ -21,12 +21,7 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * This will replay a given list of tests solely based on the information received in the test case file(s).
@@ -66,9 +61,9 @@ public class ReplayCommand implements Runnable {
     @CommandLine.Mixin
     HelpFullOption helpFullOption;
 
-    @CommandLine.Option(names = {"-D", "--debug"},
-            description = "Sets log level to ALL. Useful for diagnosing when raising bugs")
-    private boolean debug;
+    @CommandLine.Option(names = {"-v"},
+            description = "Prints verbose information about the execution")
+    private boolean verbose;
 
     @CommandLine.Option(names = {"-H"},
             description = "Specifies the headers to be passed with all the re-played tests. It will override values from the replay files for the same header name")
@@ -182,7 +177,7 @@ public class ReplayCommand implements Runnable {
 
     @Override
     public void run() {
-        if (debug) {
+        if (verbose) {
             CommonUtils.setDochiaLogLevel("ALL");
             logger.fav("Setting dochia log level to ALL!");
         }

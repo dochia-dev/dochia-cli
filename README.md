@@ -1,7 +1,7 @@
 # Dochia
 
 > **Bringing Chaos with Love** - Dochia automatically generates and executes negative and boundary testing so you can
-> focus on creative problem-solving. Nobody wants to debug why their "enterprise-grade" API can't handle a simple 🤷‍♀️
+> focus on creative problem-solving. Because nobody wants to debug why their "enterprise-grade" API can't handle a simple 🤷‍♀️
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java Version](https://img.shields.io/badge/Java-21+-blue.svg)](https://openjdk.org)

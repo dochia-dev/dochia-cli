@@ -17,22 +17,6 @@ import java.util.*;
 @Getter
 public class ReportingArguments {
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(ReportingArguments.class);
-    @CommandLine.Option(names = {"-l", "--log"}, paramLabel = "<package:level>",
-            description = "Sets custom log level of a given package(s). This can be a comma separated list of @|bold,underline package:level|@ pairs or a global log level. This is intended more for debugging purposes", split = ",")
-    private List<String> logData;
-
-    @CommandLine.Option(names = {"-g", "--skip-log"}, paramLabel = "<level>",
-            description = "A list of log levels to skip. For example, only @|bold,underline note|@ and @|bold,underline info|@ levels can be skipped, but the rest remain. By default it skips @|bold,underline note, skip|@ levels which are used to enable more detailed traceability" +
-                    " If supplied, this will override the --only-log argument", split = ",")
-    private List<String> skipLogs;
-
-    @CommandLine.Option(names = {"-O", "--only-log"}, paramLabel = "<level>",
-            description = "A list of log levels to include. For example, only @|bold,underline fav|@ and @|bold,underline warning|@ levels can be included, while the rest are left out", split = ",")
-    private List<String> onlyLog;
-
-    @CommandLine.Option(names = {"-D", "--debug"},
-            description = "Set log level to ALL. Useful for diagnosis when raising bugs")
-    private boolean debug;
 
     @CommandLine.Option(names = {"--print-execution-statistics"},
             description = "Print a summary of execution times for each endpoint and HTTP method. By default this will print a summary for each endpoint: max, min and average. Detailed reports can be enabled using @|bold --printDetailedExecutionStatistics|@")
@@ -71,9 +55,9 @@ public class ReportingArguments {
                     " The response time limit check is triggered only if the test case is considered successful i.e. response matches Playbook expectations")
     private int maxResponseTime;
 
-    @CommandLine.Option(names = {"--verbosity"}, paramLabel = "<verbosity>",
-            description = "Sets the verbosity of the console logging. If set to @|bold summary|@ the output is a simple progress per path. Default: @|bold,underline ${DEFAULT-VALUE}|@")
-    private Verbosity verbosity = Verbosity.SUMMARY;
+    @CommandLine.Option(names = {"-v"}, paramLabel = "<verbosity>",
+            description = "Sets the verbosity of the console logging. Specify multiple -v options to increase verbosity. For example, -v, -vv, -vvv")
+    private boolean[] verbosity;
 
     @CommandLine.Option(names = {"--mask-headers"}, paramLabel = "<header>",
             description = "A list of headers to mask when logging into console or in report files. Headers will be replaced with @|underline $$headerName|@ so that test cases can be replayed with environment variables", split = ",")
@@ -82,10 +66,6 @@ public class ReportingArguments {
     @CommandLine.Option(names = {"--print-progress"},
             description = "If set to true, it will print any URLs matching the given match arguments.  Default: @|bold,underline ${DEFAULT-VALUE}|@")
     boolean printProgress;
-
-    private List<String> getLogData() {
-        return Optional.ofNullable(logData).orElse(Collections.emptyList());
-    }
 
     /**
      * Return the give log list as PrettyLogger levels.
@@ -109,39 +89,42 @@ public class ReportingArguments {
      * Processes log data based on --verbosity.
      */
     public void processLogData() {
-        if (verbosity == Verbosity.SUMMARY) {
-            prepareSummaryLogging();
+        if (isVerbosityOne()) {
+            PrettyLogger.enableLevels(PrettyLevel.CONFIG, PrettyLevel.FATAL);
+        } else if (isNoVerbosity()) {
+            PrettyLogger.enableLevels(PrettyLevel.FATAL);
         } else {
             prepareDetailedLogging();
         }
     }
 
+    private boolean isNoVerbosity() {
+        return verbosity == null || verbosity.length == 0;
+    }
+
+    private boolean isVerbosityOne() {
+        return verbosity != null && verbosity.length == 1;
+    }
+
+    private boolean isVerbosityTwo() {
+        return verbosity != null && verbosity.length == 2;
+    }
+
+    private boolean isVerbosityThree() {
+        return verbosity != null && verbosity.length >= 3;
+    }
+
     private void prepareSummaryLogging() {
-        PrettyLogger.enableLevels(PrettyLevel.CONFIG, PrettyLevel.FATAL);
+
     }
 
     private void prepareDetailedLogging() {
-        for (String logLine : this.getLogData()) {
-            String[] log = logLine.strip().trim().split(":", -1);
-            String level;
-            String pkg = "dev.dochia.cli";
-            if (log.length == 1) {
-                level = log[0];
-            } else {
-                level = log[1];
-                pkg = log[0];
-            }
-            CommonUtils.setLogLevel(pkg, level);
-        }
-        if (debug) {
+        if (isVerbosityThree()) {
             CommonUtils.setDochiaLogLevel("ALL");
             logger.fav("Setting dochia log level to ALL!");
         }
-        PrettyLogger.enableLevels(getAsPrettyLevelList(this.onlyLog).toArray(new PrettyLevel[0]));
-        PrettyLogger.disableLevels(getAsPrettyLevelList(this.skipLogs).toArray(new PrettyLevel[0]));
 
-        /*if no input is supplied, by default note and skip are not logged*/
-        if (this.skipLogs == null && this.onlyLog == null) {
+        if (isVerbosityTwo()) {
             PrettyLogger.disableLevels(getAsPrettyLevelList(List.of("note", "skip")).toArray(new PrettyLevel[0]));
         }
     }
@@ -171,7 +154,7 @@ public class ReportingArguments {
      * @return true if --verbosity=SUMMARY, false otherwise
      */
     public boolean isSummaryInConsole() {
-        return verbosity == Verbosity.SUMMARY;
+        return !isVerbosityTwo() && !isVerbosityThree();
     }
 
     /**

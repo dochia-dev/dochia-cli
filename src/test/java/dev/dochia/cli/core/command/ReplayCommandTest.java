@@ -47,7 +47,7 @@ class ReplayCommandTest {
     @CsvSource({"true", "false"})
     void shouldExecuteIfTestCasesSupplied(boolean debug) throws Exception {
         replayCommand.tests = new String[]{"src/test/resources/Test12.json"};
-        ReflectionTestUtils.setField(replayCommand, "debug", debug);
+        ReflectionTestUtils.setField(replayCommand, "verbose", debug);
         HttpResponse response = Mockito.mock(HttpResponse.class);
         Mockito.when(response.getBody()).thenReturn("");
         Mockito.when(serviceCaller.callService(Mockito.any(), Mockito.anySet())).thenReturn(response);
