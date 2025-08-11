@@ -90,9 +90,9 @@ public class ReportingArguments {
      */
     public void processLogData() {
         if (isVerbosityOne()) {
-            PrettyLogger.enableLevels(PrettyLevel.CONFIG, PrettyLevel.FATAL);
+            PrettyLogger.enableLevels(PrettyLevel.CONFIG, PrettyLevel.FATAL, PrettyLevel.TIMER);
         } else if (isNoVerbosity()) {
-            PrettyLogger.enableLevels(PrettyLevel.FATAL);
+            PrettyLogger.enableLevels(PrettyLevel.FATAL, PrettyLevel.TIMER);
         } else {
             prepareDetailedLogging();
         }
@@ -112,10 +112,6 @@ public class ReportingArguments {
 
     private boolean isVerbosityThree() {
         return verbosity != null && verbosity.length >= 3;
-    }
-
-    private void prepareSummaryLogging() {
-
     }
 
     private void prepareDetailedLogging() {

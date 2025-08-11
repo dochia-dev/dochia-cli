@@ -6,6 +6,7 @@ import dev.dochia.cli.core.exception.DochiaException;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
+import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
 import jakarta.inject.Inject;
@@ -15,7 +16,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -31,6 +31,12 @@ public class DochiaMain implements QuarkusApplication {
     CommandLine.IFactory factory;
 
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(DochiaMain.class);
+
+    public static void main(String[] args) {
+        checkForSummaryReport(args);
+
+        Quarkus.run(DochiaMain.class, args);
+    }
 
     @Override
     public int run(String... args) {
@@ -62,6 +68,13 @@ public class DochiaMain implements QuarkusApplication {
         return commandLine.setParameterExceptionHandler(new ShortErrorMessageHandler()).execute(args);
     }
 
+    private static void checkForSummaryReport(String[] args) {
+        boolean verbose = Arrays.asList(args).contains("-vv") || Arrays.asList(args).contains("-vvv");
+        if (verbose) {
+            System.setProperty("quarkus.log.console.format", "[%X{id_ansi}][%X{playbook}] %m %n");
+        }
+    }
+
     private void loadConfigIfSupplied(CommandLine commandLine, String... args) {
         File configFile = findConfigFile(args);
         if (configFile != null && configFile.exists()) {
@@ -77,7 +90,7 @@ public class DochiaMain implements QuarkusApplication {
     }
 
     private void checkForConsoleColorsDisabled(String... args) {
-        boolean colorsDisabled = Arrays.stream(args).anyMatch(arg -> arg.trim().toLowerCase(Locale.ROOT).equals("--no-color"));
+        boolean colorsDisabled = Arrays.asList(args).contains("--no-color");
         if (colorsDisabled) {
             PrettyLogger.disableColors();
             PrettyLogger.changeMessageFormat("%1$-12s");

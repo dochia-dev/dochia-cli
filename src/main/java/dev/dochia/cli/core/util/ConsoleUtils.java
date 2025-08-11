@@ -2,12 +2,13 @@ package dev.dochia.cli.core.util;
 
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
-import java.util.Optional;
-import java.util.regex.Pattern;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.fusesource.jansi.Ansi;
 import picocli.CommandLine;
+
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for console-related operations.
@@ -40,7 +41,7 @@ public abstract class ConsoleUtils {
      */
     public static void initTerminalWidth(CommandLine.Model.CommandSpec spec) {
         try {
-            terminalWidth = spec.usageMessage().width();
+            terminalWidth = Math.min(140, spec.usageMessage().width());
         } catch (Exception e) {
             terminalWidth = 80;
         }
@@ -132,7 +133,7 @@ public abstract class ConsoleUtils {
     public static void renderRow(String prefix, String path, char progressChar) {
         String withoutAnsi = ANSI_REMOVE_PATTERN.matcher(path).replaceAll("");
         int dots = Math.max(terminalWidth - withoutAnsi.length() - 2, 1);
-        String firstPart = path.substring(0, path.indexOf(SEPARATOR));
+        String firstPart = " ".repeat(3) + path.substring(0, path.indexOf(SEPARATOR));
         String secondPart = path.substring(path.indexOf(SEPARATOR) + 1);
         String toPrint = Ansi.ansi().bold().a(prefix + firstPart + " " + ".".repeat(dots) + secondPart + " " + progressChar).reset().toString();
 
@@ -156,9 +157,7 @@ public abstract class ConsoleUtils {
      * @param header The header text to be rendered.
      */
     public static void renderHeader(String header) {
-        LOGGER.noFormat(" ");
-        int equalsNo = (terminalWidth - header.length()) / 2;
-        LOGGER.noFormat(Ansi.ansi().bold().a("=".repeat(equalsNo) + header + "=".repeat(equalsNo)).reset().toString());
+        System.out.print("\uD83E\uDDEA " + Ansi.ansi().bold().a(header).reset().toString());
     }
 
     /**

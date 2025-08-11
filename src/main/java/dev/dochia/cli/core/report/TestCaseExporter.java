@@ -19,6 +19,7 @@ import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
 import jakarta.inject.Inject;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.fusesource.jansi.Ansi;
@@ -47,6 +48,7 @@ import static org.fusesource.jansi.Ansi.ansi;
  * This class is responsible for writing the final report file(s).
  */
 
+@Slf4j
 public abstract class TestCaseExporter {
     static final String REPORT_HTML = "index.html";
     static final MustacheFactory mustacheFactory = new DefaultMustacheFactory();
@@ -157,9 +159,9 @@ public abstract class TestCaseExporter {
         }
         String redCross = ansi().fgRed().a("✖").reset().toString();
         ConsoleUtils.emptyLine();
-        logger.info("Errors by reason:");
+        logger.info("Errors found:");
         resultReasonCounts.forEach((reason, count) ->
-                logger.noFormat(" {} {}: {} errors", redCross, reason, count));
+                logger.noFormat(" {} {} ({} error(s))", redCross, reason, count));
     }
 
     /**
@@ -237,16 +239,17 @@ public abstract class TestCaseExporter {
      * @param executionStatisticsListener the listener providing statistics on dochia execution
      */
     public void printExecutionDetails(ExecutionStatisticsListener executionStatisticsListener) {
-        String dochiaFinished = ansi().fgBlue().a("dochia finished in {}. Total requests {}. ").toString();
-        String passed = ansi().fgGreen().bold().a("✔ Passed {}, ").toString();
-        String warnings = ansi().fgYellow().bold().a("⚠ warnings: {}, ").toString();
-        String errors = ansi().fgRed().bold().a("‼ errors: {}").toString();
-        String check = ansi().reset().fgBlue().a(String.format("You can open the report here: %s ", reportingPath.toUri() + getSummaryReportTitle())).reset().toString();
+        String dochiaFinished = ansi().fgBlue().a("{} tests completed in {}\n").toString();
+        String passed = ansi().fgGreen().bold().a("  ✔ {} passed, ").toString();
+        String warnings = ansi().fgYellow().bold().a("⚠ {} warnings, ").toString();
+        String errors = ansi().fgRed().bold().a("‼ {} errors").toString();
+        String check = ansi().reset().fgBlue().a(String.format("Full Report: %s ", reportingPath.toUri() + getSummaryReportTitle())).reset().toString();
         String finalMessage = dochiaFinished + passed + warnings + errors;
         String duration = Duration.ofMillis(System.currentTimeMillis() - t0).toString().toLowerCase(Locale.ROOT).substring(2);
 
         ConsoleUtils.emptyLine();
-        logger.complete(finalMessage, duration, executionStatisticsListener.getAll(), executionStatisticsListener.getSuccess(), executionStatisticsListener.getWarns(), executionStatisticsListener.getErrors(), executionStatisticsListener.getSkipped());
+        logger.complete(finalMessage, executionStatisticsListener.getAll(), duration, executionStatisticsListener.getSuccess(), executionStatisticsListener.getWarns(), executionStatisticsListener.getErrors(), executionStatisticsListener.getSkipped());
+        ConsoleUtils.emptyLine();
         logger.complete(check);
     }
 

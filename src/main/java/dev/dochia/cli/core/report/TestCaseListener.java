@@ -8,13 +8,13 @@ import com.google.gson.JsonParser;
 import dev.dochia.cli.core.args.IgnoreArguments;
 import dev.dochia.cli.core.args.ReportingArguments;
 import dev.dochia.cli.core.context.GlobalContext;
-import dev.dochia.cli.core.playbook.api.DryRun;
-import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamily;
 import dev.dochia.cli.core.http.ResponseCodeFamilyDynamic;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.model.*;
+import dev.dochia.cli.core.playbook.api.DryRun;
+import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.WordUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
@@ -135,9 +135,9 @@ public class TestCaseListener {
      * Creates and executes a test by running the provided runnable.
      * Logs test start, catches exceptions during execution, logs results, and performs necessary cleanup.
      *
-     * @param externalLogger the external logger for logging test-related information
-     * @param testCasePlaybook         the playbook associated with the test
-     * @param s              the runnable representing the test logic
+     * @param externalLogger   the external logger for logging test-related information
+     * @param testCasePlaybook the playbook associated with the test
+     * @param s                the runnable representing the test logic
      */
     public void createAndExecuteTest(PrettyLogger externalLogger, TestCasePlaybook testCasePlaybook, Runnable s, PlaybookData data) {
         this.startTestCase(data);
@@ -337,11 +337,6 @@ public class TestCaseListener {
         }
     }
 
-    private void renderGlobalPlaybooksStatistics() {
-        String toRenderPreviousPath = "global" + ConsoleUtils.SEPARATOR + executionStatisticsListener.resultAsStringPerPath("N/A");
-        ConsoleUtils.renderNewRow(toRenderPreviousPath, '✔');
-    }
-
     private void markPreviousPathAsDone() {
         String previousPath = runPerPathListener.peek();
         if (previousPath != null) {
@@ -369,14 +364,11 @@ public class TestCaseListener {
         MDC.put(PLAYBOOK, this.getKeyDefault());
         MDC.put(PLAYBOOK_KEY, this.getKeyDefault());
 
-        String osDetails = System.getProperty("os.name") + "-" + System.getProperty("os.version") + "-" + System.getProperty("os.arch");
-
         ConsoleUtils.emptyLine();
-        logger.start(ansi().bold().a("Starting {}-{}, build time {} UTC, platform {}").reset().toString(),
+        logger.start(ansi().bold().a("Starting {}-{}, build time {} UTC").reset().toString(),
                 ansi().fg(Ansi.Color.GREEN).a(appName),
                 ansi().fg(Ansi.Color.GREEN).a(appVersion),
-                ansi().fg(Ansi.Color.GREEN).a(appBuildTime),
-                ansi().fg(Ansi.Color.GREEN).a(osDetails).reset());
+                ansi().fg(Ansi.Color.GREEN).a(appBuildTime));
     }
 
     /**
@@ -421,10 +413,10 @@ public class TestCaseListener {
      */
     public void endSession() {
         markPreviousPathAsDone();
-        renderGlobalPlaybooksStatistics();
         reportingArguments.enableAdditionalLoggingIfSummary();
         testReportsGenerator.writeSummary(testCaseSummaryDetails, executionStatisticsListener);
         testReportsGenerator.writeHelperFiles();
+        ConsoleUtils.emptyLine();
         testReportsGenerator.writeErrorsByReason(testCaseSummaryDetails);
         testReportsGenerator.writePerformanceReport(testCaseExecutionDetails);
         testReportsGenerator.printExecutionDetails(executionStatisticsListener);
@@ -432,11 +424,12 @@ public class TestCaseListener {
     }
 
     /**
-     * Renders a FUZZING header if logging is SUMMARY.
+     * Renders a starting header if logging is SUMMARY.
      */
-    public void renderFuzzingHeader() {
+    public void renderStartHeader() {
         if (reportingArguments.isSummaryInConsole()) {
-            ConsoleUtils.renderHeader(" FUZZING ");
+            ConsoleUtils.emptyLine();
+            ConsoleUtils.renderHeader("Running tests...");
         }
     }
 
@@ -839,7 +832,7 @@ public class TestCaseListener {
     /**
      * Returns the expected HTTP response code from the --playbooks-config file
      *
-     * @param playbook       the name of the playbook
+     * @param playbook     the name of the playbook
      * @param defaultValue default value when property is not found
      * @return the value of the property if found or null otherwise
      */

@@ -210,7 +210,6 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
         testCaseListener.initReportingPath();
         this.printConfiguration(openAPI);
         this.initGlobalData(openAPI);
-        testCaseListener.renderFuzzingHeader();
         this.startFuzzing(openAPI);
     }
 
@@ -279,6 +278,8 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
     }
 
     void startFuzzing(OpenAPI openAPI) {
+        testCaseListener.renderStartHeader();
+
         List<String> suppliedPaths = filterArguments.getPathsToRun(openAPI);
 
         for (Map.Entry<String, PathItem> entry :
