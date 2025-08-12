@@ -58,9 +58,9 @@ import java.nio.charset.StandardCharsets;
         subcommands = {
                 AutoComplete.GenerateCompletion.class,
                 CommandLine.HelpCommand.class,
-                TestCommand.class,
                 ListCommand.class,
                 ReplayCommand.class,
+                TestCommand.class,
                 InfoCommand.class,
                 RandomCommand.class,
                 ExplainCommand.class

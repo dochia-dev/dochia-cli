@@ -57,8 +57,11 @@ public class DochiaMain implements QuarkusApplication {
                 commandLine.getOut().println(ConsoleUtils.getShortVersionOfHelp());
                 return CommandLine.ExitCode.OK;
             }
-            if (parseResult.hasMatchedOption("--help-full") ||
-                    (parseResult.subcommand() != null && parseResult.subcommand().hasMatchedOption("--help-full"))) {
+            if (parseResult.subcommand() != null && parseResult.subcommand().hasMatchedOption("--help-full")) {
+                parseResult.subcommand().commandSpec().commandLine().usage(commandLine.getOut());
+                return CommandLine.ExitCode.OK;
+            }
+            if (parseResult.hasMatchedOption("--help-full")) {
                 commandLine.usage(commandLine.getOut());
                 return CommandLine.ExitCode.OK;
             }
