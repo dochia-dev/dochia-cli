@@ -90,13 +90,13 @@ dochia --version
 
 ```bash
 # Test your API using OpenAPI spec in blackbox mode i.e., checking only 500 status codes
-dochia test -c api.yaml -s http://locahost:8080 -b -k
+dochia test -c api.yaml -s http://locahost:8080 -b
 
 # Target specific endpoints
-dochia test  -c api.yaml -s http://locahost:8080 -b -k --path "/api/users"
+dochia test  -c api.yaml -s http://locahost:8080 -b --path "/api/users"
 
 # Pass in an authentication header from the API_KEY environment variable
-dochia test  -c api.yaml -s http://locahost:8080 -b -k --path "/api/users" -H "Api-Key=$API_KEY"
+dochia test  -c api.yaml -s http://locahost:8080 -b --path "/api/users" -H "Api-Key=$API_KEY"
 
 # Replay a specific test
 dochia replay Test120
