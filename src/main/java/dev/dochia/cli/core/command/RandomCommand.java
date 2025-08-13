@@ -16,7 +16,7 @@ import java.util.Map;
  * Runs continuous fuzzing based on random payloads, rather than pre-defined playbooks.
  */
 @CommandLine.Command(
-        name = "random",
+        name = "fuzz",
         mixinStandardHelpOptions = true,
         usageHelpAutoWidth = true,
         description = "Run continuous fuzzing based on random mutators, rather than pre-defined playbooks.",
@@ -31,9 +31,9 @@ import java.util.Map;
                 "@|bold ERR|@:Where ERR is the number of errors reported by dochia"},
         footerHeading = "%n@|bold,underline Examples:|@%n",
         footer = {"  Run continuous fuzzing for path /my-path for 100 seconds and match 500 http response codes:",
-                "    dochia random -H header=value -X POST -p /my-path -s http://localhost:8080 --mc 500 --stopAfterTimeInSec 100  ",
+                "    dochia fuzz -H header=value -X POST -p /my-path -s http://localhost:8080 --mc 500 --stopAfterTimeInSec 100  ",
                 "", "   Run continuous fuzzing for path /my-path and match 500 http response codes and stop after 10 errors:",
-                "    dochia random -H header=value -X POST -p /my-path -s http://localhost:8080 --mc 500 --stopAfterErrors 10"},
+                "    dochia fuzz -H header=value -X POST -p /my-path -s http://localhost:8080 --mc 500 --stopAfterErrors 10"},
         versionProvider = VersionProvider.class)
 @Unremovable
 public class RandomCommand implements Runnable, CommandLine.IExitCodeGenerator {

@@ -38,7 +38,7 @@ import java.nio.charset.StandardCharsets;
         synopsisHeading = "@|bold,underline Usage:|@%n",
         customSynopsis = {
                 "@|bold dochia|@ @|fg(yellow) test -c|@ <contract> @|fg(yellow) -s|@ <server> [ADDITIONAL OPTIONS]",
-                "@|bold dochia (test | list | replay | info | stats | random | explain)|@ [OPTIONS]"
+                "@|bold dochia (test | fuzz | replay | list | info | explain)|@ [OPTIONS]"
         },
         exitCodeListHeading = "%n@|bold,underline Exit Codes:|@%n",
         exitCodeList = {

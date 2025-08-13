@@ -48,7 +48,7 @@ import static org.fusesource.jansi.Ansi.ansi;
         synopsisHeading = "@|bold,underline Usage:|@%n",
         customSynopsis = {
                 "@|bold dochia|@ @|fg(yellow) test -c|@ <contract> @|fg(yellow) -s|@ <server> [ADDITIONAL OPTIONS]",
-                "@|bold dochia (list | replay | info | stats | random | explain)|@ [OPTIONS]"
+                "@|bold dochia (test | fuzz | replay | list | info | explain)|@ [OPTIONS]"
         },
         exitCodeListHeading = "%n@|bold,underline Exit Codes:|@%n",
         exitCodeList = {
@@ -373,7 +373,7 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
                         .bold()
                         .bold()
                         .a(
-                                "Example flags: useRequestBodyExamples {}, useSchemaExamples {}, usePropertyExamples {}, useResponseBodyExamples {}, useDefaults {}")
+                                "Example flags: use-request-body-examples {}, use-schema-examples {}, use-property-examples {}, use-response-body-examples {}, use-defaults {}")
                         .reset()
                         .toString(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.isUseRequestBodyExamples()).reset().bold(),
@@ -389,7 +389,7 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
                 ansi()
                         .bold()
                         .a(
-                                "selfReferenceDepth {}, largeStringsSize {}, randomHeadersNumber {}, limitFuzzedFields {}, limitXxxOfCombinations {}")
+                                "self-reference-depth {}, large-strings-size {}, random-headers-number {}, limit-fuzzed-fields {}, limit-xxx-of-combinations {}")
                         .reset()
                         .toString(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.getSelfReferenceDepth()).reset().bold(),
@@ -405,7 +405,7 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
                 ansi()
                         .bold()
                         .a(
-                                "How the service handles whitespaces and random unicodes: edgeSpacesStrategy {}, sanitizationStrategy {}")
+                                "How the service handles whitespaces and random unicodes: edge-spaces-strategy {}, sanitization-strategy {}")
                         .reset()
                         .toString(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.getEdgeSpacesStrategy()).reset().bold(),

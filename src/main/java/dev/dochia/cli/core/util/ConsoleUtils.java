@@ -195,7 +195,7 @@ public abstract class ConsoleUtils {
                 
                 Usage:
                   dochia test -c <contract> -s <server> [OPTIONS]
-                  dochia (test | list | replay | info | random | explain) [OPTIONS]
+                  dochia (test | fuzz | replay | list | info | explain) [OPTIONS]
                 
                 Common Options:
                   -h, --help                     Show help and exit.
@@ -206,12 +206,12 @@ public abstract class ConsoleUtils {
                       --headers=<file>           YAML file with custom headers specific per path (e.g., auth tokens).
                   -R=<name=value>                Fixed field values applicable to all paths.
                       --ref-data=<file>          YAML file with fixed field values specific per path.
-                  -f, --testCasePlaybooks=<list>           Playbook names to run.
+                  -f, --playbooks=<list>           Playbook names to run.
                   -p, --paths=<list>             Specific paths to test.
                   -d, --dry-run                  Simulate tests without executing.
                 
                 For full commands and options, run:
-                  dochia (test | list | replay | info | random | explain) --help-full
+                  dochia (test | fuzz | replay | list | info | explain) --help-full
                 
                 """;
     }
