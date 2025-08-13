@@ -117,13 +117,6 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
     @CommandLine.ArgGroup(heading = "%n@|bold,underline Reporting Options:|@%n", exclusive = false)
     ReportingArguments reportingArguments;
 
-    @Inject
-    @CommandLine.ArgGroup(
-            heading =
-                    "%n@|bold,underline Match Options (they are only active when supplying a custom dictionary):|@%n",
-            exclusive = false)
-    MatchArguments matchArguments;
-
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
 

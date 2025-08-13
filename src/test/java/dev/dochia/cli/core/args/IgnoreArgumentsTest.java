@@ -168,28 +168,28 @@ class IgnoreArgumentsTest {
     void shouldIgnoreResponseLinesWhenFiltering() {
         ignoreArguments.setFilterResponseLines(List.of(100L));
         Assertions.assertThat(ignoreArguments.getIgnoreResponseLines()).containsOnly(100L);
-        Assertions.assertThat(ignoreArguments.isSkipReportingForIgnoredCodes()).isTrue();
+        Assertions.assertThat(ignoreArguments.isSkipReportingForIgnoredArguments()).isTrue();
     }
 
     @Test
     void shouldIgnoreResponseCodesCWhenFiltering() {
         ignoreArguments.setFilterResponseCodes(List.of("200", "400"));
         Assertions.assertThat(ignoreArguments.getIgnoreResponseCodes()).containsOnly("200", "400");
-        Assertions.assertThat(ignoreArguments.isSkipReportingForIgnoredCodes()).isTrue();
+        Assertions.assertThat(ignoreArguments.isSkipReportingForIgnoredArguments()).isTrue();
     }
 
     @Test
     void shouldIgnoreResponseWordsWhenFiltering() {
         ignoreArguments.setFilterResponseWords(List.of(200L));
         Assertions.assertThat(ignoreArguments.getIgnoreResponseWords()).containsOnly(200L);
-        Assertions.assertThat(ignoreArguments.isSkipReportingForIgnoredCodes()).isTrue();
+        Assertions.assertThat(ignoreArguments.isSkipReportingForIgnoredArguments()).isTrue();
     }
 
     @Test
     void shouldIgnoreResponseSizesWhenFiltering() {
         ignoreArguments.setFilterResponseSize(List.of(500L));
         Assertions.assertThat(ignoreArguments.getIgnoreResponseSizes()).containsOnly(500L);
-        Assertions.assertThat(ignoreArguments.isSkipReportingForIgnoredCodes()).isTrue();
+        Assertions.assertThat(ignoreArguments.isSkipReportingForIgnoredArguments()).isTrue();
     }
 
 
@@ -197,7 +197,7 @@ class IgnoreArgumentsTest {
     void shouldIgnoreResponseRegexWhenFiltering() {
         ignoreArguments.setFilterResponseRegex("regex");
         Assertions.assertThat(ignoreArguments.getIgnoreResponseRegex()).isEqualTo("regex");
-        Assertions.assertThat(ignoreArguments.isSkipReportingForIgnoredCodes()).isTrue();
+        Assertions.assertThat(ignoreArguments.isSkipReportingForIgnoredArguments()).isTrue();
     }
 
 
@@ -239,8 +239,7 @@ class IgnoreArgumentsTest {
                 ignoreArguments.getIgnoreResponseSizes() != null ||
                 ignoreArguments.getIgnoreResponseWords() != null ||
                 ignoreArguments.getIgnoreResponseLines() != null ||
-                ignoreArguments.getIgnoreResponseRegex() != null ||
-                ignoreArguments.isBlackbox();
+                ignoreArguments.getIgnoreResponseRegex() != null;
 
         Assertions.assertThat(ignoreArguments.isAnyIgnoreArgumentSupplied()).isEqualTo(expected);
     }

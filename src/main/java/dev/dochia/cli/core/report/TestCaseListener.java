@@ -448,9 +448,9 @@ public class TestCaseListener {
     }
 
     /**
-     * If {@code --ignoreResponseCodes} is supplied and the response code received from the service
+     * If {@code --ignore-codes} is supplied and the response code received from the service
      * is in the ignored list, the method will actually report INFO instead of WARN.
-     * If {@code --skipReportingForIgnoredCodes} is also enabled, the reporting for these ignored codes will be skipped entirely.
+     * If {@code skipReportingForIgnoredCodes} is also enabled, the reporting for these ignored codes will be skipped entirely.
      *
      * @param logger  the current logger
      * @param message message to be logged
@@ -467,16 +467,16 @@ public class TestCaseListener {
             reportError(logger, ResultFactory.createErrorLeaksDetectedInResponse(detectedKeyWords));
         } else if (ignoreArguments.isSkipReportingForWarnings()) {
             this.logger.debug(RECEIVED_RESPONSE_IS_MARKED_AS_IGNORED_SKIPPING);
-            this.skipTest(logger, replaceBrackets("Skip reporting as --skipReportingForWarnings is enabled"));
+            this.skipTest(logger, replaceBrackets("Skip reporting as --hide-warnings is enabled"));
             this.recordResult(message, params, SKIP_REPORTING, logger);
         } else if (ignoreArguments.isNotIgnoredResponse(httpResponse)) {
             this.logger.debug("Received response is not marked as ignored... reporting warn!");
             executionStatisticsListener.increaseWarns(testCase.getContractPath());
             logger.warning(message, params);
             this.recordResult(message, params, "warning", logger);
-        } else if (ignoreArguments.isSkipReportingForIgnoredCodes()) {
+        } else if (ignoreArguments.isSkipReportingForIgnoredArguments()) {
             this.logger.debug(RECEIVED_RESPONSE_IS_MARKED_AS_IGNORED_SKIPPING);
-            this.skipTest(logger, replaceBrackets("Some response elements were marked as ignored and --skipReportingForIgnoredCodes is enabled."));
+            this.skipTest(logger, replaceBrackets("Some response elements were marked as filtered through --filter-*** arguments."));
             this.recordResult(message, params, SKIP_REPORTING, logger);
         } else {
             testCase.setResultIgnoreDetails("warning");
@@ -525,9 +525,9 @@ public class TestCaseListener {
     }
 
     /**
-     * If {@code --ignoreResponseCodes} is supplied and the response code received from the service
+     * If {@code --ingore-codes} is supplied and the response code received from the service
      * is in the ignored list, the method will actually report INFO instead of ERROR.
-     * If {@code --skipReportingForIgnoredCodes} is also enabled, the reporting for these ignored codes will be skipped entirely.
+     * If {@code skipReportingForIgnoredCodes} is also enabled, the reporting for these ignored codes will be skipped entirely.
      *
      * @param logger  the current logger
      * @param message message to be logged
@@ -547,9 +547,9 @@ public class TestCaseListener {
             ResultFactory.Result result = ResultFactory.createErrorLeaksDetectedInResponse(testCase.getErrorLeaks());
             setResultReason(result.reason());
             logAndRecordError(logger, result.message(), testCase.getErrorLeaks().toArray(), testCase, httpResponse);
-        } else if (ignoreArguments.isSkipReportingForIgnoredCodes()) {
+        } else if (ignoreArguments.isSkipReportingForIgnoredArguments()) {
             this.logger.debug(RECEIVED_RESPONSE_IS_MARKED_AS_IGNORED_SKIPPING);
-            this.skipTest(logger, "Some response elements were was marked as ignored and --skipReportingForIgnoredCodes is enabled.");
+            this.skipTest(logger, "Some response elements were filtered usinbg --filter-* argyments.");
             this.recordResult(message, params, SKIP_REPORTING, logger);
         } else {
             testCase.setResultIgnoreDetails(Level.ERROR.toString());
@@ -637,11 +637,11 @@ public class TestCaseListener {
             reportError(logger, ResultFactory.createErrorLeaksDetectedInResponse(detectedKeyWords));
         } else if (ignoreArguments.isSkipReportingForSuccess()) {
             this.logger.debug(RECEIVED_RESPONSE_IS_MARKED_AS_IGNORED_SKIPPING);
-            this.skipTest(logger, replaceBrackets("Skip reporting as --skipReportingForSuccess is enabled"));
+            this.skipTest(logger, replaceBrackets("Skip reporting as --hide-success is enabled"));
             this.recordResult(message, params, SKIP_REPORTING, logger);
-        } else if (ignoreArguments.isIgnoredResponse(httpResponse) && ignoreArguments.isSkipReportingForIgnoredCodes()) {
+        } else if (ignoreArguments.isIgnoredResponse(httpResponse) && ignoreArguments.isSkipReportingForIgnoredArguments()) {
             this.logger.debug(RECEIVED_RESPONSE_IS_MARKED_AS_IGNORED_SKIPPING);
-            this.skipTest(logger, "Some response elements were was marked as ignored and --skipReportingForIgnoredCodes is enabled.");
+            this.skipTest(logger, "Some response elements were filtered using --filter-* arguments.");
             this.recordResult(message, params, SKIP_REPORTING, logger);
         } else if (httpResponse.exceedsExpectedResponseTime(reportingArguments.getMaxResponseTime())) {
             this.logger.debug("Received response time exceeds --maxResponseTimeInMs: actual {}, max {}",

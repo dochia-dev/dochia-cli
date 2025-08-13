@@ -10,7 +10,6 @@ import picocli.CommandLine;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * Arguments used to ignore response matching. The difference between Filter and Ignore arguments
@@ -19,96 +18,96 @@ import java.util.stream.Stream;
 @Singleton
 @Getter
 public class IgnoreArguments {
+    @CommandLine.Option(names = {"-b", "--blackbox"},
+            description = "Ignore all response codes except for @|bold,underline 5XX|@ and report them as @|bold,underline error|@ (equivalent to --filter-codes=\"2xx,4xx\")")
+    public void setBlackbox(boolean blackbox) {
+        if (blackbox) {
+            setFilterResponseCodes(List.of("2xx", "4xx", "501"));
+        }
+    }
 
-    @CommandLine.Option(names = {"--ignore-response-code-undocumented-check", "--iu"},
-            description = "Don't check if the response code received from the service is documented inside the contract. This will mark the test result as @|bold,underline success|@ instead of @|bold,underline warn|@")
-    private boolean ignoreResponseCodeUndocumentedCheck;
-
-    @CommandLine.Option(names = {"--ignore-response-body-check", "--ib"},
-            description = "Don't check if the response body received from the service matches the schema supplied inside the contract. This will mark the test result as @|bold,underline success|@ instead of @|bold,underline warn|@")
-    private boolean ignoreResponseBodyCheck;
-
-    @CommandLine.Option(names = {"--ignore-error-leaks-check", "--ie"},
-            description = "Don't check if the response body received from the service matches the schema supplied inside the contract. This will mark the test result as @|bold,underline success|@ instead of @|bold,underline warn|@")
-    private boolean ignoreErrorLeaksCheck;
-
-    @CommandLine.Option(names = {"--ignore-response-content-type-check", "--it"},
-            description = "Don't check if the response content type received from the service matches the one supplied inside the contract. This will mark the test result as @|bold,underline success|@ instead of @|bold,underline warn|@")
-    private boolean ignoreResponseContentTypeCheck;
-
-    @CommandLine.Option(names = {"-i", "--ignore-response-codes", "--ic"}, paramLabel = "<code>",
-            description = "A comma separated list of HTTP response codes that will be considered as @|bold,underline success|@, even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@", split = ",")
+    @CommandLine.Option(names = {"-i", "--ignore-codes"}, paramLabel = "<code>",
+            description = "Treat these response codes as success (still reported), even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@", split = ",")
     private List<String> ignoreResponseCodes;
 
-    @CommandLine.Option(names = {"--ignore-response-size", "--is"}, paramLabel = "<size>",
-            description = "A comma separated list of response sizes that will be considered as @|bold,underline success|@, even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@", split = ",")
+    @CommandLine.Option(names = {"--filter-codes", "--fc"}, paramLabel = "<code>",
+            description = "Treat these response codes as success (not reported), even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@ Equivalent to --i <codes> -k", split = ",")
+    public void setFilterResponseCodes(List<String> filterResponseCodes) {
+        this.ignoreResponseCodes = filterResponseCodes;
+        skipReportingForIgnoredArguments = true;
+    }
+
+    @CommandLine.Option(names = {"--ignore-undocumented-codes"}, description = "Don't flag undocumented response codes as warnings")
+    private boolean ignoreResponseCodeUndocumentedCheck;
+
+    @CommandLine.Option(names = {"--ignore-body-validation"}, description = "Don't validate response body against schema")
+    private boolean ignoreResponseBodyCheck;
+
+    @CommandLine.Option(names = {"--ignore-error-leak-check"}, description = "Don't check for error information leaks")
+    private boolean ignoreErrorLeaksCheck;
+
+    @CommandLine.Option(names = {"--ignore-content-type-check"}, description = "Don't validate response content type")
+    private boolean ignoreResponseContentTypeCheck;
+
+
+    @CommandLine.Option(names = {"--ignore-size", "--is"}, paramLabel = "<sizes>",
+            description = "Treat these response sizes as success (still reported), even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@", split = ",")
     private List<Long> ignoreResponseSizes;
 
-    @CommandLine.Option(names = {"--ignore-response-words", "--iw"}, paramLabel = "<count>",
-            description = "A comma separated list of word counts in the response that will be considered as @|bold,underline success|@, even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@", split = ",")
+    @CommandLine.Option(names = {"--ignore-words", "--iw"}, paramLabel = "<counts>",
+            description = "Treat these word counts as success (still reported), even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@", split = ",")
     private List<Long> ignoreResponseWords;
 
-    @CommandLine.Option(names = {"--ignore-response-lines", "--il"}, paramLabel = "<count>",
-            description = "A comma separated list of number of line counts in the response that will be considered as @|bold,underline success|@, even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@", split = ",")
+    @CommandLine.Option(names = {"--ignore-lines", "--il"}, paramLabel = "<counts>",
+            description = "Treat these line counts as success (still reported), even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@", split = ",")
     private List<Long> ignoreResponseLines;
 
-    @CommandLine.Option(names = {"--ignore-response-regex", "--ir"}, paramLabel = "<regex>",
-            description = "A regex that will match against the response that will be considered as @|bold,underline success|@, even if the Playbook will typically report it as @|bold,underline warn|@ or @|bold,underline error|@")
+    @CommandLine.Option(names = {"--ignore-regex", "--ir"}, paramLabel = "<regex>",
+            description = "Treat responses matching this pattern as success (still reported), even if the Playbook will typically report it as @|bold,underline warn|@ or @|bold,underline error|@")
     private String ignoreResponseRegex;
 
     /*Creating equivalent filtering options for all ignored arguments*/
-    @CommandLine.Option(names = {"--filter-response-codes", "--fc"}, paramLabel = "<code>",
-            description = "A comma separated list of HTTP response codes that will be filtered. Equivalent to --i <response_codes> -k", split = ",")
-    public void setFilterResponseCodes(List<String> filterResponseCodes) {
-        this.ignoreResponseCodes = filterResponseCodes;
-        skipReportingForIgnoredCodes = true;
-    }
-
-    @CommandLine.Option(names = {"--filter-response-size", "--fs"}, paramLabel = "<size>",
-            description = "A comma separated list of response sizes that will be filtered. Equivalent to --is <size> -k", split = ",")
+    @CommandLine.Option(names = {"--filter-size", "--fs"}, paramLabel = "<sizes>",
+            description = "Treat these response sizes as success (not reported)", split = ",")
     public void setFilterResponseSize(List<Long> filterResponseSizes) {
         this.ignoreResponseSizes = filterResponseSizes;
-        skipReportingForIgnoredCodes = true;
+        skipReportingForIgnoredArguments = true;
     }
 
-    @CommandLine.Option(names = {"--filter-response-words", "--fw"}, paramLabel = "<count>",
-            description = "A comma separated list of word counts in the response that filtered. Equivalent to --iw <words> -k", split = ",")
+    @CommandLine.Option(names = {"--filter-words", "--fw"}, paramLabel = "<count>",
+            description = "Treat these word counts as success (not reported)", split = ",")
     public void setFilterResponseWords(List<Long> filterResponseWords) {
         this.ignoreResponseWords = filterResponseWords;
-        skipReportingForIgnoredCodes = true;
+        skipReportingForIgnoredArguments = true;
     }
 
-    @CommandLine.Option(names = {"--filter-response-lines", "--fl"}, paramLabel = "<count>",
-            description = "A comma separated list of number of line counts in the response that will be filtered. Equivalent to --il <no_of_lines> -k", split = ",")
+    @CommandLine.Option(names = {"--filter-lines", "--fl"}, paramLabel = "<counts>",
+            description = "Treat these line counts as success (not reported)", split = ",")
     public void setFilterResponseLines(List<Long> filterResponseLines) {
         this.ignoreResponseLines = filterResponseLines;
-        skipReportingForIgnoredCodes = true;
+        skipReportingForIgnoredArguments = true;
     }
 
-    @CommandLine.Option(names = {"--filter-response-regex", "--fr"}, paramLabel = "<regex>",
-            description = "A regex that will match against the response that will be filtered. Equivalent to --ir <regex> -k")
+    @CommandLine.Option(names = {"--filter-regex", "--fr"}, paramLabel = "<regex>",
+            description = "Treat responses matching this pattern as success (not reported)")
     public void setFilterResponseRegex(String filterResponseRegex) {
         this.ignoreResponseRegex = filterResponseRegex;
-        skipReportingForIgnoredCodes = true;
+        skipReportingForIgnoredArguments = true;
     }
     /*End of filtering options*/
 
-    @CommandLine.Option(names = {"-k", "--skip-reporting-for-ignored-codes", "--sri"},
-            description = "Skip reporting entirely for the ignored response codes, sizes, words and lines provided in the @|bold,underline --ignoreResponseXXX|@ arguments. Default: @|bold false|@ ")
-    private boolean skipReportingForIgnoredCodes;
 
-    @CommandLine.Option(names = {"--srs", "--skip-reporting-for-success"},
-            description = "Skip reporting entirely for tests cases reported as success. Default: @|bold false|@ ")
+    @CommandLine.Option(names = {"--hide-success"},
+            description = "Don't report successful test results. Default: @|bold false|@ ")
     private boolean skipReportingForSuccess;
 
-    @CommandLine.Option(names = {"--srw", "--skip-reporting-for-warning"},
-            description = "Skip reporting entirely for tests cases reported as warnings. Default: @|bold false|@ ")
+    @CommandLine.Option(names = {"--hide-warnings"},
+            description = "Don't report warning results. Default: @|bold false|@ ")
     private boolean skipReportingForWarnings;
 
-    @CommandLine.Option(names = {"-b", "--blackbox"},
-            description = "Ignore all response codes except for @|bold,underline 5XX|@ which will be returned as @|bold,underline error|@. This is similar to @|bold --ignoreResponseCodes=\"2xx,4xx\"|@")
 
-    private boolean blackbox;
+    private boolean skipReportingForIgnoredArguments;
+
 
     /**
      * Returns a list with all response codes.
@@ -116,10 +115,7 @@ public class IgnoreArguments {
      * @return a list of response codes to ignore
      */
     public List<String> getIgnoreResponseCodes() {
-        List<String> ignored = Optional.ofNullable(this.ignoreResponseCodes).orElse(Collections.emptyList());
-        List<String> fromBlackbox = blackbox ? List.of("2xx", "4xx", "501") : Collections.emptyList();
-
-        return Stream.concat(ignored.stream(), fromBlackbox.stream()).toList();
+        return Optional.ofNullable(this.ignoreResponseCodes).orElse(Collections.emptyList());
     }
 
     /**
@@ -189,7 +185,7 @@ public class IgnoreArguments {
 
     public boolean isAnyIgnoreArgumentSupplied() {
         return ignoreResponseCodes != null || ignoreResponseSizes != null || ignoreResponseWords != null ||
-                ignoreResponseLines != null || ignoreResponseRegex != null || blackbox;
+                ignoreResponseLines != null || ignoreResponseRegex != null;
     }
 
     /**

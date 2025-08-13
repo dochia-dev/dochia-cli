@@ -51,7 +51,7 @@ public class FilesArguments {
     @Setter
     private List<String> params;
 
-    @CommandLine.Option(names = {"-P"}, paramLabel = "<string=object>",
+    @CommandLine.Option(names = {"-U"}, paramLabel = "<string=object>",
             description = "Specifies the url/path params to be replaced in request paths")
     @Setter
     Map<String, Object> urlParamsArguments;

@@ -27,13 +27,6 @@ import java.util.stream.Stream;
  */
 @Singleton
 public class FilterArguments {
-
-    public enum TotalCountType {
-        PLAYBOOKS,
-        LINTERS,
-        ALL
-    }
-
     /* local caches to avoid recompute */
     static final List<String> PLAYBOOKS_TO_BE_RUN = new ArrayList<>();
     static final List<TestCasePlaybook> SECOND_PHASE_PLAYBOOKS_TO_BE_RUN = new ArrayList<>();
@@ -60,7 +53,7 @@ public class FilterArguments {
         FLOAT, DOUBLE, INT32, INT64, DATE, DATE_TIME, PASSWORD, BYTE, BINARY, EMAIL, UUID, URI, URL, HOSTNAME, IPV4, IPV6
     }
 
-    @CommandLine.Option(names = {"-f", "--playbooks", "--playbook"}, paramLabel = "<playbook>",
+    @CommandLine.Option(names = {"-P", "--playbooks", "--playbook"}, paramLabel = "<playbook>",
             description = "A comma separated list of playbooks to be run. They can be full or partial Playbook names. All available can be listed using: @|bold dochia list -f|@", split = ",")
     private List<String> suppliedPlaybooks;
 
@@ -78,7 +71,7 @@ public class FilterArguments {
     @Setter
     private List<String> skipPlaybooks;
 
-    @CommandLine.Option(names = {"--http-methods", "--http-method", "-X"}, paramLabel = "<method>",
+    @CommandLine.Option(names = {"-X", "--http-methods", "--http-method"}, paramLabel = "<method>",
             description = "A comma separated list of HTTP methods to include. Default: @|bold,underline ${DEFAULT-VALUE}|@", split = ",")
     @Setter
     private List<HttpMethod> httpMethods = HttpMethod.restMethods();
@@ -102,11 +95,11 @@ public class FilterArguments {
     private List<FieldType> skipFieldTypes;
 
     @CommandLine.Option(names = {"--field-formats", "--field-format"}, paramLabel = "<format>",
-            description = "A comma separated list of OpenAPI data formats to include. It supports formats mentioned in the documentation: @|underline https://swagger.io/docs/specification/data-models/data-types|@", split = ",")
+            description = "A comma separated list of OpenAPI data formats to include.", split = ",")
     private List<FormatType> fieldFormats;
 
     @CommandLine.Option(names = {"--skip-field-formats", "--skip-field-format"}, paramLabel = "<format>",
-            description = "A comma separated list of OpenAPI data formats to skip.  It supports formats mentioned in the documentation: @|underline https://swagger.io/docs/specification/data-models/data-types|@", split = ",")
+            description = "A comma separated list of OpenAPI data formats to skip.", split = ",")
     private List<FormatType> skipFieldFormats;
 
     @CommandLine.Option(names = {"--skip-fields", "--skip-field"}, paramLabel = "<field>",

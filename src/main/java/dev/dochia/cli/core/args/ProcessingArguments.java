@@ -68,7 +68,7 @@ public class ProcessingArguments {
     private int randomHeadersNumber = 10000;
 
     @Setter
-    @CommandLine.Option(names = {"--self-reference-depth", "-L"}, paramLabel = "<depth>",
+    @CommandLine.Option(names = {"--self-reference-depth"}, paramLabel = "<depth>",
             description = "Max depth for request objects having cyclic dependencies. Default: @|bold,underline ${DEFAULT-VALUE}|@")
     private int selfReferenceDepth = 2;
 

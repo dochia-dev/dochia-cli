@@ -220,7 +220,7 @@ class TestCaseListenerTest {
     @Test
     void shouldSkipInsteadOfInfoWhenSkipReportingIsEnabledAndIgnoredResponseCode() {
         Mockito.when(ignoreArguments.isIgnoredResponse(Mockito.any())).thenReturn(true);
-        Mockito.when(ignoreArguments.isSkipReportingForIgnoredCodes()).thenReturn(true);
+        Mockito.when(ignoreArguments.isSkipReportingForIgnoredArguments()).thenReturn(true);
         HttpResponse response = HttpResponse.builder().body("{}").responseCode(200).build();
         prepareTestCaseListenerSimpleSetup(response, () -> testCaseListener.reportInfo(logger, "Something was good"));
 
@@ -294,7 +294,7 @@ class TestCaseListenerTest {
     @Test
     void shouldSkipTestWhenErrorAndIgnoredCodeSuppliedAndSkipReportingEnabled() {
         Mockito.when(ignoreArguments.isIgnoredResponseCode("200")).thenReturn(true);
-        Mockito.when(ignoreArguments.isSkipReportingForIgnoredCodes()).thenReturn(true);
+        Mockito.when(ignoreArguments.isSkipReportingForIgnoredArguments()).thenReturn(true);
 
         prepareTestCaseListenerSimpleSetup(HttpResponse.builder().responseCode(200).build(), () -> testCaseListener.reportError(logger, "Error"));
 
@@ -308,7 +308,7 @@ class TestCaseListenerTest {
     @Test
     void shouldSkipTestWhenWarnAndIgnoredCodeSuppliedAndSkipReportingEnabled() {
         Mockito.when(ignoreArguments.isIgnoredResponseCode("200")).thenReturn(true);
-        Mockito.when(ignoreArguments.isSkipReportingForIgnoredCodes()).thenReturn(true);
+        Mockito.when(ignoreArguments.isSkipReportingForIgnoredArguments()).thenReturn(true);
 
         prepareTestCaseListenerSimpleSetup(HttpResponse.builder().responseCode(200).build(), () -> testCaseListener.reportWarn(logger, "Warn"));
 
@@ -632,7 +632,7 @@ class TestCaseListenerTest {
     void shouldReportErrorWhenPlaybookSuccessfulButResponseTimeExceedsMax() {
         TestCaseListener spyListener = Mockito.spy(testCaseListener);
         Mockito.when(ignoreArguments.isSkipReportingForSuccess()).thenReturn(false);
-        Mockito.when(ignoreArguments.isSkipReportingForIgnoredCodes()).thenReturn(false);
+        Mockito.when(ignoreArguments.isSkipReportingForIgnoredArguments()).thenReturn(false);
         Mockito.when(reportingArguments.getMaxResponseTime()).thenReturn(10);
 
         spyListener.createAndExecuteTest(logger, testCasePlaybook, () -> {
@@ -647,7 +647,7 @@ class TestCaseListenerTest {
     void shouldReportErrorWhenKeywordsDetectedInResponse() {
         TestCaseListener spyListener = Mockito.spy(testCaseListener);
         Mockito.when(ignoreArguments.isSkipReportingForSuccess()).thenReturn(false);
-        Mockito.when(ignoreArguments.isSkipReportingForIgnoredCodes()).thenReturn(false);
+        Mockito.when(ignoreArguments.isSkipReportingForIgnoredArguments()).thenReturn(false);
         Mockito.when(ignoreArguments.isIgnoreErrorLeaksCheck()).thenReturn(false);
 
 
