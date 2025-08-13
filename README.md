@@ -1,7 +1,8 @@
 # Dochia
 
 > **Bringing Chaos with Love** - Dochia automatically generates and executes negative and boundary testing so you can
-> focus on creative problem-solving. Because nobody wants to debug why their "enterprise-grade" API can't handle a simple 🤷‍♀️
+> focus on creative problem-solving. Because nobody wants to debug why their "enterprise-grade" API can't handle a
+> simple 🤷‍♀️
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java Version](https://img.shields.io/badge/Java-21+-blue.svg)](https://openjdk.org)
@@ -11,8 +12,14 @@
 ## What is Dochia?
 
 Dochia automatically generates and executes negative and boundary testing so you can
-focus on creative problem-solving. It auto-generates malicious, weird, and edge-case inputs to hammer your endpoints. **It's like throwing a tantrum at
+focus on creative problem-solving. It auto-generates malicious, weird, and edge-case inputs to hammer your endpoints. *
+*It's like throwing a tantrum at
 your API, so your users don't have to.**
+
+## About the Name
+
+Dochia comes from Romanian folklore - a legendary figure known for testing the limits of winter's harshness. Like its
+namesake, this tool rigorously tests your APIs to ensure they can withstand any conditions.
 
 Instead of spending 40% of your time writing repetitive test cases and missing critical edge cases, let Dochia do the
 heavy lifting while you focus on building amazing features.
