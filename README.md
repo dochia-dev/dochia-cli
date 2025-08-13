@@ -12,17 +12,17 @@
 ## What is Dochia?
 
 Dochia automatically generates and executes negative and boundary testing so you can
-focus on creative problem-solving. It auto-generates malicious, weird, and edge-case inputs to hammer your endpoints. *
-*It's like throwing a tantrum at
+focus on creative problem-solving. It auto-generates malicious, weird, and edge-case inputs to hammer your endpoints.
+Instead of spending 40% of your time writing repetitive test cases and missing critical edge cases, let Dochia do the
+heavy lifting while you focus on building amazing features.
+
+**It's like throwing a tantrum at
 your API, so your users don't have to.**
 
 ## About the Name
 
 Dochia comes from Romanian folklore - a legendary figure known for testing the limits of winter's harshness. Like its
 namesake, this tool rigorously tests your APIs to ensure they can withstand any conditions.
-
-Instead of spending 40% of your time writing repetitive test cases and missing critical edge cases, let Dochia do the
-heavy lifting while you focus on building amazing features.
 
 ## Features
 
