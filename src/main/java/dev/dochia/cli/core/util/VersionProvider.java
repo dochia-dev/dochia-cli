@@ -16,9 +16,9 @@ public class VersionProvider implements CommandLine.IVersionProvider {
         return new String[]{
                 "%n@|green "
                         + properties.getProperty("app.name")
-                        + " Free, version "
+                        + " v"
                         + properties.getProperty("app.version")
-                        + "|@"
+                        + "|@ (Free)"
         };
     }
 }

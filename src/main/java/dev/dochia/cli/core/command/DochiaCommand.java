@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
         name = "dochia",
         mixinStandardHelpOptions = true,
         header = {
-                "%n@|green dochia automatically generates and executes negative and boundary testing so you can focus on creative problem-solving; version ${app.version}|@ %n",
+                "%n@|green dochia automatically generates and executes negative and boundary testing so you can focus on creative problem-solving; v${app.version}|@ (Free)%n",
                 """
                              _             _     _      \s
                             | |           | |   (_)     \s
