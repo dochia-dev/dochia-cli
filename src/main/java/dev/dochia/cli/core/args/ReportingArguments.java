@@ -18,11 +18,11 @@ import java.util.*;
 public class ReportingArguments {
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(ReportingArguments.class);
 
-    @CommandLine.Option(names = {"--print-execution-statistics"},
+    @CommandLine.Option(names = {"--execution-stats"},
             description = "Print a summary of execution times for each endpoint and HTTP method. By default this will print a summary for each endpoint: max, min and average. Detailed reports can be enabled using @|bold --printDetailedExecutionStatistics|@")
     private boolean printExecutionStatistics;
 
-    @CommandLine.Option(names = {"--print-detailed-execution-statistics"},
+    @CommandLine.Option(names = {"--detailed-execution-stats"},
             description = "Print detailed execution statistics with execution times for each request")
     private boolean printDetailedExecutionStatistics;
 
@@ -50,7 +50,7 @@ public class ReportingArguments {
             description = "Indicates if coloured output is enabled in the console.")
     private boolean color = true;
 
-    @CommandLine.Option(names = {"--max-response-time-in-ms"}, paramLabel = "<max>",
+    @CommandLine.Option(names = {"--max-response-time"}, paramLabel = "<ms>",
             description = "Sets a response time limit in milliseconds. If responses take longer than the provided value, they will get marked as @|bold error|@ with reason @|underline Response time exceeds max|@." +
                     " The response time limit check is triggered only if the test case is considered successful i.e. response matches Playbook expectations")
     private int maxResponseTime;

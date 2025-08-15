@@ -50,7 +50,7 @@ import java.nio.charset.StandardCharsets;
         footerHeading = "%n@|bold,underline Examples:|@%n",
         footer = {
                 "  Run in blackbox mode and only report 500 http error codes:",
-                "    dochia test -c openapi.yml -s http://localhost:8080 -b -k",
+                "    dochia test -c openapi.yml -s http://localhost:8080 -b",
                 "",
                 "  Run with authentication headers from an environment variable called TOKEN:",
                 "    dochia test -c openapi.yml -s http://localhost:8080 -H API-Token=$$TOKEN"

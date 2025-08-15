@@ -7,6 +7,6 @@ import java.io.File;
 
 @Singleton
 public class ConfigOptions {
-    @CommandLine.Option(names = "--config-file", description = "Path to config file", paramLabel = "<file>")
+    @CommandLine.Option(names = "--config", description = "Path to config file", paramLabel = "<file>")
     public File configFile;
 }

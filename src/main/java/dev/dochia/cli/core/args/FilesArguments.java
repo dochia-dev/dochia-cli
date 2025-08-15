@@ -36,7 +36,7 @@ public class FilesArguments {
     private Properties playbookConfigProperties;
     @Getter
 
-    @CommandLine.Option(names = {"--error-leaks-keywords", "-K"}, paramLabel = "<file>",
+    @CommandLine.Option(names = {"--error-keywords", "-K"}, paramLabel = "<file>",
             description = "A properties file with error leaks keywords that will be used when processing responses to detect potential error leaks. If one of these keyword is found, the test case will be marked as error")
     @Setter
     private File errorLeaksKeywords;
@@ -51,7 +51,7 @@ public class FilesArguments {
     @Setter
     private List<String> params;
 
-    @CommandLine.Option(names = {"-U"}, paramLabel = "<string=object>",
+    @CommandLine.Option(names = {"-U"}, paramLabel = "<name=value>",
             description = "Specifies the url/path params to be replaced in request paths")
     @Setter
     Map<String, Object> urlParamsArguments;
@@ -61,7 +61,7 @@ public class FilesArguments {
     @Setter
     private File headersFile;
 
-    @CommandLine.Option(names = {"-H"}, paramLabel = "<string=object>",
+    @CommandLine.Option(names = {"-H", "--header"}, paramLabel = "<name=value>",
             description = "Specifies the headers that will be passed along with the request. When supplied it will be applied to ALL paths. For per-path control, the `--headers` arg must be used")
     @Setter
     Map<String, Object> headersMap;
@@ -71,26 +71,26 @@ public class FilesArguments {
     @Setter
     private File queryFile;
 
-    @CommandLine.Option(names = {"--paths-run-order"}, paramLabel = "<file>",
+    @CommandLine.Option(names = {"--execution-order"}, paramLabel = "<file>",
             description = "A file with the order in which the paths will be executed. The paths are on each line. The order from file will drive the execution order")
     @Setter
     private File pathsOrderFile;
 
-    @CommandLine.Option(names = {"-Q"}, paramLabel = "<string=object>",
+    @CommandLine.Option(names = {"-Q"}, paramLabel = "<name=value>",
             description = "Specifies additional query parameters that will be passed along with the request. This can be used to pass non-documented query params. When supplied it will be applied to ALL paths. " +
                     "For per-path control, the `--query-params` argument must be used")
     @Setter
     Map<String, Object> queryParamsArguments;
 
-    @CommandLine.Option(names = {"--ref-data"}, paramLabel = "<file>",
+    @CommandLine.Option(names = {"--reference-data"}, paramLabel = "<file>",
             description = "A YAML file with fields that must have a fixed value in order for requests to succeed. ")
     @Setter
     @Getter
     private File refDataFile;
 
-    @CommandLine.Option(names = {"-R"}, paramLabel = "<string=object>",
+    @CommandLine.Option(names = {"-R"}, paramLabel = "<name=value>",
             description = "Specifies fields that must have a fixed value in order for requests to succeed. When supplied it will be applied to ALL paths. " +
-                    "For per-path control, the `--ref-data` argument must be used")
+                    "For per-path control, the `--reference-data` argument must be used")
     @Setter
     Map<String, Object> refDataArguments;
 

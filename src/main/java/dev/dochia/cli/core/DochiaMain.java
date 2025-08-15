@@ -113,9 +113,9 @@ public class DochiaMain implements QuarkusApplication {
 
     private File findConfigFile(String[] args) {
         for (int i = 0; i < args.length - 1; i++) {
-            if ("--configFile".equals(args[i])) {
+            if ("--config".equals(args[i])) {
                 return new File(args[i + 1]);
-            } else if (args[i].startsWith("--configFile=")) {
+            } else if (args[i].startsWith("--config=")) {
                 return new File(args[i].split("=", 2)[1]);
             }
         }

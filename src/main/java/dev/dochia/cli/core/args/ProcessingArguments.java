@@ -34,8 +34,7 @@ public class ProcessingArguments {
 
     @CommandLine.Option(names = {"--use-examples"}, negatable = true,
             description = "When set to @|bold true|@, it will use request body examples, schema examples and primitive properties examples from the OpenAPI contract when available. " +
-                    "This is equivalent of using @|bold,underline --useRequestBodyExamples|@ @|bold,underline --useSchemaExamples|@ @|bold,underline --usePropertyExamples|@ @|bold,underline --useResponseBodyExamples|@." +
-                    "Default: @|bold,underline ${DEFAULT-VALUE}|@")
+                    "This is equivalent of using @|bold,underline --useRequestBodyExamples|@ @|bold,underline --useSchemaExamples|@ @|bold,underline --usePropertyExamples|@ @|bold,underline --useResponseBodyExamples|@.")
     @Setter
     private Boolean useExamples;
 
@@ -63,7 +62,7 @@ public class ProcessingArguments {
             description = "The size of the strings used by the Playbooks sending large values like @|bold VeryLargeStringsPlaybook|@. Default: @|bold,underline ${DEFAULT-VALUE}|@")
     private int largeStringsSize = 40000;
 
-    @CommandLine.Option(names = {"--random-headers-number"}, paramLabel = "<number>",
+    @CommandLine.Option(names = {"--random-headers-count"}, paramLabel = "<number>",
             description = "The number of random headers that will be sent by the @|bold LargeNumberOfRandomAlphanumericHeadersPlaybook and LargeNumberOfRandomHeadersPlaybook|@. Default: @|bold,underline ${DEFAULT-VALUE}|@")
     private int randomHeadersNumber = 10000;
 
@@ -78,7 +77,7 @@ public class ProcessingArguments {
     private String contentType;
 
     @Setter
-    @CommandLine.Option(names = {"--one-of-selection", "--any-of-selection"}, paramLabel = "<string=string>",
+    @CommandLine.Option(names = {"--schema-discriminator"}, paramLabel = "<name=value>",
             description = "A @|bold name=value|@ list of discriminator names and values that can be use to filter request payloads when objects use oneOf or anyOf definitions" +
                     " which result in multiple payloads for a single endpoint and http method")
     Map<String, String> xxxOfSelections;
@@ -94,12 +93,12 @@ public class ProcessingArguments {
     private boolean allowInvalidEnumValues;
 
     @Setter
-    @CommandLine.Option(names = {"--limit-xxx-of-combinations"}, paramLabel = "<max>",
+    @CommandLine.Option(names = {"--max-schema-combinations"}, paramLabel = "<max>",
             description = "Max number of anyOf/oneOf combinations. Default: @|bold,underline ${DEFAULT-VALUE}|@")
     private int limitXxxOfCombinations = 20;
 
     @Setter
-    @CommandLine.Option(names = {"--limit-tested-fields"}, paramLabel = "<max>",
+    @CommandLine.Option(names = {"--max-tested-fields"}, paramLabel = "<max>",
             description = "Max number of request fields to be tested. Default: @|bold,underline ${DEFAULT-VALUE}|@ which means all fields will be tested")
     private int limitNumberOfFields;
 
@@ -107,7 +106,7 @@ public class ProcessingArguments {
             description = "If set to @|bold true|@, it will use default values (if set) when generating examples. Default: @|bold,underline ${DEFAULT-VALUE}|@")
     private boolean useDefaults = true;
 
-    @CommandLine.Option(names = {"--resolve-xxx-of-responses"},
+    @CommandLine.Option(names = {"--resolve-response-combinations"},
             description = "If set to @|bold true|@, it will resolve oneOf/anyOf combinations also for responses. Default: @|bold,underline ${DEFAULT-VALUE}|@")
     private boolean resolveXxxOfCombinationForResponses;
 

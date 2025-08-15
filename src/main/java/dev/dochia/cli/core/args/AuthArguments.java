@@ -20,11 +20,11 @@ public class AuthArguments {
             description = "Location of the keystore holding certificates used when authenticating calls using one-way or two-way SSL")
     private String sslKeystore;
 
-    @CommandLine.Option(names = {"--ssl-keystore-pwd"}, paramLabel = "<password>",
+    @CommandLine.Option(names = {"--ssl-keystore-password"}, paramLabel = "<password>",
             description = "The password of the sslKeystore")
     private String sslKeystorePwd;
 
-    @CommandLine.Option(names = {"--ssl-key-pwd"}, paramLabel = "<password>",
+    @CommandLine.Option(names = {"--ssl-key-password"}, paramLabel = "<password>",
             description = "The password of the private key from the sslKeystore")
     private String sslKeyPwd;
 

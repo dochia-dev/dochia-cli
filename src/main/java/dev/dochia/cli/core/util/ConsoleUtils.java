@@ -205,7 +205,7 @@ public abstract class ConsoleUtils {
                   -H=<name=value>                Custom headers applicable to all paths(e.g., auth tokens)
                       --headers=<file>           YAML file with custom headers specific per path (e.g., auth tokens).
                   -R=<name=value>                Fixed field values applicable to all paths.
-                      --ref-data=<file>          YAML file with fixed field values specific per path.
+                      --reference-data=<file>          YAML file with fixed field values specific per path.
                   -f, --playbooks=<list>           Playbook names to run.
                   -p, --paths=<list>             Specific paths to test.
                   -d, --dry-run                  Simulate tests without executing.

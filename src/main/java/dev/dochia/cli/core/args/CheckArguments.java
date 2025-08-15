@@ -12,19 +12,19 @@ import picocli.CommandLine;
 @Getter
 @Setter
 public class CheckArguments {
-    @CommandLine.Option(names = {"-A", "--check-headers"},
-            description = "Run only Header ")
+    @CommandLine.Option(names = {"-A", "--headers-only"},
+            description = "Run only Header Playbooks")
     private boolean checkHeaders;
 
-    @CommandLine.Option(names = {"-F", "--check-fields"},
-            description = "Run only Fields Test Case Playbooks")
+    @CommandLine.Option(names = {"-F", "--fields-only"},
+            description = "Run only Fields Playbooks")
     private boolean checkFields;
 
-    @CommandLine.Option(names = {"-B", "--check-body"},
-            description = "Run only Body Test Case Playbooks")
+    @CommandLine.Option(names = {"-B", "--body-only"},
+            description = "Run only Body Playbooks")
     private boolean checkHttp;
 
-    @CommandLine.Option(names = {"-E", "--include-emojis"},
+    @CommandLine.Option(names = {"-E", "--include-emojis"}, negatable = true, defaultValue = "true", fallbackValue = "true",
             description = "Include Emojis Test Case Playbooks. Default: @|bold,underline ${DEFAULT-VALUE}|@")
     private boolean includeEmojis = true;
 }

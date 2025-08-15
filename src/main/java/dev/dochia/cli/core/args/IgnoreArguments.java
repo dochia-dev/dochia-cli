@@ -31,7 +31,7 @@ public class IgnoreArguments {
     private List<String> ignoreResponseCodes;
 
     @CommandLine.Option(names = {"--filter-codes", "--fc"}, paramLabel = "<code>",
-            description = "Treat these response codes as success (not reported), even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@ Equivalent to --i <codes> -k", split = ",")
+            description = "Treat these response codes as success (not reported), even if the Playbook will typically report them as @|bold,underline warn|@ or @|bold,underline error|@", split = ",")
     public void setFilterResponseCodes(List<String> filterResponseCodes) {
         this.ignoreResponseCodes = filterResponseCodes;
         skipReportingForIgnoredArguments = true;

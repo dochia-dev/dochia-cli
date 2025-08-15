@@ -60,7 +60,7 @@ import static org.fusesource.jansi.Ansi.ansi;
         footerHeading = "%n@|bold,underline Examples:|@%n",
         footer = {
                 "  Run in blackbox mode and only report 500 http error codes:",
-                "    dochia test -c openapi.yml -s http://localhost:8080 -b -k",
+                "    dochia test -c openapi.yml -s http://localhost:8080 -b",
                 "",
                 "  Run with authentication headers from an environment variable called TOKEN:",
                 "    dochia test -c openapi.yml -s http://localhost:8080 -H API-Token=$$TOKEN"
@@ -94,27 +94,27 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
     AuthArguments authArgs;
 
     @Inject
-    @CommandLine.ArgGroup(heading = "%n@|bold,underline Check Options:|@%n", exclusive = false)
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Test Control Options:|@%n", exclusive = false)
     CheckArguments checkArgs;
 
     @Inject
-    @CommandLine.ArgGroup(heading = "%n@|bold,underline Files Options:|@%n", exclusive = false)
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline ConfigurationFiles Options:|@%n", exclusive = false)
     FilesArguments filesArguments;
 
     @Inject
-    @CommandLine.ArgGroup(heading = "%n@|bold,underline Filter Options:|@%n", exclusive = false)
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Filter and Selection Options:|@%n", exclusive = false)
     FilterArguments filterArguments;
 
     @Inject
-    @CommandLine.ArgGroup(heading = "%n@|bold,underline Ignore Options:|@%n", exclusive = false)
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Response Handling Options:|@%n", exclusive = false)
     IgnoreArguments ignoreArguments;
 
     @Inject
-    @CommandLine.ArgGroup(heading = "%n@|bold,underline Processing Options:|@%n", exclusive = false)
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Processing and GenerationOptions:|@%n", exclusive = false)
     ProcessingArguments processingArguments;
 
     @Inject
-    @CommandLine.ArgGroup(heading = "%n@|bold,underline Reporting Options:|@%n", exclusive = false)
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Reporting and Output Options:|@%n", exclusive = false)
     ReportingArguments reportingArguments;
 
     @CommandLine.Spec

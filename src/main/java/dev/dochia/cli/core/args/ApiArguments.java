@@ -14,7 +14,7 @@ import picocli.CommandLine;
 @Singleton
 public class ApiArguments {
     @CommandLine.Option(
-            names = {"--max-req-per-minute"}, paramLabel = "<max>",
+            names = {"--max-requests-per-minute"}, paramLabel = "<max>",
             description = "Maximum number of requests per minute; this is useful when APIs have rate limiting implemented. Default: @|bold,underline ${DEFAULT-VALUE}|@",
             defaultValue = "10000")
     private int maxRequestsPerMinute = 10000;
