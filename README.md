@@ -9,6 +9,15 @@
 [![GraalVM](https://img.shields.io/badge/GraalVM-Native-orange.svg)](https://www.graalvm.org)
 [![Release](https://img.shields.io/github/v/release/dochia-dev/dochia-cli.svg)](https://github.com/dochia-dev/dochia-cli/releases)
 
+
+![CI](https://img.shields.io/github/actions/workflow/status/dochia-dev/dochia-cli/main.yml?style=for-the-badge&logo=git&logoColor=white)
+[![Commits](https://img.shields.io/github/commit-activity/m/dochia-dev/dochia-cli?style=for-the-badge&logo=git&logoColor=white)](https://github.com/dochia-dev/dochia-cli/pulse)
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dochia-dev_dochia-cli&metric=alert_status&token=3b850d65b8e085c7f98cb046dcb71d289e83d86d)](https://sonarcloud.io/summary/new_code?id=dochia-dev_dochia-cli)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=dochia-dev_dochia-cli&metric=bugs&token=3b850d65b8e085c7f98cb046dcb71d289e83d86d)](https://sonarcloud.io/summary/new_code?id=dochia-dev_dochia-cli)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=dochia-dev_dochia-cli&metric=code_smells&token=3b850d65b8e085c7f98cb046dcb71d289e83d86d)](https://sonarcloud.io/summary/new_code?id=dochia-dev_dochia-cli)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=dochia-dev_dochia-cli&metric=coverage&token=3b850d65b8e085c7f98cb046dcb71d289e83d86d)](https://sonarcloud.io/summary/new_code?id=dochia-dev_dochia-cli)
+
 ## What is Dochia?
 
 Dochia automatically generates and executes negative and boundary testing so you can
