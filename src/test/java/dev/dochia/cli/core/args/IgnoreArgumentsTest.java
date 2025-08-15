@@ -44,7 +44,7 @@ class IgnoreArgumentsTest {
     @ParameterizedTest
     @CsvSource({"200,true", "501,true", "500,false", "400,true", "503,false"})
     void shouldMatchIgnoredResponseCodesWhenBlackbox(String responseCode, boolean expected) {
-        ReflectionTestUtils.setField(ignoreArguments, "blackbox", true);
+        ignoreArguments.setBlackbox(true);
         Assertions.assertThat(ignoreArguments.isIgnoredResponseCode(responseCode)).isEqualTo(expected);
     }
 
@@ -59,7 +59,7 @@ class IgnoreArgumentsTest {
     @Test
     void shouldNotMatchIgnoredResponseCodesWhenBlackbox() {
         ReflectionTestUtils.setField(ignoreArguments, "ignoreResponseCodes", List.of("4xx"));
-        ReflectionTestUtils.setField(ignoreArguments, "blackbox", false);
+        ignoreArguments.setBlackbox(false);
         Assertions.assertThat(ignoreArguments.isIgnoredResponseCode("200")).isFalse();
     }
 
@@ -225,7 +225,7 @@ class IgnoreArgumentsTest {
         case6.setFilterResponseRegex(".*error.*");
 
         IgnoreArguments case7 = new IgnoreArguments();
-        ReflectionTestUtils.setField(case7, "blackbox", true);
+        case7.setBlackbox(true);
 
         IgnoreArguments case8 = new IgnoreArguments();
 

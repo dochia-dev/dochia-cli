@@ -91,8 +91,7 @@ class FilterArgumentsTest {
 
     @Test
     void shouldNotReturnContractPlaybooksWhenBlackbox() {
-        ReflectionTestUtils.setField(ignoreArguments, "blackbox", true);
-
+        ignoreArguments.setBlackbox(true);
         List<String> playbooks = filterArguments.getFirstPhasePlaybooksForPath();
 
         Assertions.assertThat(playbooks).contains("CheckSecurityHeadersPlaybook", "HappyPathPlaybook", "RemoveFieldsPlaybook")
