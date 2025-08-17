@@ -66,6 +66,6 @@ public class DuplicateHeadersPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "send a 'happy' flow request and duplicate an existing header";
+        return "Send happy path request and duplicate an existing header";
     }
 }

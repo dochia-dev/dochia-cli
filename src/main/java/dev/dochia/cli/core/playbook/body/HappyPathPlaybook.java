@@ -50,6 +50,6 @@ public class HappyPathPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "send a request with all fields and headers populated";
+        return "Send request with all fields and headers properly populated";
     }
 }

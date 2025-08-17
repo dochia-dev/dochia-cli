@@ -39,7 +39,7 @@ public class NonRestHttpMethodsPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "iterate through a list of HTTP methods specific to the WebDAV protocol that are not expected to be implemented by REST APIs";
+        return "Iterate through WebDAV-specific HTTP methods not expected in REST APIs";
     }
 
     @Override

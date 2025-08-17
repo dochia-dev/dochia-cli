@@ -1,9 +1,9 @@
 package dev.dochia.cli.core.playbook.header.base;
 
+import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.playbook.executor.HeadersIteratorExecutor;
 import dev.dochia.cli.core.playbook.executor.HeadersIteratorExecutorContext;
-import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
@@ -68,7 +68,7 @@ public abstract class BaseHeadersPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "iterate through each header and send %s in the targeted header"
+        return "Iterate through each header and send %s"
                 .formatted(this.getPlaybookContext().getTypeOfDataSentToTheService());
     }
 

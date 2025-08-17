@@ -63,6 +63,6 @@ public class VeryLargeUnicodeStringsInFieldsPlaybook extends ExpectOnly4XXBaseFi
 
     @Override
     public String description() {
-        return "iterate through each field and send very large random unicode values";
+        return "Iterate through each field and send very large random unicode values";
     }
 }

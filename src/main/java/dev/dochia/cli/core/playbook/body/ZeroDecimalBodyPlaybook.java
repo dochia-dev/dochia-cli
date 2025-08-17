@@ -35,6 +35,6 @@ public class ZeroDecimalBodyPlaybook extends BaseHttpWithPayloadSimplePlaybook {
 
     @Override
     public String description() {
-        return "send a request with decimal 0.0 as body";
+        return "Send request with decimal 0.0 as body";
     }
 }

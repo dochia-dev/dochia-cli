@@ -50,6 +50,6 @@ public class StringFieldsRightBoundaryPlaybook extends BaseBoundaryFieldPlaybook
 
     @Override
     public String description() {
-        return "iterate through each String field and send outside the range values on the right side";
+        return "Iterate through each string field and send out-of-range values on the right boundary";
     }
 }

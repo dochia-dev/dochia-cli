@@ -47,6 +47,6 @@ class FullwidthBracketsFieldsPlaybook extends ExpectOnly2XXBaseFieldsPlaybook {
 
     @Override
     public String description() {
-        return "insert fullwidth '<' and '>' to test for markup filter bypass";
+        return "Insert fullwidth '<' and '>' characters to test for markup filter bypass";
     }
 }

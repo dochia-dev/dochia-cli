@@ -30,7 +30,7 @@ public class ZeroWidthCharsInValuesHeadersPlaybook extends BaseHeadersPlaybook {
         return BaseHeadersPlaybookContext.builder()
                 .expectedHttpCodeForRequiredHeadersFuzzed(ResponseCodeFamilyPredefined.FOURXX)
                 .expectedHttpForOptionalHeadersFuzzed(ResponseCodeFamilyPredefined.FOURXX)
-                .typeOfDataSentToTheService("Zero-width characters")
+                .typeOfDataSentToTheService("zero-width characters")
                 .fuzzStrategy(UnicodeGenerator.getZwCharsSmallListHeaders().stream().map(value -> FuzzingStrategy.insert().withData(value)).toList())
                 .matchResponseSchema(false)
                 .build();

@@ -75,7 +75,7 @@ public class ExamplesFieldsPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "send a request for every unique example";
+        return "Send a request for every unique example defined in the contract";
     }
 
     @Override

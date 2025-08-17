@@ -36,6 +36,6 @@ public class RandomNegativeIntegerBodyPlaybook extends BaseHttpWithPayloadSimple
 
     @Override
     public String description() {
-        return "send a request with a random negative integer body";
+        return "Send request with random negative integer body";
     }
 }

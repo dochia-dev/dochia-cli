@@ -90,6 +90,6 @@ public class ZeroWidthCharsInNamesFieldsPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "iterate through each field and insert zero-width characters in the field names";
+        return "Iterate through each field name and insert zero-width characters";
     }
 }

@@ -35,6 +35,6 @@ public class EmptyJsonBodyPlaybook extends BaseHttpWithPayloadSimplePlaybook {
 
     @Override
     public String description() {
-        return "send a request with a empty json body";
+        return "Send request with empty JSON object body";
     }
 }

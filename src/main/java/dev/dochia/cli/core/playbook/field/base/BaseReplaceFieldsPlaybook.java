@@ -57,7 +57,7 @@ public abstract class BaseReplaceFieldsPlaybook implements TestCasePlaybook {
     @Override
     public String description() {
         BaseReplaceFieldsContext context = this.getContext(null);
-        return "iterate through each %s field and replace it with %s values".formatted(context.replaceWhat, context.replaceWith);
+        return "Iterate through each %s field and replace with %s values".formatted(context.replaceWhat, context.replaceWith);
     }
 
     @Override

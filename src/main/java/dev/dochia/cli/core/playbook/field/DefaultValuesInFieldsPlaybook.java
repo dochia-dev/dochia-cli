@@ -61,7 +61,7 @@ public class DefaultValuesInFieldsPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "iterate through each field with default values defined and send a happy flow request";
+        return "Iterate through each field with default values and send a happy path request";
     }
 
     @Override

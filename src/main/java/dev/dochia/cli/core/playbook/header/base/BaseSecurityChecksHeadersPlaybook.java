@@ -136,6 +136,6 @@ public abstract class BaseSecurityChecksHeadersPlaybook implements TestCasePlayb
 
     @Override
     public String description() {
-        return String.format("send a request with a %s %s header and expect to get %s code", typeOfHeader(), targetHeaderName(), getExpectedResponseCode());
+        return String.format("Send request with a %s %s header and expect %s response code", typeOfHeader(), targetHeaderName(), getExpectedResponseCode());
     }
 }

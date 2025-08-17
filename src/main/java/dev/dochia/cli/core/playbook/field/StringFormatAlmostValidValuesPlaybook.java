@@ -56,6 +56,6 @@ public class StringFormatAlmostValidValuesPlaybook extends BaseBoundaryFieldPlay
 
     @Override
     public String description() {
-        return "iterate through each String field and get its 'format' value (i.e. email, ip, uuid, date, datetime, etc); send requests with values which are almost valid (i.e. email@yhoo. for email, 888.1.1. for ip, etc)";
+        return "Iterate through each formatted string field and send almost-valid values for the format";
     }
 }

@@ -35,6 +35,6 @@ public class EmptyJsonArrayBodyPlaybook extends BaseHttpWithPayloadSimplePlayboo
 
     @Override
     public String description() {
-        return "send a request with a empty json array body";
+        return "Send request with empty JSON array body";
     }
 }

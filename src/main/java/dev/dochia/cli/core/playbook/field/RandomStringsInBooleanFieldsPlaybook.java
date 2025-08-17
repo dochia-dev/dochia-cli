@@ -47,6 +47,6 @@ public class RandomStringsInBooleanFieldsPlaybook extends BaseBoundaryFieldPlayb
 
     @Override
     public String description() {
-        return "iterate through each Boolean field and send random strings";
+        return "Iterate through each boolean field and send random strings";
     }
 }

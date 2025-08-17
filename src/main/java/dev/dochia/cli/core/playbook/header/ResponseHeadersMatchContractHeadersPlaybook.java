@@ -83,6 +83,6 @@ public class ResponseHeadersMatchContractHeadersPlaybook implements TestCasePlay
 
     @Override
     public String description() {
-        return "send a request with all fields and headers populated and checks if the response headers match the ones defined in the contract";
+        return "Send request with all fields populated and verify response headers match contract";
     }
 }

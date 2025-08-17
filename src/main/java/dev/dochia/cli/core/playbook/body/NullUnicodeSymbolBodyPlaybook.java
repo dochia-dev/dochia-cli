@@ -35,6 +35,6 @@ public class NullUnicodeSymbolBodyPlaybook extends BaseHttpWithPayloadSimplePlay
 
     @Override
     public String description() {
-        return "send a request with a ␀ body";
+        return "Send request with ␀ symbol body";
     }
 }

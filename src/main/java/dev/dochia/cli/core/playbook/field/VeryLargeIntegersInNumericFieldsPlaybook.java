@@ -71,6 +71,6 @@ public class VeryLargeIntegersInNumericFieldsPlaybook extends ExpectOnly4XXBaseF
 
     @Override
     public String description() {
-        return "iterate through each numeric field and send very large numbers (40000 characters)";
+        return "Iterate through each numeric field and send very large integer numbers (40000 characters)";
     }
 }

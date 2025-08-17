@@ -93,7 +93,7 @@ public class DeletedResourcesNotAvailablePlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "checks that resources are not available after successful deletes";
+        return "Check that resources are not available after successful DELETE operations";
     }
 
     @Override

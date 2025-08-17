@@ -43,6 +43,6 @@ public class UppercaseExpandingBytesInStringFieldsPlaybook extends TwoXXorFourXX
 
     @Override
     public String description() {
-        return "iterate to string fields and send values that expand the byte representation when uppercased";
+        return "Iterate through string fields and send values that expand byte representation when uppercased";
     }
 }

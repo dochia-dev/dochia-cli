@@ -10,12 +10,13 @@ import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.util.DochiaModelUtils;
 import io.swagger.v3.oas.models.media.Schema;
+import org.apache.commons.lang3.StringUtils;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.function.Function;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Abstract base class for playbooks targeting exact values in fields.
@@ -133,7 +134,7 @@ public abstract class ExactValuesInFieldsPlaybook extends BaseBoundaryFieldPlayb
 
     @Override
     public String description() {
-        return String.format("iterate through each %s fields that have %s defined and send values matching the %s size/value",
+        return String.format("Iterate through each %s field with %s defined and send values matching the exact %s value",
                 getSchemaTypesThePlaybookWillApplyTo(), exactValueTypeString(), exactValueTypeString());
     }
 

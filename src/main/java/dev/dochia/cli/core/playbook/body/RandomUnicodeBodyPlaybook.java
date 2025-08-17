@@ -35,6 +35,6 @@ public class RandomUnicodeBodyPlaybook extends BaseHttpWithPayloadSimplePlaybook
 
     @Override
     public String description() {
-        return "send a request with a random unicode string body";
+        return "Send request with random unicode string body";
     }
 }

@@ -42,6 +42,6 @@ public class EnumCaseVariantFieldsPlaybook extends BaseEnumIteratorFieldsPlayboo
 
     @Override
     public String description() {
-        return "iterate through each enum field and send case-variant values to test case sensitivity of enum handling";
+        return "Iterate through each enum field and send case-variant values to test case sensitivity";
     }
 }

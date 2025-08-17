@@ -52,6 +52,6 @@ public class IntegerFieldsLeftBoundaryPlaybook extends BaseBoundaryFieldPlaybook
 
     @Override
     public String description() {
-        return "iterate through each Integer field and send outside the range values on the left side";
+        return "Iterate through each integer field and send out-of-range values on the left boundary";
     }
 }

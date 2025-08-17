@@ -35,6 +35,6 @@ public class RandomStringBodyPlaybook extends BaseHttpWithPayloadSimplePlaybook 
 
     @Override
     public String description() {
-        return "send a request with a random string body";
+        return "Send request with random string body";
     }
 }

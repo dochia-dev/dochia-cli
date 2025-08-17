@@ -53,7 +53,7 @@ public class HttpMethodPlaybookUtil {
                         .testCasePlaybook(testCasePlaybook)
                         .expectedSpecificResponseCode("405")
                         .payload(HttpMethod.requiresBody(httpMethod) ? data.getPayload() : "")
-                        .scenario("Send a happy flow request with undocumented HTTP method: %s".formatted(httpMethod))
+                        .scenario("Send a happy path request with undocumented HTTP method: %s".formatted(httpMethod))
                         .responseProcessor(this::checkResponse)
                         .playbookData(data)
                         .httpMethod(httpMethod)

@@ -35,6 +35,6 @@ public class NullUnicodeBodyPlaybook extends BaseHttpWithPayloadSimplePlaybook {
 
     @Override
     public String description() {
-        return "send a request with a \\u0000 body";
+        return "Send request with \\u0000 body";
     }
 }

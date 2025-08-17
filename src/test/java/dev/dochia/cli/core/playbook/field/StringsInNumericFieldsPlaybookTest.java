@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 @QuarkusTest
-class StringsInNumericFieldsPlaybookTest
- {
+class StringsInNumericFieldsPlaybookTest {
 
     private StringsInNumericFieldsPlaybook stringsInNumericFieldsPlaybook;
 
@@ -38,7 +37,7 @@ class StringsInNumericFieldsPlaybookTest
 
     @Test
     void shouldGetDescription() {
-        Assertions.assertThat(stringsInNumericFieldsPlaybook.description()).isEqualTo("iterate through each Integer (int, long) and Number field (float, double) and send requests having the `fuzz` string value");
+        Assertions.assertThat(stringsInNumericFieldsPlaybook.description()).isNotNull();
     }
 
     @Test

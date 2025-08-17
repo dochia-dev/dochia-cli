@@ -77,7 +77,7 @@ public class RandomDummyInvalidJsonBodyPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "send a request with dummy invalid json body";
+        return "Send request with dummy invalid JSON body";
     }
 
     @Override

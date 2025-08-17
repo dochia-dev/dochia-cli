@@ -96,6 +96,6 @@ public class NewFieldsPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "send a happy flow request and add a new field inside the request called 'dochiaFuzzyField'";
+        return " Send a happy path request and add a new field 'dochiaFuzzyField'";
     }
 }

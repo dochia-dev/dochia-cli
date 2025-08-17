@@ -35,6 +35,6 @@ public class NullBodyPlaybook extends BaseHttpWithPayloadSimplePlaybook {
 
     @Override
     public String description() {
-        return "send a request with a NULL body";
+        return "Send request with null body";
     }
 }

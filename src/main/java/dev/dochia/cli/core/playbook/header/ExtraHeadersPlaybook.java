@@ -60,6 +60,6 @@ public class ExtraHeadersPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "send a 'happy' flow request and add an extra field inside the request called 'Dochia-Fuzzy-Header'";
+        return "Send happy path request and add extra header 'Dochia-Fuzzy-Header'";
     }
 }

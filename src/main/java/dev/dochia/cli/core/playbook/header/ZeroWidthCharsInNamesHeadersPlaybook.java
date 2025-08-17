@@ -73,6 +73,6 @@ public class ZeroWidthCharsInNamesHeadersPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "injects zero-width characters in the header names";
+        return "Inject zero-width characters in header names";
     }
 }

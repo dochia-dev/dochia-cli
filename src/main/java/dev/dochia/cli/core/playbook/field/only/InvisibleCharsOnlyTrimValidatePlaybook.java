@@ -55,7 +55,7 @@ public abstract class InvisibleCharsOnlyTrimValidatePlaybook extends Expect4XXFo
 
     @Override
     public String description() {
-        return "iterate through each field and send  " + this.typeOfDataSentToTheService();
+        return "Iterate through each field and send " + this.typeOfDataSentToTheService();
     }
 
     /**

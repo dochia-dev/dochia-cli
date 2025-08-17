@@ -64,6 +64,6 @@ public class NullValuesInFieldsPlaybook extends Expect4XXForRequiredBaseFieldsPl
 
     @Override
     public String description() {
-        return "iterate through each field and send null values";
+        return "Iterate through each field and send null values";
     }
 }

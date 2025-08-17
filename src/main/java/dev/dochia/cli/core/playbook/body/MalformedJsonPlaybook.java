@@ -35,6 +35,6 @@ public class MalformedJsonPlaybook extends BaseHttpWithPayloadSimplePlaybook {
 
     @Override
     public String description() {
-        return "send a malformed json request which has the String 'bla' at the end";
+        return "Send malformed JSON request with trailing 'bla' string";
     }
 }

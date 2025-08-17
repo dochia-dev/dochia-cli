@@ -132,6 +132,6 @@ public class RemoveFieldsPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "iterate trough each request fields and remove certain fields according to the supplied 'fieldsFuzzingStrategy'";
+        return "Iterate through each request field and remove fields according to the configured strategy";
     }
 }

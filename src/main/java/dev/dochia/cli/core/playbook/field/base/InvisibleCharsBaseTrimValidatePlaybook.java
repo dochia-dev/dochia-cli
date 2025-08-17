@@ -40,7 +40,7 @@ public abstract class InvisibleCharsBaseTrimValidatePlaybook extends ExpectOnly2
 
     @Override
     public String description() {
-        return "iterate through each field and send " + this.typeOfDataSentToTheService();
+        return "Iterate through each field and send " + this.typeOfDataSentToTheService();
     }
 
     /**

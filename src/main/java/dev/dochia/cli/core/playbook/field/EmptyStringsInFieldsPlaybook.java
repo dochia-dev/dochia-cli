@@ -64,6 +64,6 @@ public class EmptyStringsInFieldsPlaybook extends Expect4XXForRequiredBaseFields
 
     @Override
     public String description() {
-        return "iterate through each field and send empty String values";
+        return "Iterate through each field and send empty string values";
     }
 }

@@ -52,6 +52,6 @@ public class DecimalFieldsRightBoundaryPlaybook extends BaseBoundaryFieldPlayboo
 
     @Override
     public String description() {
-        return "iterate through each Number field (either float or double) and send outside the range values on the right side in the targeted field";
+        return "Iterate through each number field (float/double) and send out-of-range values on the right boundary";
     }
 }

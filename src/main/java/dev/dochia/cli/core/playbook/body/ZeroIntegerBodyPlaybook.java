@@ -33,6 +33,6 @@ public class ZeroIntegerBodyPlaybook extends BaseHttpWithPayloadSimplePlaybook {
 
   @Override
   public String description() {
-    return "send a request with integer 0 (zero) as body";
+    return "Send request with integer 0 as body";
   }
 }

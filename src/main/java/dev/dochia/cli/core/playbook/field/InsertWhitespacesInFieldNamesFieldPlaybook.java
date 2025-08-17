@@ -80,6 +80,6 @@ public class InsertWhitespacesInFieldNamesFieldPlaybook implements TestCasePlayb
 
     @Override
     public String description() {
-        return "iterates through each request field name and insert random whitespaces";
+        return "Iterate through each request field name and insert random whitespaces";
     }
 }

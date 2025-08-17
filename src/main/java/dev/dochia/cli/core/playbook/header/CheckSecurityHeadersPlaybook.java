@@ -117,6 +117,6 @@ public class CheckSecurityHeadersPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "check all responses for good practices around Security related headers like: " + SECURITY_HEADERS_AS_STRING;
+        return "Check all responses for security header best practices (X-Frame-Options, CSP, Cache-Control, etc.)";
     }
 }

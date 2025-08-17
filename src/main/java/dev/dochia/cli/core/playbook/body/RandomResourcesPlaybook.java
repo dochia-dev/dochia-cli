@@ -189,7 +189,7 @@ public class RandomResourcesPlaybook implements TestCasePlaybook {
 
   @Override
   public String description() {
-    return "iterate through each path variable and send random resource identifiers";
+    return "Iterate through each path variable and send random resource identifiers";
   }
 
   @Override

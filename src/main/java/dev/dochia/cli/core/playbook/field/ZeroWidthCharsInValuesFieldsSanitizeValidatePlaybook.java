@@ -54,6 +54,6 @@ public class ZeroWidthCharsInValuesFieldsSanitizeValidatePlaybook extends Expect
 
     @Override
     public String description() {
-        return "iterate through each field and send values containing zero-width characters";
+        return "Iterate through each field and send values containing zero-width characters";
     }
 }

@@ -1,7 +1,7 @@
 package dev.dochia.cli.core.playbook.header;
 
-import dev.dochia.cli.core.playbook.api.HeaderPlaybook;
 import dev.dochia.cli.core.args.ProcessingArguments;
+import dev.dochia.cli.core.playbook.api.HeaderPlaybook;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
 import dev.dochia.cli.core.playbook.header.base.BaseRandomHeadersPlaybook;
 import dev.dochia.cli.core.report.TestCaseListener;
@@ -30,7 +30,7 @@ public class LargeNumberOfRandomAlphanumericHeadersPlaybook extends BaseRandomHe
 
     @Override
     public String description() {
-        return "send a 'happy' flow request with 10 000 extra random alphanumeric headers";
+        return String.format("Send happy path request with %s extra random alphanumeric headers", super.processingArguments.getRandomHeadersNumber());
     }
 
     @Override

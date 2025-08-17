@@ -67,6 +67,6 @@ public class HttpMethodsPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "iterate through each undocumented HTTP method and send an empty request";
+        return "Iterate through each undocumented HTTP method and send empty request";
     }
 }

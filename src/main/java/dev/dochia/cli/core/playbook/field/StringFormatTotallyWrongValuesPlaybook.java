@@ -56,6 +56,6 @@ public class StringFormatTotallyWrongValuesPlaybook extends BaseBoundaryFieldPla
 
     @Override
     public String description() {
-        return "iterate through each String field and get its 'format' value (i.e. email, ip, uuid, date, datetime, etc); send requests with values which are totally wrong (i.e. abcd for email, 1244. for ip, etc)";
+        return "Iterate through each formatted string field and send completely invalid values for the format";
     }
 }

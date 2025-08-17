@@ -40,7 +40,7 @@ public class CustomHttpMethodsPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "iterate through a list of hypothetical HTTP methods that are not expected to be implemented by REST APIs";
+        return "Iterate through hypothetical HTTP methods not expected in REST APIs";
     }
 
     @Override

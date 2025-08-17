@@ -1,11 +1,11 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.playbook.api.FieldPlaybook;
 import dev.dochia.cli.core.args.FilesArguments;
-import dev.dochia.cli.core.playbook.field.base.BaseBoundaryFieldPlaybook;
 import dev.dochia.cli.core.generator.simple.NumberGenerator;
 import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
+import dev.dochia.cli.core.playbook.field.base.BaseBoundaryFieldPlaybook;
 import dev.dochia.cli.core.report.TestCaseListener;
 import io.swagger.v3.oas.models.media.Schema;
 import jakarta.inject.Singleton;
@@ -52,6 +52,6 @@ public class ExtremeNegativeNumbersInIntegerFieldsPlaybook extends BaseBoundaryF
 
     @Override
     public String description() {
-        return String.format("iterate through each Integer field and send %s for int32 and %s for int64", Long.MIN_VALUE, NumberGenerator.MOST_NEGATIVE_INTEGER);
+        return "Iterate through each integer field and send extreme negative values based on format constraints";
     }
 }

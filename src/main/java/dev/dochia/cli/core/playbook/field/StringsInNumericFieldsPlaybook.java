@@ -52,6 +52,6 @@ public class StringsInNumericFieldsPlaybook extends BaseBoundaryFieldPlaybook {
 
     @Override
     public String description() {
-        return "iterate through each Integer (int, long) and Number field (float, double) and send requests having the `fuzz` string value";
+        return "Iterate through each numeric field and send string values";
     }
 }

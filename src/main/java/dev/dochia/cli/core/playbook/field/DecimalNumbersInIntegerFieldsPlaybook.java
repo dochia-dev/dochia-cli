@@ -53,6 +53,6 @@ public class DecimalNumbersInIntegerFieldsPlaybook extends BaseBoundaryFieldPlay
 
     @Override
     public String description() {
-        return "iterate through each Integer field and send decimal values";
+        return "Iterate through each integer field and send decimal values";
     }
 }

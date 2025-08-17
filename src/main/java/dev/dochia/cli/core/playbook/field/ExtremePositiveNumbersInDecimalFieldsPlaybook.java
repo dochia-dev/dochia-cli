@@ -1,11 +1,11 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.playbook.api.FieldPlaybook;
 import dev.dochia.cli.core.args.FilesArguments;
-import dev.dochia.cli.core.playbook.field.base.BaseBoundaryFieldPlaybook;
 import dev.dochia.cli.core.generator.simple.NumberGenerator;
 import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
+import dev.dochia.cli.core.playbook.field.base.BaseBoundaryFieldPlaybook;
 import dev.dochia.cli.core.report.TestCaseListener;
 import io.swagger.v3.oas.models.media.Schema;
 import jakarta.inject.Singleton;
@@ -53,6 +53,6 @@ public class ExtremePositiveNumbersInDecimalFieldsPlaybook extends BaseBoundaryF
 
     @Override
     public String description() {
-        return String.format("iterate through each Number field and send %s for no format, %s for float and %s for double", NumberGenerator.MOST_POSITIVE_DECIMAL, Float.MAX_VALUE, Double.MAX_VALUE);
+        return "Iterate through each number field and send extreme positive values based on format constraints";
     }
 }

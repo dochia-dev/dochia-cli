@@ -41,7 +41,7 @@ public class IterateThroughEnumValuesFieldsPlaybook extends BaseEnumIteratorFiel
 
     @Override
     public String description() {
-        return "iterate through each enum field and send happy flow requests iterating through each possible enum values";
+        return "Iterate through each enum field and send happy path requests with each possible enum value";
     }
 
 }

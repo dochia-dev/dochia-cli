@@ -131,7 +131,7 @@ public class InvalidReferencesFieldsPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "iterate through each path and fuzz the path parameters with invalid references";
+        return "Iterate through each path parameter and send invalid reference values";
     }
 
     @Override

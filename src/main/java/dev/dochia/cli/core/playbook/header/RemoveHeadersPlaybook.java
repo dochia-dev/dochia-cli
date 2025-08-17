@@ -74,6 +74,6 @@ public class RemoveHeadersPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "iterate through each header and remove different combinations of them";
+        return "Iterate through each header and remove different combinations";
     }
 }

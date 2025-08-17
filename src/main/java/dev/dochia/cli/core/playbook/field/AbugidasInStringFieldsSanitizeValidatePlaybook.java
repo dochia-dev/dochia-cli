@@ -1,14 +1,14 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.playbook.api.FieldPlaybook;
-import dev.dochia.cli.core.playbook.api.SanitizeAndValidate;
 import dev.dochia.cli.core.args.FilesArguments;
-import dev.dochia.cli.core.playbook.field.base.ExpectOnly2XXBaseFieldsPlaybook;
 import dev.dochia.cli.core.generator.simple.UnicodeGenerator;
 import dev.dochia.cli.core.http.ResponseCodeFamily;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
+import dev.dochia.cli.core.playbook.api.SanitizeAndValidate;
+import dev.dochia.cli.core.playbook.field.base.ExpectOnly2XXBaseFieldsPlaybook;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.strategy.FuzzingStrategy;
 import jakarta.inject.Singleton;
@@ -41,7 +41,7 @@ public class AbugidasInStringFieldsSanitizeValidatePlaybook extends ExpectOnly2X
 
     @Override
     protected String typeOfDataSentToTheService() {
-        return "values containing abugidas chars";
+        return "values containing abugidas characters";
     }
 
     @Override
@@ -56,6 +56,6 @@ public class AbugidasInStringFieldsSanitizeValidatePlaybook extends ExpectOnly2X
 
     @Override
     public String description() {
-        return "iterate through each field and send " + typeOfDataSentToTheService();
+        return "Iterate through each field and send " + typeOfDataSentToTheService();
     }
 }

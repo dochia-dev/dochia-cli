@@ -100,7 +100,7 @@ public class TemporalLogicFieldsPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "Sends semantically invalid date values (e.g., startDate after endDate, expired tokens, future birth dates) to verify if the backend enforces logical date constraints.";
+        return "Send semantically invalid date values to verify backend date constraint enforcement";
     }
 
     @Override

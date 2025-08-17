@@ -64,7 +64,7 @@ public class InvalidValuesInEnumsFieldsPlaybook extends BaseBoundaryFieldPlayboo
 
     @Override
     public String description() {
-        return "iterate through each ENUM field and send invalid values";
+        return "Iterate through each enum field and send invalid values";
     }
 
     @Override

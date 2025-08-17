@@ -39,6 +39,6 @@ class ZeroWidthCharsInValuesHeadersPlaybookTest {
 
     @Test
     void shouldReturnTypeOfDataToSend() {
-        Assertions.assertThat(zeroWidthCharsInValuesHeadersPlaybook.getPlaybookContext().getTypeOfDataSentToTheService()).isEqualTo("Zero-width characters");
+        Assertions.assertThat(zeroWidthCharsInValuesHeadersPlaybook.getPlaybookContext().getTypeOfDataSentToTheService()).isEqualTo("zero-width characters");
     }
 }

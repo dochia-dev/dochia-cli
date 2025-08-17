@@ -59,7 +59,7 @@ public class InsertRandomValuesInBodyPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "insert invalid data within a valid request body";
+        return "Insert invalid data within a valid request body";
     }
 
     @Override

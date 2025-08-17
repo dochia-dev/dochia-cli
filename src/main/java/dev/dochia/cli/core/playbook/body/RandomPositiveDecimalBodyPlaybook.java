@@ -35,6 +35,6 @@ public class RandomPositiveDecimalBodyPlaybook extends BaseHttpWithPayloadSimple
 
     @Override
     public String description() {
-        return "send a request with a random positive decimal body";
+        return "Send request with random positive decimal body";
     }
 }

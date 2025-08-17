@@ -36,6 +36,6 @@ public class DummyRequestPlaybook extends BaseHttpWithPayloadSimplePlaybook {
 
     @Override
     public String description() {
-        return "send a dummy json request {'dochia': 'dochia'}";
+        return "Send dummy JSON request {'dochia': 'dochia'}";
     }
 }

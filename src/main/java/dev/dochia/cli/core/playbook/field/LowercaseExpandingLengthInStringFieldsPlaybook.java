@@ -45,6 +45,6 @@ public class LowercaseExpandingLengthInStringFieldsPlaybook extends TwoXXorFourX
 
     @Override
     public String description() {
-        return "iterate to string fields and send values that expand their length when lowercased";
+        return "Iterate through string fields and send values that expand length when lowercased";
     }
 }

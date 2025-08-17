@@ -66,6 +66,6 @@ public class VeryLargeStringsInFieldsPlaybook extends ExpectOnly4XXBaseFieldsPla
 
     @Override
     public String description() {
-        return "iterate through each String field and send very large values (40000 characters)";
+        return "Iterate through each string field and send very large values (40000 characters)";
     }
 }
