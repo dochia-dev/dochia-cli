@@ -80,25 +80,6 @@ class FilterArgumentsTest {
     }
 
     @Test
-    void shouldNotReturnContractPlaybooksWhenIgnoredSupplied() {
-        ReflectionTestUtils.setField(ignoreArguments, "ignoreResponseCodes", List.of("2xx"));
-
-        List<String> playbooks = filterArguments.getFirstPhasePlaybooksForPath();
-
-        Assertions.assertThat(playbooks).contains("CheckSecurityHeadersPlaybook", "HappyPathPlaybook", "RemoveFieldsPlaybook")
-                .doesNotContain("TopLevelElementsLinter");
-    }
-
-    @Test
-    void shouldNotReturnContractPlaybooksWhenBlackbox() {
-        ignoreArguments.setBlackbox(true);
-        List<String> playbooks = filterArguments.getFirstPhasePlaybooksForPath();
-
-        Assertions.assertThat(playbooks).contains("CheckSecurityHeadersPlaybook", "HappyPathPlaybook", "RemoveFieldsPlaybook")
-                .doesNotContain("TopLevelElementsLinter");
-    }
-
-    @Test
     void shouldRemoveSkippedPlaybooks() {
         ReflectionTestUtils.setField(filterArguments, "skipPlaybooks", List.of("VeryLarge", "SecurityHeaders", "Jumbo"));
         List<String> playbooks = filterArguments.getFirstPhasePlaybooksForPath();
@@ -113,7 +94,7 @@ class FilterArgumentsTest {
         ReflectionTestUtils.setField(filterArguments, "suppliedPlaybooks", List.of("VeryLarge", "SecurityHeaders", "Jumbo"));
         List<String> playbooks = filterArguments.getFirstPhasePlaybooksForPath();
 
-        Assertions.assertThat(playbooks).doesNotContain("TopLevelElementsLinter", "HappyPathPlaybook", "RemoveFieldsPlaybook", "Jumbo")
+        Assertions.assertThat(playbooks).doesNotContain("HappyPathPlaybook", "RemoveFieldsPlaybook", "Jumbo")
                 .containsOnly("CheckSecurityHeadersPlaybook", "VeryLargeStringsInFieldsPlaybook", "VeryLargeUnicodeStringsInFieldsPlaybook", "VeryLargeUnicodeStringsInHeadersPlaybook", "VeryLargeStringsInHeadersPlaybook",
                         "VeryLargeDecimalsInNumericFieldsPlaybook", "VeryLargeIntegersInNumericFieldsPlaybook");
     }

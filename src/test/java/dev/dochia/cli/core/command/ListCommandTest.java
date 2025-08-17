@@ -1,8 +1,8 @@
 package dev.dochia.cli.core.command;
 
+import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.playbook.special.mutators.api.Mutator;
-import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.enterprise.inject.Instance;
@@ -82,15 +82,6 @@ class ListCommandTest {
     }
 
     @Test
-    void shouldListLintersJson() {
-        ListCommand spyListCommand = Mockito.spy(listCommand);
-        CommandLine commandLine = new CommandLine(spyListCommand);
-        commandLine.execute("-l", "-j");
-        Mockito.verify(spyListCommand, Mockito.times(1)).listLinters();
-        Mockito.verify(spyListCommand, Mockito.times(0)).displayPlaybooks(Mockito.anyList(), Mockito.any());
-    }
-
-    @Test
     void shouldListPathsJson() {
         ListCommand spyListCommand = Mockito.spy(listCommand);
         CommandLine commandLine = new CommandLine(spyListCommand);
@@ -121,14 +112,6 @@ class ListCommandTest {
         CommandLine commandLine = new CommandLine(spyListCommand);
         commandLine.execute("-f");
         Mockito.verify(spyListCommand, Mockito.times(1)).listPlaybooks();
-    }
-
-    @Test
-    void shouldListLinters() {
-        ListCommand spyListCommand = Mockito.spy(listCommand);
-        CommandLine commandLine = new CommandLine(spyListCommand);
-        commandLine.execute("-l");
-        Mockito.verify(spyListCommand, Mockito.times(1)).listLinters();
     }
 
     @Test

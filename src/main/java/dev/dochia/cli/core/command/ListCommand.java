@@ -1,12 +1,12 @@
 package dev.dochia.cli.core.command;
 
 import dev.dochia.cli.core.command.model.*;
-import dev.dochia.cli.core.playbook.api.*;
-import dev.dochia.cli.core.playbook.special.mutators.api.CustomMutatorConfig;
-import dev.dochia.cli.core.playbook.special.mutators.api.Mutator;
 import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.api.*;
+import dev.dochia.cli.core.playbook.special.mutators.api.CustomMutatorConfig;
+import dev.dochia.cli.core.playbook.special.mutators.api.Mutator;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.JsonUtils;
 import dev.dochia.cli.core.util.OpenApiUtils;
@@ -87,9 +87,6 @@ public class ListCommand implements Runnable {
         if (listCommandGroups.listPlaybooksGroup != null && listCommandGroups.listPlaybooksGroup.playbooks) {
             listPlaybooks();
         }
-        if (listCommandGroups.listPlaybooksGroup != null && listCommandGroups.listPlaybooksGroup.linters) {
-            listLinters();
-        }
         if (listCommandGroups.listStrategiesGroup != null && listCommandGroups.listStrategiesGroup.strategies) {
             listPlaybookStrategies();
         }
@@ -106,18 +103,6 @@ public class ListCommand implements Runnable {
 
         if (listCommandGroups.listMutatorsGroup != null && listCommandGroups.listMutatorsGroup.customMutatorTypes) {
             listMutatorsTypes();
-        }
-    }
-
-    void listLinters() {
-        List<TestCasePlaybook> linters = filterPlaybooks(Linter.class);
-        if (json) {
-            List<PlaybookListEntry> playbookEntries = List.of(new PlaybookListEntry().category("Linters").playbooks(linters));
-            PrettyLoggerFactory.getConsoleLogger().noFormat(JsonUtils.GSON.toJson(playbookEntries));
-        } else {
-            String message = ansi().bold().fg(Ansi.Color.GREEN).a("dochia has {} registered linters:").reset().toString();
-            logger.noFormat(message, playbooksList.size());
-            displayPlaybooks(linters, Linter.class);
         }
     }
 
@@ -267,14 +252,12 @@ public class ListCommand implements Runnable {
         List<TestCasePlaybook> fieldTestCasePlaybooks = filterPlaybooks(FieldPlaybook.class);
         List<TestCasePlaybook> headerTestCasePlaybooks = filterPlaybooks(HeaderPlaybook.class);
         List<TestCasePlaybook> httpTestCasePlaybooks = filterPlaybooks(BodyPlaybook.class);
-        List<TestCasePlaybook> contractInfo = filterPlaybooks(Linter.class);
 
         if (json) {
             List<PlaybookListEntry> playbookEntries = List.of(
                     new PlaybookListEntry().category("Field").playbooks(fieldTestCasePlaybooks),
                     new PlaybookListEntry().category("Header").playbooks(headerTestCasePlaybooks),
-                    new PlaybookListEntry().category("HTTP").playbooks(httpTestCasePlaybooks),
-                    new PlaybookListEntry().category("Linters").playbooks(contractInfo));
+                    new PlaybookListEntry().category("Body").playbooks(httpTestCasePlaybooks));
             PrettyLoggerFactory.getConsoleLogger().noFormat(JsonUtils.GSON.toJson(playbookEntries));
         } else {
             String message = ansi().bold().fg(Ansi.Color.GREEN).a("dochia has {} registered playbooks:").reset().toString();
@@ -282,7 +265,6 @@ public class ListCommand implements Runnable {
             displayPlaybooks(fieldTestCasePlaybooks, FieldPlaybook.class);
             displayPlaybooks(headerTestCasePlaybooks, HeaderPlaybook.class);
             displayPlaybooks(httpTestCasePlaybooks, BodyPlaybook.class);
-            displayPlaybooks(contractInfo, Linter.class);
         }
     }
 
@@ -339,11 +321,6 @@ public class ListCommand implements Runnable {
                 names = {"-f", "--playbooks", "playbooks"},
                 description = "Display all current registered Playbooks")
         boolean playbooks;
-
-        @CommandLine.Option(
-                names = {"-l", "--linters", "linters"},
-                description = "Display all current registered Linters")
-        boolean linters;
     }
 
     static class ListMutatorsGroup {

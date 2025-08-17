@@ -457,19 +457,6 @@ public class FilterArguments {
         this.dryRun = false;
     }
 
-
-    /**
-     * Determines whether the current run includes the {@code Linter} playbook.
-     * <p>
-     * This is useful to distinguish whether a linting-specific analysis will be performed.
-     *
-     * @return {@code true} if the supplied playbooks include "Linter", {@code false} otherwise
-     */
-    public boolean isLinting() {
-        return this.getSuppliedPlaybooks().stream()
-                .anyMatch(playbook -> playbook.equalsIgnoreCase("Linter"));
-    }
-
     /**
      * Convert list of enums to list of strings.
      *
@@ -581,18 +568,7 @@ public class FilterArguments {
                 .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), TrimAndValidate.class) == null)
                 .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), SanitizeAndValidate.class) == null)
                 .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), SpecialPlaybook.class) == null)
-                .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), Linter.class) == null)
                 .count();
     }
 
-    /**
-     * Returns the total number of playbooks that are annotated with {@link Linter}.
-     *
-     * @return the total number of linters to be run
-     */
-    public long getTotalLinters() {
-        return playbooks.stream()
-                .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), Linter.class) != null)
-                .count();
-    }
 }
