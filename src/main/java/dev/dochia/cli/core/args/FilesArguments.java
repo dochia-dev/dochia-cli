@@ -94,8 +94,8 @@ public class FilesArguments {
     @Setter
     Map<String, Object> refDataArguments;
 
-    @CommandLine.Option(names = {"--mutators", "-m"}, paramLabel = "<file>",
-            description = "A folder containing custom mutators. This argument is taken in consideration only when using the `dochia random` sub-command")
+    @CommandLine.Option(names = {"--mutators", "-M"}, paramLabel = "<folder>",
+            description = "A folder containing custom mutators. This argument is taken in consideration only when using the `dochia fuzz` sub-command")
     @Getter
     @Setter
     private File mutatorsFolder;

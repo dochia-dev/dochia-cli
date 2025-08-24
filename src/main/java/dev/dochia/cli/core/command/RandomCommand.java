@@ -67,19 +67,19 @@ public class RandomCommand implements Runnable, CommandLine.IExitCodeGenerator {
     @CommandLine.ArgGroup(heading = "%n@|bold,underline Stop Options:|@%n", exclusive = false, multiplicity = "1")
     StopArguments stopArguments;
 
-    @CommandLine.Option(names = {"--httpMethod", "-X"}, required = true,
+    @CommandLine.Option(names = {"--http-method", "-X"}, paramLabel = "<method>", required = true,
             description = "The HTTP method. Default: @|bold,underline ${DEFAULT-VALUE}|@")
     HttpMethod httpMethod = HttpMethod.POST;
 
-    @CommandLine.Option(names = {"--contentType"},
+    @CommandLine.Option(names = {"--content-type"}, paramLabel = "<content-ype>",
             description = "A custom mime type if the OpenAPI contract/spec uses content type negotiation versioning")
     private String contentType;
-    @CommandLine.Option(names = {"--oneOfSelection", "--anyOfSelection"},
+    @CommandLine.Option(names = {"--schema-discriminator"}, paramLabel = "<name=value>",
             description = "A @|bold name:value|@ list of discriminator names and values that can be used to filter request payloads when objects use oneOf or anyOf definitions" +
                     " which result in multiple payloads for a single endpoint and http method")
     Map<String, String> xxxOfSelections;
 
-    @CommandLine.Option(names = {"--path", "-p"}, required = true,
+    @CommandLine.Option(names = {"--path", "-p"}, paramLabel = "<path>", required = true,
             description = "An API path for continuous fuzzing")
     String path;
 

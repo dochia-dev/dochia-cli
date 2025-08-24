@@ -310,7 +310,7 @@ public class ListCommand implements Runnable {
 
     static class ListStrategies {
         @CommandLine.Option(
-                names = {"-s", "--fieldsPlaybookStrategies", "fieldsPlaybookStrategies"},
+                names = {"-s", "--fields-playbookStrategies"},
                 description = "Display all current registered Fields Fuzzing Strategies",
                 required = true)
         boolean strategies;
@@ -330,7 +330,7 @@ public class ListCommand implements Runnable {
         boolean mutators;
 
         @CommandLine.Option(
-                names = {"--cmt", "--customMutatorTypes"},
+                names = {"--cmt", "--custom-mutator-yypes"},
                 description = "Display types supported by the Custom Mutator")
         boolean customMutatorTypes;
     }

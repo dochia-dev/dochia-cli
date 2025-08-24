@@ -19,7 +19,7 @@ public class ReportingArguments {
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(ReportingArguments.class);
 
     @CommandLine.Option(names = {"--execution-stats"},
-            description = "Print a summary of execution times for each endpoint and HTTP method. By default this will print a summary for each endpoint: max, min and average. Detailed reports can be enabled using @|bold --printDetailedExecutionStatistics|@")
+            description = "Print a summary of execution times for each endpoint and HTTP method. By default this will print a summary for each endpoint: max, min and average. Detailed reports can be enabled using @|bold --detailed-execution-stats|@")
     private boolean printExecutionStatistics;
 
     @CommandLine.Option(names = {"--detailed-execution-stats"},

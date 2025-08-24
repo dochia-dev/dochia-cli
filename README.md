@@ -85,11 +85,11 @@ docker run --rm -v $(pwd):/workspace dochia/cli test -c /workspace/api.yaml -s h
 
 ```bash
 # Download latest release for your platform
-wget https://github.com/dochia-dev/dochia-cli/releases/latest/dochia-xxx.tar.gz
-tar -xzf dochia-xxx.tar.gz
+wget https://github.com/dochia-dev/dochia-cli/releases/latest/dochia_platform_version.tar.gz -O dochia.tar.gz
+tar -xzf dochia.tar.gz
 chmod +x dochia
 sudo mv dochia /usr/local/bin/dochia
-rm dochia-xxx.tar.gz
+rm dochia.tar.gz
 
 # Verify insallation
 dochia --version
