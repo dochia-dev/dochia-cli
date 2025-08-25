@@ -18,12 +18,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: dochia-${{ github.event.inputs.releaseversion }}
+          ref: dochia-cli-${{ github.event.inputs.releaseversion }}
 
       - name: Get Previous Tag
         id: get_previous_tag
         run: |
-          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -E '^dochia-[0-9]+\.[0-9]+(\.[0-9]+)?$' | grep -v "dochia-${{ github.event.inputs.releaseversion }}" | head -n 1)
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | grep -E '^dochia-cli-[0-9]+\.[0-9]+(\.[0-9]+)?$' | grep -v "dochia-cli-${{ github.event.inputs.releaseversion }}" | head -n 1)
           echo "PREVIOUS_TAG=$PREVIOUS_TAG"
           echo "PREVIOUS_TAG=$PREVIOUS_TAG" >> $GITHUB_ENV
 
@@ -31,7 +31,7 @@ jobs:
         id: generate_changelog
         run: |
           echo "Generating changelog from ${{ env.PREVIOUS_TAG }} to ${{ github.ref_name }}"
-          CHANGELOG=$(git log ${{ env.PREVIOUS_TAG }}..dochia-${{ github.event.inputs.releaseversion }} --pretty=format:"* %s" --no-merges | grep -vE "\[maven-release-plugin\]|chore:|docs:|test:|ci:|build:")
+          CHANGELOG=$(git log ${{ env.PREVIOUS_TAG }}..dochia-cli-${{ github.event.inputs.releaseversion }} --pretty=format:"* %s" --no-merges | grep -vE "\[maven-release-plugin\]|chore:|docs:|test:|ci:|build:")
           echo "CHANGELOG<<EOF" >> $GITHUB_ENV
           echo "$CHANGELOG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -42,8 +42,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: dochia-${{ github.event.inputs.releaseversion }}
-          release_name: dochia-${{ github.event.inputs.releaseversion }}
+          tag_name: dochia-cli-${{ github.event.inputs.releaseversion }}
+          release_name: dochia-cli-${{ github.event.inputs.releaseversion }}
           draft: false
           prerelease: false
           body: ${{ env.CHANGELOG}}
@@ -62,7 +62,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: dochia-${{ github.event.inputs.releaseversion }}
+          ref: dochia-cli-${{ github.event.inputs.releaseversion }}
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -109,7 +109,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          ref: dochia-${{ github.event.inputs.releaseversion }}
+          ref: dochia-cli-${{ github.event.inputs.releaseversion }}
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -151,7 +151,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          ref: dochia-${{ github.event.inputs.releaseversion }}
+          ref: dochia-cli-${{ github.event.inputs.releaseversion }}
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
