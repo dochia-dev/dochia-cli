@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
                         Y88b 888 Y88..88P Y88b.    888  888 888 888  888
                          "Y88888  "Y88P"   "Y8888P 888  888 888 "Y888888
                         
-                                                 Bringing Chaos with Love!
+                                               Bringing Chaos with Love!
                         """
         },
         usageHelpAutoWidth = true,
