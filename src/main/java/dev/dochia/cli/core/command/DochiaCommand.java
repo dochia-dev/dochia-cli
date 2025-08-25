@@ -17,14 +17,14 @@ import java.nio.charset.StandardCharsets;
         header = {
                 "%n@|green dochia automatically generates and executes negative and boundary testing so you can focus on creative problem-solving; v${app.version}|@ (Free)%n",
                 """
-                             888                   888      d8b         \s
-                             888                   888      Y8P         \s
-                             888                   888                  \s
-                         .d88888  .d88b.   .d8888b 88888b.  888  8888b. \s
-                        d88" 888 d88""88b d88P"    888 "88b 888     "88b\s
-                        888  888 888  888 888      888  888 888 .d888888\s
-                        Y88b 888 Y88..88P Y88b.    888  888 888 888  888\s
-                         "Y88888  "Y88P"   "Y8888P 888  888 888 "Y888888\s
+                             888                   888      d8b
+                             888                   888      Y8P
+                             888                   888
+                         .d88888  .d88b.   .d8888b 88888b.  888  8888b.
+                        d88" 888 d88""88b d88P"    888 "88b 888     "88b
+                        888  888 888  888 888      888  888 888 .d888888
+                        Y88b 888 Y88..88P Y88b.    888  888 888 888  888
+                         "Y88888  "Y88P"   "Y8888P 888  888 888 "Y888888
                         
                                                  Bringing Chaos with Love!
                         """
