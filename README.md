@@ -78,7 +78,7 @@ curl -sSL https://get.dochia.dev | sh
 #### Docker
 
 ```bash
-docker run --rm -v $(pwd):/workspace dochia/cli test -c /workspace/api.yaml -s http://localhost:8080
+docker run --rm -v $(pwd):/workspace dochiadev/dochia-cli test -c /workspace/api.yaml -s http://localhost:8080
 ```
 
 #### Manual Download
