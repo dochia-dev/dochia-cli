@@ -48,7 +48,7 @@ function initializeChart() {
         data: {
             labels: ['Success', 'Warnings', 'Errors'],
             datasets: [{
-                data: [266, 8, 2],
+                data: [totalScs, totalWrn, totalErr],
                 backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
                 borderWidth: 0,
                 cutout: '70%'
@@ -251,6 +251,29 @@ function copyReplayCommand(event) {
 }
 
 // ==========================================
+// SUCCESS RATE STYLING
+// ==========================================
+
+/**
+ * Update success rate styling based on percentage value
+ */
+function updateSuccessRateStyles() {
+    document.querySelectorAll('.success-rate-compact').forEach(element => {
+        const percentage = parseFloat(element.getAttribute('data-percentage'));
+        
+        // Remove all existing state classes
+        element.classList.remove('warning', 'error');
+        
+        // Add appropriate class based on percentage
+        if (percentage < 50) {
+            element.classList.add('error');
+        } else if (percentage < 95) {
+            element.classList.add('warning');
+        }
+    });
+}
+
+// ==========================================
 // INITIALIZATION
 // ==========================================
 
@@ -258,8 +281,11 @@ function copyReplayCommand(event) {
  * Initialize all functionality when DOM is loaded
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize theme
+    // Initialize theme on page load
     initializeTheme();
+
+    // Initialize success rate styling
+    updateSuccessRateStyles();
     
     // Initialize chart (landing page only)
     initializeChart();

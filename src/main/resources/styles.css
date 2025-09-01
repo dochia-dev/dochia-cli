@@ -245,15 +245,46 @@ body.dark-theme .stat-item.primary .stat-value { color: #BC8CFF; }
     align-items: center;
     text-align: center;
     padding: 0.5rem 1rem;
-    background: rgba(16, 185, 129, 0.1);
     border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+/* Success state (green) - above 75% */
+.success-rate-compact {
+    background: rgba(16, 185, 129, 0.1);
     border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.success-rate-compact .rate-value,
+.success-rate-compact .rate-label {
+    color: var(--success);
+}
+
+/* Warning state (orange) - between 50% and 75% */
+.success-rate-compact.warning {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.success-rate-compact.warning .rate-value,
+.success-rate-compact.warning .rate-label {
+    color: #f59e0b;
+}
+
+/* Error state (red) - below 50% */
+.success-rate-compact.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.success-rate-compact.error .rate-value,
+.success-rate-compact.error .rate-label {
+    color: #ef4444;
 }
 
 .success-rate-compact .rate-value {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--success);
     font-family: 'JetBrains Mono', monospace;
     line-height: 1;
 }
@@ -261,7 +292,6 @@ body.dark-theme .stat-item.primary .stat-value { color: #BC8CFF; }
 .success-rate-compact .rate-label {
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--success);
     margin-top: 0.25rem;
 }
 
