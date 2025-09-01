@@ -66,7 +66,7 @@ namesake, this tool rigorously tests your APIs to ensure they can withstand any 
 #### Homebrew (macOS/Linux)
 
 ```bash
-brew install dochia
+brew install dochia-dev/tap/dochia-cli
 ```
 
 #### Curl (Linux/macOS)
