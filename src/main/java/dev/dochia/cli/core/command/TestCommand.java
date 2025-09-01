@@ -144,20 +144,24 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
 
     @Override
     public void run() {
+        Future<VersionChecker.CheckResult> newVersion = this.checkForNewVersion();
         try {
-            Future<VersionChecker.CheckResult> newVersion = this.checkForNewVersion();
             checkIfNotArgs();
             testCaseListener.startSession();
             this.doLogic();
-            testCaseListener.endSession();
-            this.printSuggestions();
-            this.printVersion(newVersion);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (DochiaException | IOException | ExecutionException | IllegalArgumentException e) {
+        } catch (DochiaException | IOException | IllegalArgumentException e) {
             logger.fatal("Something went wrong while running dochia: {}", e.toString());
             logger.debug("Stacktrace: {}", e);
             exitCodeDueToErrors = 192;
+        } finally {
+            testCaseListener.endSession();
+            this.printSuggestions();
+            try {
+                this.printVersion(newVersion);
+            } catch (ExecutionException | InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.debug("Stacktrace: {}", e);
+            }
         }
     }
 
