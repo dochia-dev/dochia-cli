@@ -87,7 +87,7 @@ jobs:
       - name: Tar files for Linux arm64
         run: |
           cp target/dochia-runner dochia
-          tar -czf dochia_linux_arm64_${{ github.event.inputs.releaseversion }}.tar.gz dochia
+          tar -czf dochia-cli_linux_arm64_${{ github.event.inputs.releaseversion }}.tar.gz dochia
 
       - name: Upload Tar files for Linux arm64
         id: upload-release-asset
@@ -126,7 +126,7 @@ jobs:
       - name: Tar jar file
         run: |
           cp target/dochia-runner.jar dochia.jar
-          tar -czf dochia_uberjar_${{ github.event.inputs.releaseversion }}.tar.gz dochia.jar
+          tar -czf dochia-cli_uberjar_${{ github.event.inputs.releaseversion }}.tar.gz dochia.jar
 
       - name: Upload Uberjar
         id: upload-release-asset
@@ -190,7 +190,7 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: |
           cp target/dochia-runner dochia
-          tar -czf dochia_${{ env.RUNNER_OS }}_${{ env.OS_ARCH}}_${{ github.event.inputs.releaseversion }}.tar.gz dochia
+          tar -czf dochia-cli_${{ env.RUNNER_OS }}_${{ env.OS_ARCH}}_${{ github.event.inputs.releaseversion }}.tar.gz dochia
 
       - name: Upload Tar files for Linux and MacOS
         if: matrix.os != 'windows-latest'
@@ -209,7 +209,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           copy target\dochia-runner.exe dochia.exe
-          Compress-Archive -Path dochia.exe -Destination dochia_windows_amd64_${{ github.event.inputs.releaseversion }}.zip
+          Compress-Archive -Path dochia.exe -Destination dochia-cli_windows_amd64_${{ github.event.inputs.releaseversion }}.zip
 
       - name: Upload Zip for Windows
         if: matrix.os == 'windows-latest'
