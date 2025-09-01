@@ -922,7 +922,6 @@ body.dark-theme .results-table-container {
 }
 
 .results-table {
-    width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
 }
@@ -949,7 +948,7 @@ body.dark-theme .results-table th {
 .results-table th:nth-child(2) { width: 20%; }  /* Playbook */
 .results-table th:nth-child(3) { width: 40%; }  /* Scenario */
 .results-table th:nth-child(4) { width: 9%; }   /* Status */
-.results-table th:nth-child(5) { width: 20%; }  /* Result Details */
+.results-table th:nth-child(5) { width: 25%; }  /* Result Details */
 
 .results-table td {
     padding: 0.75rem;
