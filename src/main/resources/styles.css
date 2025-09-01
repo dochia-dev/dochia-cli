@@ -1727,18 +1727,76 @@ body.dark-theme .test-sidebar {
 .test-status-icon {
     width: 2.5rem;
     height: 2.5rem;
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    color: white;
-    transition: background 0.3s ease;
+    position: relative;
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite;
 }
 
-body.dark-theme .test-status-icon {
+.test-status-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* Warning */
+.test-status-icon.warn,
+.test-status-icon.warning {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+}
+
+.test-status-icon.warn::before,
+.test-status-icon.warning::before {
+    content: '⚠';
+}
+
+/* Error */
+.test-status-icon.error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+.test-status-icon.error::before {
+    content: '✕';
+}
+
+/* Success */
+.test-status-icon.success,
+.test-status-icon.passed {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+}
+
+.test-status-icon.success::before,
+.test-status-icon.passed::before {
+    content: '✓';
+}
+
+/* Dark theme */
+body.dark-theme .test-status-icon.warn,
+body.dark-theme .test-status-icon.warning {
     background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+}
+
+body.dark-theme .test-status-icon.error {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+body.dark-theme .test-status-icon.success,
+body.dark-theme .test-status-icon.passed {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 .sidebar-title {
