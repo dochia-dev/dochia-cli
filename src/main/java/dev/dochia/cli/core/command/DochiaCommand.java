@@ -81,7 +81,7 @@ public class DochiaCommand implements Runnable, CommandLine.IExitCodeGenerator {
         if (licenses) {
             System.exit(displayLicenses());
         }
-        System.out.println(ConsoleUtils.getShortVersionOfHelp());
+        System.out.println(ConsoleUtils.SHORT_HELP);
     }
 
     private int displayLicenses() {

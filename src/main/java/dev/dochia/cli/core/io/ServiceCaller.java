@@ -15,11 +15,11 @@ import dev.dochia.cli.core.args.ProcessingArguments;
 import dev.dochia.cli.core.context.GlobalContext;
 import dev.dochia.cli.core.dsl.DSLParser;
 import dev.dochia.cli.core.dsl.api.Parser;
-import dev.dochia.cli.core.playbook.api.DryRun;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.io.util.FormEncoder;
 import dev.dochia.cli.core.model.HttpRequest;
 import dev.dochia.cli.core.model.HttpResponse;
+import dev.dochia.cli.core.playbook.api.DryRun;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.strategy.FuzzingStrategy;
 import dev.dochia.cli.core.util.*;
@@ -465,10 +465,7 @@ public class ServiceCaller {
 
     private String getResponseContentType(Response response) {
         MediaType defaultResponseMediaType = MediaType.parse(HttpResponse.unknownContentType());
-        if (response.body() != null) {
-            return String.valueOf(Optional.ofNullable(response.body().contentType()).orElse(defaultResponseMediaType));
-        }
-        return String.valueOf(defaultResponseMediaType);
+        return String.valueOf(Optional.ofNullable(response.body().contentType()).orElse(defaultResponseMediaType));
     }
 
     private void addBasicAuth(List<KeyValuePair<String, Object>> headers) {
@@ -547,11 +544,7 @@ public class ServiceCaller {
      * @throws IOException If an I/O error occurs while reading the response body.
      */
     public String getAsRawString(Response response) throws IOException {
-        if (response.body() != null) {
-            return response.body().string();
-        }
-
-        return "";
+        return Optional.ofNullable(response.body().string()).orElse("");
     }
 
     private void recordServiceData(ServiceData serviceData) {

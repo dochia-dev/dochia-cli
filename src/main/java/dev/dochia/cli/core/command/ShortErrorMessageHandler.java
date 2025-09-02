@@ -31,7 +31,7 @@ public class ShortErrorMessageHandler implements CommandLine.IParameterException
         err.println(cmd.getColorScheme().errorText(ex.getMessage())); // bold red
         CommandLine.UnmatchedArgumentException.printSuggestions(ex, err);
         ConsoleUtils.emptyLine();
-        err.println(ConsoleUtils.getShortVersionOfHelp());
+        err.println(ConsoleUtils.SHORT_HELP);
 
         CommandLine.Model.CommandSpec spec = cmd.getCommandSpec();
 

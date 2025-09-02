@@ -21,6 +21,41 @@ public abstract class ConsoleUtils {
 
     private static final Pattern ANSI_REMOVE_PATTERN = Pattern.compile("\u001B\\[[;\\d]*m");
     public static final String SEPARATOR = "  ";
+    public static final String SHORT_HELP =
+            """
+                    dochia – Bringing chaos with love!
+                    
+                    Description:
+                      dochia automatically generates and executes negative and boundary testing
+                      so you can focus on creative problem-solving.
+                    
+                      dochia is designed to work with OpenAPI specifications and can be run in various modes.
+                      The simplest way to run dochia is to provide the OpenAPI spec and the server URL.
+                    
+                    Examples:
+                      dochia test -c api.yml -s http://localhost:8080 -H 'Authorization=Bearer TOKEN'
+                    
+                    Usage:
+                      dochia test -c <contract> -s <server> [OPTIONS]
+                      dochia (test | fuzz | replay | list | info | explain) [OPTIONS]
+                    
+                    Common Options:
+                      -h, --help                     Show help and exit.
+                      -V, --version                  Print version and exit.
+                      -c, --contract=<contract>      API contract or spec.
+                      -s, --server=<server>          Base URL of the service.
+                      -H=<name=value>                Custom headers applicable to all paths(e.g., auth tokens)
+                          --headers=<file>           YAML file with custom headers specific per path (e.g., auth tokens).
+                      -R=<name=value>                Fixed field values applicable to all paths.
+                          --reference-data=<file>          YAML file with fixed field values specific per path.
+                      -f, --playbooks=<list>           Playbook names to run.
+                      -p, --paths=<list>             Specific paths to test.
+                      -d, --dry-run                  Simulate tests without executing.
+                    
+                    For full commands and options, run:
+                      dochia (test | fuzz | replay | list | info | explain) --help-full
+                    
+                    """;
 
     /**
      * Get the width of the terminal.
@@ -177,42 +212,5 @@ public abstract class ConsoleUtils {
      */
     public static void emptyLine() {
         LOGGER.noFormat(" ");
-    }
-
-    public static String getShortVersionOfHelp() {
-        return """
-                dochia – Bringing chaos with love!
-                
-                Description:
-                  dochia automatically generates and executes negative and boundary testing
-                  so you can focus on creative problem-solving.
-                
-                  dochia is designed to work with OpenAPI specifications and can be run in various modes.
-                  The simplest way to run dochia is to provide the OpenAPI spec and the server URL.
-                
-                Examples:
-                  dochia test -c api.yml -s http://localhost:8080 -H 'Authorization=Bearer TOKEN'
-                
-                Usage:
-                  dochia test -c <contract> -s <server> [OPTIONS]
-                  dochia (test | fuzz | replay | list | info | explain) [OPTIONS]
-                
-                Common Options:
-                  -h, --help                     Show help and exit.
-                  -V, --version                  Print version and exit.
-                  -c, --contract=<contract>      API contract or spec.
-                  -s, --server=<server>          Base URL of the service.
-                  -H=<name=value>                Custom headers applicable to all paths(e.g., auth tokens)
-                      --headers=<file>           YAML file with custom headers specific per path (e.g., auth tokens).
-                  -R=<name=value>                Fixed field values applicable to all paths.
-                      --reference-data=<file>          YAML file with fixed field values specific per path.
-                  -f, --playbooks=<list>           Playbook names to run.
-                  -p, --paths=<list>             Specific paths to test.
-                  -d, --dry-run                  Simulate tests without executing.
-                
-                For full commands and options, run:
-                  dochia (test | fuzz | replay | list | info | explain) --help-full
-                
-                """;
     }
 }

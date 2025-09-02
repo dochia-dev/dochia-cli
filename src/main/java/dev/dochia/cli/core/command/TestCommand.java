@@ -167,7 +167,7 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
 
     private void checkIfNotArgs() {
         if (apiArguments.getContract() == null && apiArguments.getServer() == null) {
-            System.out.println(ConsoleUtils.getShortVersionOfHelp());
+            System.out.println(ConsoleUtils.SHORT_HELP);
             System.exit(0);
         }
     }

@@ -283,7 +283,7 @@ public abstract class CommonUtils {
       }
     }
 
-    if (!result.toString().isEmpty()) {
+    if (!result.isEmpty()) {
       return StringUtils.stripStart(result.toString().trim(), ", ");
     }
 
