@@ -59,6 +59,12 @@ namesake, this tool rigorously tests your APIs to ensure they can withstand any 
 - 95% reduction in "how did that get through testing?" incidents
 - More time for creative problem-solving
 
+## Is Dochia free?
+
+Yes, Dochia is free and open source software. You can use it for free and modify it as you see fit. It follows an open code model.
+The code in this repo is available under the Apache License 2.0. 
+A `Pro` version will be available soon that will contain additional features and support.
+
 ## Quick Start
 
 ### Installation
