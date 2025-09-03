@@ -97,8 +97,8 @@ jobs:
           RELEASE_URL: ${{ needs.release.outputs.release_upload_url }}
         with:
           upload_url: ${{ env.RELEASE_URL }}
-          asset_path: dochia_linux_arm64_${{ github.event.inputs.releaseversion }}.tar.gz
-          asset_name: dochia_linux_arm64_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_path: dochia-cli_linux_arm64_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_name: dochia-cli_linux_arm64_${{ github.event.inputs.releaseversion }}.tar.gz
           asset_content_type: application/gzip
 
   build_uberjar:
@@ -136,8 +136,8 @@ jobs:
           RELEASE_URL: ${{ needs.release.outputs.release_upload_url }}
         with:
           upload_url: ${{ env.RELEASE_URL }}
-          asset_path: dochia_uberjar_${{ github.event.inputs.releaseversion }}.tar.gz
-          asset_name: dochia_uberjar_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_path: dochia-cli_uberjar_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_name: dochia-cli_uberjar_${{ github.event.inputs.releaseversion }}.tar.gz
           asset_content_type: application/gzip
 
   build:
@@ -201,8 +201,8 @@ jobs:
           RELEASE_URL: ${{ needs.release.outputs.release_upload_url }}
         with:
           upload_url: ${{ env.RELEASE_URL }}
-          asset_path: dochia_${{ env.RUNNER_OS }}_${{ env.OS_ARCH}}_${{ github.event.inputs.releaseversion }}.tar.gz
-          asset_name: dochia_${{ env.RUNNER_OS }}_${{ env.OS_ARCH}}_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_path: dochia-cli_${{ env.RUNNER_OS }}_${{ env.OS_ARCH}}_${{ github.event.inputs.releaseversion }}.tar.gz
+          asset_name: dochia-cli_${{ env.RUNNER_OS }}_${{ env.OS_ARCH}}_${{ github.event.inputs.releaseversion }}.tar.gz
           asset_content_type: application/gzip
 
       - name: Zip file for Windows
@@ -220,6 +220,6 @@ jobs:
           RELEASE_URL: ${{ needs.release.outputs.release_upload_url }}
         with:
           upload_url: ${{ env.RELEASE_URL }}
-          asset_path: dochia_windows_amd64_${{ github.event.inputs.releaseversion }}.zip
-          asset_name: dochia_windows_amd64_${{ github.event.inputs.releaseversion }}.zip
+          asset_path: dochia-cli_windows_amd64_${{ github.event.inputs.releaseversion }}.zip
+          asset_name: dochia-cli_windows_amd64_${{ github.event.inputs.releaseversion }}.zip
           asset_content_type: application/zip
