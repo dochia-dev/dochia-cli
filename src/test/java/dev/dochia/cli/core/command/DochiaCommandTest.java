@@ -59,17 +59,6 @@ class DochiaCommandTest {
                 .contains("dochia automatically generates");
     }
 
-    @Test
-    void shouldDisplayLicensesWhenLicensesOption() {
-        // Given
-        dochiaCommand.licenses = true;
-
-        // When
-        dochiaCommand.run();
-
-        // Then
-        assertThat(outContent.toString()).isNotEmpty();
-    }
 
     @Test
     void shouldDisplayLicenseWhenLicensesOption() {

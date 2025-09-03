@@ -10,7 +10,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.net.Proxy;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @QuarkusTest
 class AuthArgumentsTest {

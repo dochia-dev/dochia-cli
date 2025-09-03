@@ -105,19 +105,6 @@ public abstract class CommonUtils {
   }
 
   /**
-   * Writes a Map of data to a YAML file using the Jackson ObjectMapper.
-   *
-   * @param yaml the path to the YAML file to be written
-   * @param data the data to be written to the YAML file
-   * @throws IOException if an I/O error occurs during the writing process
-   */
-  public static void writeToYaml(String yaml, Map<String, Map<String, Object>> data)
-      throws IOException {
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-    mapper.writeValue(new File(yaml), data);
-  }
-
-  /**
    * This method replaces the existing value of the {@code jsonPropertyForReplacement} with the
    * supplied value. For complex replacement like merging with refData values or processing the
    * FuzzingStrategy use the {@code FuzzingStrategy.replaceField} method.
@@ -261,33 +248,6 @@ public abstract class CommonUtils {
     return NumberUtils.isCreatable(initialValue)
         ? NumberUtils.createNumber(initialValue)
         : initialValue;
-  }
-
-  /**
-   * Checks each element in the given array against a specified predicate and constructs a
-   * comma-separated string of elements that satisfy the predicate. The resulting string is stripped
-   * of leading commas and spaces.
-   *
-   * @param pathElements The array of strings to be checked.
-   * @param checkFunction The predicate used to test each element in the array. Elements that
-   *     satisfy the predicate will be included in the result.
-   * @return A comma-separated string of elements that satisfy the predicate, or {@code N_A} if no
-   *     elements meet the criteria.
-   */
-  public static String check(String[] pathElements, Predicate<String> checkFunction) {
-    StringBuilder result = new StringBuilder();
-
-    for (String pathElement : pathElements) {
-      if (checkFunction.test(pathElement)) {
-        result.append(COMMA).append(pathElement);
-      }
-    }
-
-    if (!result.isEmpty()) {
-      return StringUtils.stripStart(result.toString().trim(), ", ");
-    }
-
-    return N_A;
   }
 
   /**
