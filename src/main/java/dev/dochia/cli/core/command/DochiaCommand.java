@@ -76,15 +76,18 @@ public class DochiaCommand implements Runnable, CommandLine.IExitCodeGenerator {
     @CommandLine.Option(names = "--licenses", description = "Show all third party licenses used by the dochia CLI")
     boolean licenses;
 
+    int exitCode;
+
     @Override
     public void run() {
         if (licenses) {
-            System.exit(displayLicenses());
+            exitCode = displayLicenses();
+            return;
         }
         System.out.println(ConsoleUtils.SHORT_HELP);
     }
 
-    private int displayLicenses() {
+    int displayLicenses() {
         try (InputStream in = Thread.currentThread()
                 .getContextClassLoader()
                 .getResourceAsStream("THIRD_PARTY_LICENSES.txt")) {
@@ -102,6 +105,6 @@ public class DochiaCommand implements Runnable, CommandLine.IExitCodeGenerator {
 
     @Override
     public int getExitCode() {
-        return 0;
+        return exitCode;
     }
 }
