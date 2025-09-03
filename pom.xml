@@ -4,7 +4,7 @@
     <groupId>dev.dochia</groupId>
     <artifactId>dochia-cli</artifactId>
     <description>Intellignet API automation that finds the bugs your users would hate to discover</description>
-    <version>1.0.6-SNAPSHOT</version>
+    <version>1.0.5-SNAPSHOT</version>
     <name>dochia</name>
     <url>https://dochia.dev</url>
 
@@ -369,7 +369,7 @@
         <url>https://github.com/dochia-dev/dochia-cli.git</url>
         <connection>scm:git:git@github.com:dochia-dev/dochia-cli.git</connection>
         <developerConnection>scm:git:git@github.com:dochia-dev/dochia-cli.git</developerConnection>
-        <tag>dochia-cli-1.0.5</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
