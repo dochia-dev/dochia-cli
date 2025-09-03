@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.command;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@QuarkusTest
 class ShortErrorMessageHandlerTest {
 
     @Mock
@@ -41,7 +43,8 @@ class ShortErrorMessageHandlerTest {
         // Given
         when(mockCommandLine.getOut()).thenReturn(new PrintWriter(out));
         String[] args = {"--help-full"};
-        CommandLine.ParameterException ex = new CommandLine.ParameterException(mockCommandLine, "test error");
+        CommandLine.ParameterException ex =
+                new CommandLine.ParameterException(mockCommandLine, "test error");
 
         // When
         int exitCode = handler.handleParseException(ex, args);
@@ -59,15 +62,15 @@ class ShortErrorMessageHandlerTest {
         when(mockCommandSpec.exitCodeOnInvalidInput()).thenReturn(CommandLine.ExitCode.USAGE);
         when(mockCommandLine.getColorScheme()).thenReturn(createColorScheme());
         String[] args = {};
-        CommandLine.ParameterException ex = new CommandLine.ParameterException(mockCommandLine, "test error");
+        CommandLine.ParameterException ex =
+                new CommandLine.ParameterException(mockCommandLine, "test error");
 
         // When
         int exitCode = handler.handleParseException(ex, args);
 
         // Then
         assertThat(exitCode).isEqualTo(CommandLine.ExitCode.USAGE);
-        assertThat(err.toString())
-                .contains("test error");
+        assertThat(err.toString()).contains("test error");
     }
 
     @Test
@@ -78,7 +81,8 @@ class ShortErrorMessageHandlerTest {
         when(mockExitCodeMapper.getExitCode(any())).thenReturn(42);
         when(mockCommandLine.getColorScheme()).thenReturn(createColorScheme());
         String[] args = {};
-        CommandLine.ParameterException ex = new CommandLine.ParameterException(mockCommandLine, "test error");
+        CommandLine.ParameterException ex =
+                new CommandLine.ParameterException(mockCommandLine, "test error");
 
         // When
         int exitCode = handler.handleParseException(ex, args);
@@ -93,12 +97,12 @@ class ShortErrorMessageHandlerTest {
         // Given
         when(mockCommandLine.getExitCodeExceptionMapper()).thenReturn(null);
         when(mockCommandLine.getErr()).thenReturn(new PrintWriter(err));
-//        when(mockCommandLine.getUsageHelpWidth()).thenReturn(80);
         when(mockCommandLine.getCommandSpec()).thenReturn(mockCommandSpec);
         when(mockCommandSpec.exitCodeOnInvalidInput()).thenReturn(123);
         when(mockCommandLine.getColorScheme()).thenReturn(createColorScheme());
         String[] args = {};
-        CommandLine.ParameterException ex = new CommandLine.ParameterException(mockCommandLine, "test error");
+        CommandLine.ParameterException ex =
+                new CommandLine.ParameterException(mockCommandLine, "test error");
 
         // When
         int exitCode = handler.handleParseException(ex, args);

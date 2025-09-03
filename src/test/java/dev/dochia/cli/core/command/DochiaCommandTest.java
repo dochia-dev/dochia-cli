@@ -59,7 +59,6 @@ class DochiaCommandTest {
                 .contains("dochia automatically generates");
     }
 
-
     @Test
     void shouldDisplayLicenseWhenLicensesOption() {
         // Given

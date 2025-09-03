@@ -1,41 +1,28 @@
 package dev.dochia.cli.core.util;
 
-import dev.dochia.cli.core.dsl.DSLParser;
-import dev.dochia.cli.core.dsl.api.Parser;
-import dev.dochia.cli.core.exception.DochiaException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import static dev.dochia.cli.core.util.DSLWords.*;
+import static dev.dochia.cli.core.util.JsonUtils.GSON_CONFIGURATION;
+
 import com.github.javafaker.Faker;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import dev.dochia.cli.core.dsl.DSLParser;
+import dev.dochia.cli.core.dsl.api.Parser;
+import dev.dochia.cli.core.exception.DochiaException;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.swagger.v3.oas.models.PathItem;
-import net.minidev.json.parser.ParseException;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.jboss.logmanager.LogContext;
-
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-
-import static dev.dochia.cli.core.util.DSLWords.ADDITIONAL_PROPERTIES;
-import static dev.dochia.cli.core.util.DSLWords.ELEMENT;
-import static dev.dochia.cli.core.util.DSLWords.MAP_VALUES;
-import static dev.dochia.cli.core.util.JsonUtils.GSON_CONFIGURATION;
+import net.minidev.json.parser.ParseException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.jboss.logmanager.LogContext;
 
 /** Some utility methods that don't fit in other classes. */
 public abstract class CommonUtils {
@@ -43,7 +30,8 @@ public abstract class CommonUtils {
   private static final String N_A = "N/A";
 
   /**
-   * Custom Faker instance for generating fake data. Uses romanian locale as a tweak to load a dpchia specific file with limited number of fake values.
+   * Custom Faker instance for generating fake data. Uses romanian locale as a tweak to load a
+   * dpchia specific file with limited number of fake values.
    */
   private static final Faker FAKER = new Faker(Locale.of("ro"), random());
 
@@ -160,8 +148,8 @@ public abstract class CommonUtils {
   }
 
   /**
-   * When parsing the custom playbook files the additionalProperties element will be parsed as: {@code
-   * {topElement=metadata, mapValues={test1=value1,test2=value2}}}.
+   * When parsing the custom playbook files the additionalProperties element will be parsed as:
+   * {@code {topElement=metadata, mapValues={test1=value1,test2=value2}}}.
    *
    * @param currentPathValues current path values from custom playbook
    * @param payload the existing payload
