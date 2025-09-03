@@ -3,13 +3,10 @@ package dev.dochia.cli.core.generator.simple;
 import dev.dochia.cli.core.util.CommonUtils;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -141,49 +138,12 @@ public abstract class UnicodeGenerator {
     }
 
     /**
-     * Returns a list of payloads of max(6, size) size.
-     *
-     * @param size the size of the current data
-     * @return a list of payloads to be used for fuzzing
-     */
-    public static List<String> getAllPayloadsOfSize(int size) {
-        String finalSize = String.valueOf(Math.min(size, 6));
-        List<String> payloads = new ArrayList<>();
-        List<String> result = new ArrayList<>();
-        payloads.addAll(getAbugidasChars());
-        payloads.addAll(getControlCharsFields());
-        payloads.addAll(getControlCharsHeaders());
-        payloads.addAll(getSeparatorsFields());
-        payloads.addAll(getSeparatorsHeaders());
-        payloads.addAll(getSpacesHeaders());
-        payloads.addAll(getSingleCodePointEmojis());
-        payloads.addAll(getMultiCodePointEmojis());
-
-        String allChars = String.join("", payloads);
-        Matcher matcher = Pattern.compile(".{1," + finalSize + "}", Pattern.DOTALL).matcher(allChars);
-        while (matcher.find()) {
-            result.add(allChars.substring(matcher.start(), matcher.end()));
-        }
-
-        return result;
-    }
-
-    /**
      * Gets a list of payload with unicode separators for field fuzzing.
      *
      * @return A list of payloads with unicode separators to be used for field fuzzing.
      */
     public static List<String> getSeparatorsFields() {
         return whitespacesFields;
-    }
-
-    /**
-     * Gets a list of payload with unicode separators for headers fuzzing.
-     *
-     * @return A list of payloads with unicode separators to be used for headers fuzzing.
-     */
-    public static List<String> getSeparatorsHeaders() {
-        return whitespacesHeaders;
     }
 
     /**

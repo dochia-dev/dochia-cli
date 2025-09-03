@@ -167,19 +167,4 @@ public class ReportingArguments {
          */
         HTML_JS
     }
-
-    /**
-     * Enumerates different levels of verbosity for displaying information.
-     */
-    public enum Verbosity {
-        /**
-         * Provides a summary level of information.
-         */
-        SUMMARY,
-        /**
-         * Provides a detailed level of information.
-         */
-        DETAILED
-    }
-
 }
