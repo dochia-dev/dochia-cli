@@ -1,12 +1,9 @@
 package dev.dochia.cli.core.command;
 
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 import picocli.CommandLine;
 
 import java.io.PrintWriter;
@@ -17,18 +14,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 @QuarkusTest
 class ShortErrorMessageHandlerTest {
 
-    @Mock
     private CommandLine mockCommandLine;
-    @Mock
     private CommandLine.Model.CommandSpec mockCommandSpec;
-    @Mock
     private CommandLine.IExitCodeExceptionMapper mockExitCodeMapper;
-    @Captor
-    private ArgumentCaptor<String> stringCaptor;
 
     private final StringWriter out = new StringWriter();
     private final StringWriter err = new StringWriter();
@@ -36,6 +27,13 @@ class ShortErrorMessageHandlerTest {
 
     private CommandLine.Help.ColorScheme createColorScheme() {
         return CommandLine.Help.defaultColorScheme(CommandLine.Help.Ansi.OFF);
+    }
+
+    @BeforeEach
+    void setup() {
+        mockCommandLine = Mockito.mock(CommandLine.class);
+        mockCommandSpec = Mockito.mock(CommandLine.Model.CommandSpec.class);
+        mockExitCodeMapper = Mockito.mock(CommandLine.IExitCodeExceptionMapper.class);
     }
 
     @Test
