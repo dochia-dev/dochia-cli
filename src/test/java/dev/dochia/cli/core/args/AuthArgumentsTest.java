@@ -9,6 +9,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.net.Proxy;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 @QuarkusTest
 class AuthArgumentsTest {
 
@@ -61,5 +64,50 @@ class AuthArgumentsTest {
         ReflectionTestUtils.setField(args, "proxyPort", 8080);
 
         Assertions.assertThat(args.getProxy().type()).isEqualTo(Proxy.Type.HTTP);
+    }
+
+    @Test
+    void shouldReturnProxyFromFullProxyString() {
+        AuthArguments args = new AuthArguments();
+        ReflectionTestUtils.setField(args, "proxy", "http://myhost:1234");
+        Proxy proxy = args.getProxy();
+        assertThat(proxy.type()).isEqualTo(Proxy.Type.HTTP);
+        assertThat(((java.net.InetSocketAddress) proxy.address()).getHostName()).isEqualTo("myhost");
+        assertThat(((java.net.InetSocketAddress) proxy.address()).getPort()).isEqualTo(1234);
+    }
+
+    @Test
+    void shouldReturnProxyFromFullProxyStringWithoutScheme() {
+        AuthArguments args = new AuthArguments();
+        ReflectionTestUtils.setField(args, "proxy", "myhost:4321");
+        Proxy proxy = args.getProxy();
+        assertThat(proxy.type()).isEqualTo(Proxy.Type.HTTP);
+        assertThat(((java.net.InetSocketAddress) proxy.address()).getHostName()).isEqualTo("myhost");
+        assertThat(((java.net.InetSocketAddress) proxy.address()).getPort()).isEqualTo(4321);
+    }
+
+    @Test
+    void shouldReturnNoProxyForInvalidProxyFormat() {
+        AuthArguments args = new AuthArguments();
+        ReflectionTestUtils.setField(args, "proxy", "badformat");
+        assertThat(args.getProxy()).isEqualTo(Proxy.NO_PROXY);
+    }
+
+    @Test
+    void shouldReturnProxyFromHostAndPort() {
+        AuthArguments args = new AuthArguments();
+        ReflectionTestUtils.setField(args, "proxyHost", "localhost");
+        ReflectionTestUtils.setField(args, "proxyPort", 8080);
+        Proxy proxy = args.getProxy();
+        assertThat(proxy.type()).isEqualTo(Proxy.Type.HTTP);
+        assertThat(((java.net.InetSocketAddress) proxy.address()).getHostName()).isEqualTo("localhost");
+        assertThat(((java.net.InetSocketAddress) proxy.address()).getPort()).isEqualTo(8080);
+    }
+
+    @Test
+    void shouldReturnNoProxyIfNotSet() {
+        AuthArguments args = new AuthArguments();
+        Proxy proxy = args.getProxy();
+        assertThat(proxy.type()).isEqualTo(Proxy.Type.DIRECT);
     }
 }

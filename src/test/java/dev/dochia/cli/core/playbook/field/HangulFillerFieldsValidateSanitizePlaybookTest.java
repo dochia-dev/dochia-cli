@@ -18,15 +18,15 @@ import java.util.List;
 import java.util.Map;
 
 @QuarkusTest
-class HangulFillerFieldsSanitizeValidatePlaybookTest {
-    private HangulFillerFieldsSanitizeValidatePlaybook hangulFillerFieldsSanitizeValidatePlaybook;
+class HangulFillerFieldsValidateSanitizePlaybookTest {
+    private HangulFillerFieldsValidateSanitizePlaybook hangulFillerFieldsSanitizeValidatePlaybook;
 
     @BeforeEach
     void setup() {
         ServiceCaller serviceCaller = Mockito.mock(ServiceCaller.class);
         TestCaseListener testCaseListener = Mockito.mock(TestCaseListener.class);
         FilesArguments filesArguments = Mockito.mock(FilesArguments.class);
-        hangulFillerFieldsSanitizeValidatePlaybook = new HangulFillerFieldsSanitizeValidatePlaybook(serviceCaller, testCaseListener, filesArguments);
+        hangulFillerFieldsSanitizeValidatePlaybook = new HangulFillerFieldsValidateSanitizePlaybook(serviceCaller, testCaseListener, filesArguments);
     }
 
     private PlaybookData mockFuzzingData() {
