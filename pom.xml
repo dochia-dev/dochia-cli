@@ -4,7 +4,7 @@
     <groupId>dev.dochia</groupId>
     <artifactId>dochia-cli</artifactId>
     <description>Intellignet API automation that finds the bugs your users would hate to discover</description>
-    <version>1.0.5</version>
+    <version>1.0.6-SNAPSHOT</version>
     <name>dochia</name>
     <url>https://dochia.dev</url>
 
