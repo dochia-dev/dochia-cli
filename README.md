@@ -28,19 +28,24 @@ heavy lifting while you focus on building amazing features.
 **It's like throwing a tantrum at
 your API, so your users don't have to.**
 
-## About the Name
 
-Dochia comes from Romanian folklore - a legendary figure known for testing the limits of winter's harshness. Like its
-namesake, this tool rigorously tests your APIs to ensure they can withstand any conditions.
+## See it in action
+
+![Demo](demo.gif)
 
 ## Features
 
 - 🚀 **Instant Setup**: Point it at your OpenAPI spec and go
-- 🧠 **Smart Testing**: 100+ generators create realistic, context-aware test cases
+- 🧠 **Smart Testing**: 120+ playbooks create realistic, context-aware test cases
 - 🔍 **Find Hidden Issues**: Edge cases, invalid inputs, and boundary conditions
 - 📊 **Clear Results**: Actionable reports with specific fixes
 - 🔄 **Replay Mode**: Replay and investigate specific test scenarios
 - 📋 **OpenAPI Native**: Understands your API structure automatically
+
+## About the Name
+
+Dochia comes from Romanian folklore - a legendary figure known for testing the limits of winter's harshness. Like its
+namesake, this tool rigorously tests your APIs to ensure they can withstand any conditions.
 
 ## Why Dochia?
 
@@ -61,9 +66,8 @@ namesake, this tool rigorously tests your APIs to ensure they can withstand any 
 
 ## Is Dochia free?
 
-Yes, Dochia is free and open source software. You can use it for free and modify it as you see fit. It follows an open code model.
-The code in this repo is available under the Apache License 2.0. 
-A `Pro` version will be available soon that will contain additional features and support.
+Yes, the code in this repo is free and open source under the Apache 2.0 license, and Dochia as a product follows an open core model. 
+A Pro version will be available soon that will contain additional features and support.
 
 ## Quick Start
 
