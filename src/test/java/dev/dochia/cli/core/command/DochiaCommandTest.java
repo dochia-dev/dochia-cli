@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,11 +36,9 @@ class DochiaCommandTest {
 
     @Test
     void shouldDisplayHelpWhenNoArguments() {
-        // When
         dochiaCommand.run();
 
-        // Then
-        assertThat(outContent.toString())
+        assertThat(outContent.toString(StandardCharsets.UTF_8))
                 .contains("dochia – Bringing chaos with love!")
                 .contains("dochia automatically generates and executes")
                 .contains("Examples:");
@@ -47,46 +46,34 @@ class DochiaCommandTest {
 
     @Test
     void shouldDisplayHelpWhenHelpOption() {
-        // Given
         dochiaCommand.licenses = false;
-
-        // When
         dochiaCommand.run();
 
-        // Then
-        assertThat(outContent.toString())
+        assertThat(outContent.toString(StandardCharsets.UTF_8))
                 .contains("dochia – Bringing chaos with love!")
                 .contains("dochia automatically generates");
     }
 
     @Test
     void shouldDisplayLicenseWhenLicensesOption() {
-        // Given
         dochiaCommand.licenses = true;
-
-        // When
         dochiaCommand.run();
 
-        // Then - Just verify it doesn't throw an exception
-        assertThat(outContent.toString()).isNotEmpty();
+        assertThat(outContent.toString(StandardCharsets.UTF_8)).isNotEmpty();
     }
 
     @Test
     void shouldReturnZeroAsExitCode() {
-        // When
         int exitCode = dochiaCommand.getExitCode();
 
-        // Then
         assertThat(exitCode).isZero();
     }
 
     @Test
     void shouldDisplayLicensesSuccessfully() {
-        // When
         int result = dochiaCommand.displayLicenses();
 
-        // Then
         assertThat(result).isZero();
-        assertThat(outContent.toString()).isNotEmpty();
+        assertThat(outContent.toString(StandardCharsets.UTF_8)).isNotEmpty();
     }
 }

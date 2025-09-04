@@ -77,6 +77,7 @@ public class ListCommand implements Runnable {
         this.playbooksList = playbooksList.stream()
                 .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), ValidateAndTrim.class) == null)
                 .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), ValidateAndSanitize.class) == null)
+                .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), SpecialPlaybook.class) == null)
                 .toList();
         this.formats = formats.stream().flatMap(format -> format.matchingFormats().stream()).sorted().toList();
         this.mutators = mutators.stream().map(m -> new MutatorEntry(m.getClass().getSimpleName(), m.description())).sorted().toList();

@@ -26,9 +26,6 @@ import org.jboss.logmanager.LogContext;
 
 /** Some utility methods that don't fit in other classes. */
 public abstract class CommonUtils {
-  private static final String COMMA = ", ";
-  private static final String N_A = "N/A";
-
   /**
    * Custom Faker instance for generating fake data. Uses romanian locale as a tweak to load a
    * dpchia specific file with limited number of fake values.

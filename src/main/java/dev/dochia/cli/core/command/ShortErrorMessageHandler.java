@@ -18,6 +18,7 @@ public class ShortErrorMessageHandler implements CommandLine.IParameterException
      * @param args the command line arguments that were parsed when the exception was thrown
      * @return the exit code to return to the operating system
      */
+    @Override
     public int handleParseException(CommandLine.ParameterException ex, String[] args) {
         CommandLine cmd = ex.getCommandLine();
 

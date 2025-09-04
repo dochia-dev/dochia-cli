@@ -565,9 +565,9 @@ public class FilterArguments {
      */
     public long getTotalPlaybooks() {
         return playbooks.stream()
-                .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), TrimAndValidate.class) == null)
-                .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), SanitizeAndValidate.class) == null)
-                .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), SpecialPlaybook.class) == null)
+                .filter(playbook -> !AnnotationUtils.isAnnotationDeclaredLocally(TrimAndValidate.class, playbook.getClass()))
+                .filter(playbook -> !AnnotationUtils.isAnnotationDeclaredLocally(SanitizeAndValidate.class, playbook.getClass()))
+                .filter(playbook -> !AnnotationUtils.isAnnotationDeclaredLocally(SpecialPlaybook.class, playbook.getClass()))
                 .count();
     }
 

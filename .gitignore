@@ -1,3 +1,4 @@
+*.tape
 *.iml
 .idea
 target

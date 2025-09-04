@@ -38,23 +38,18 @@ class ShortErrorMessageHandlerTest {
 
     @Test
     void shouldPrintFullUsageAndReturnOkWhenHelpFullArgPresent() {
-        // Given
         when(mockCommandLine.getOut()).thenReturn(new PrintWriter(out));
         String[] args = {"--help-full"};
         CommandLine.ParameterException ex =
                 new CommandLine.ParameterException(mockCommandLine, "test error");
-
-        // When
         int exitCode = handler.handleParseException(ex, args);
 
-        // Then
         assertThat(exitCode).isEqualTo(CommandLine.ExitCode.OK);
         verify(mockCommandLine).usage(any(PrintWriter.class));
     }
 
     @Test
     void shouldPrintErrorAndSuggestionsWhenHelpFullNotPresent() {
-        // Given
         when(mockCommandLine.getErr()).thenReturn(new PrintWriter(err));
         when(mockCommandLine.getCommandSpec()).thenReturn(mockCommandSpec);
         when(mockCommandSpec.exitCodeOnInvalidInput()).thenReturn(CommandLine.ExitCode.USAGE);
@@ -63,17 +58,14 @@ class ShortErrorMessageHandlerTest {
         CommandLine.ParameterException ex =
                 new CommandLine.ParameterException(mockCommandLine, "test error");
 
-        // When
         int exitCode = handler.handleParseException(ex, args);
 
-        // Then
         assertThat(exitCode).isEqualTo(CommandLine.ExitCode.USAGE);
         assertThat(err.toString()).contains("test error");
     }
 
     @Test
     void shouldUseMappedExitCodeWhenExitCodeMapperPresent() {
-        // Given
         when(mockCommandLine.getExitCodeExceptionMapper()).thenReturn(mockExitCodeMapper);
         when(mockCommandLine.getErr()).thenReturn(new PrintWriter(err));
         when(mockExitCodeMapper.getExitCode(any())).thenReturn(42);
@@ -82,17 +74,14 @@ class ShortErrorMessageHandlerTest {
         CommandLine.ParameterException ex =
                 new CommandLine.ParameterException(mockCommandLine, "test error");
 
-        // When
         int exitCode = handler.handleParseException(ex, args);
 
-        // Then
         assertThat(exitCode).isEqualTo(42);
         verify(mockExitCodeMapper).getExitCode(ex);
     }
 
     @Test
     void shouldUseDefaultExitCodeWhenNoExitCodeMapper() {
-        // Given
         when(mockCommandLine.getExitCodeExceptionMapper()).thenReturn(null);
         when(mockCommandLine.getErr()).thenReturn(new PrintWriter(err));
         when(mockCommandLine.getCommandSpec()).thenReturn(mockCommandSpec);
@@ -102,10 +91,8 @@ class ShortErrorMessageHandlerTest {
         CommandLine.ParameterException ex =
                 new CommandLine.ParameterException(mockCommandLine, "test error");
 
-        // When
         int exitCode = handler.handleParseException(ex, args);
 
-        // Then
         assertThat(exitCode).isEqualTo(123);
     }
 }

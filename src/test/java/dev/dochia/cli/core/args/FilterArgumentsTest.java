@@ -361,6 +361,6 @@ class FilterArgumentsTest {
 
     @Test
     void shouldCountTotalPlaybooks() {
-        Assertions.assertThat(filterArguments.getTotalPlaybooks()).isEqualTo(116);
+        Assertions.assertThat(filterArguments.getTotalPlaybooks()).isEqualTo(124);
     }
 }
