@@ -304,6 +304,9 @@ public abstract class TestCaseExporter {
             context.put("TOTAL_PATHS", dochiaConfiguration.totalPaths());
         }
 
+        var groupedTestCases = BucketsCalculator.createBuckets(summaries);
+        context.put("GROUPED_TEST_CASES", groupedTestCases);
+
         Writer writer = this.getSummaryTemplate().execute(new StringWriter(), context);
 
         try {

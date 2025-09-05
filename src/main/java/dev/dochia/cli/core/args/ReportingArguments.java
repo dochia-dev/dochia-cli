@@ -165,6 +165,11 @@ public class ReportingArguments {
         /**
          * Generates a report in HTML format with JavaScript support.
          */
-        HTML_JS
+        HTML_JS,
+
+        /**
+         * Generates a report in HTML format with JavaScript support and groups issues by clusters.
+         */
+        BUCKETS
     }
 }

@@ -273,6 +273,56 @@ function updateSuccessRateStyles() {
     });
 }
 
+// Buckets/Clusters related javascript functions
+function toggleCluster(element) {
+    // Toggle the 'collapsed' class on the cluster header
+    element.classList.toggle('collapsed');
+    
+    // Get the content div that follows the header
+    const content = element.nextElementSibling;
+    if (content) {
+        content.classList.toggle('collapsed');
+    }
+    
+    // Toggle the arrow icon
+    const toggle = element.querySelector('.cluster-item-toggle');
+    if (toggle) {
+        toggle.textContent = element.classList.contains('collapsed') ? '▶' : '▼';
+    }
+}
+
+function toggleErrorCluster(element) {
+    // Toggle the 'collapsed' class on the header
+    element.classList.toggle('collapsed');
+    
+    // Get the content div that follows the header
+    const content = element.nextElementSibling;
+    if (content) {
+        content.classList.toggle('collapsed');
+    }
+    
+    // Toggle the arrow icon
+    const toggle = element.querySelector('.cluster-toggle');
+    if (toggle) {
+        toggle.textContent = element.classList.contains('collapsed') ? '▶' : '▼';
+    }
+}
+
+// Optional: Add function to expand or collapse all clusters
+function expandAllClusters() {
+    document.querySelectorAll('.cluster-content.collapsed').forEach(content => {
+        content.classList.remove('collapsed');
+        content.previousElementSibling.classList.remove('collapsed');
+    });
+}
+
+function collapseAllClusters() {
+    document.querySelectorAll('.cluster-content:not(.collapsed)').forEach(content => {
+        content.classList.add('collapsed');
+        content.previousElementSibling.classList.add('collapsed');
+    });
+}
+
 // ==========================================
 // INITIALIZATION
 // ==========================================
