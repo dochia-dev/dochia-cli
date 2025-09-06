@@ -125,20 +125,20 @@
     max-height: 5000px; /* Large enough to contain all content */
     overflow: hidden; /* Hide overflow when collapsing */
     transition: all 0.3s ease;
-    padding: 1rem 1.75rem 1.5rem;
+    padding: 1rem 1.75rem 1.5rem; /* Added top padding for spacing */
     opacity: 1;
     transform: translateY(0);
 }
 
 .cluster-content.collapsed {
     max-height: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
     opacity: 0;
     transform: translateY(-10px);
-    margin: 0;
-    border: none;
+    border: none !important;
     overflow: hidden;
+    min-height: 0 !important;
 }
 
 /* Cluster Item Styles */
@@ -454,7 +454,8 @@
 }
 
 .dark-theme .cluster-header {
-    border-bottom: 20px solid #1e293b;
+    border-bottom: 1px solid var(--border-color-dark);
+    margin-bottom: 0;
 }
 .dark-theme .cluster-item-header {
     background: #1e293b;
@@ -478,7 +479,6 @@
 
 .dark-theme .path-group {
     background: #1e293b;
-    border: 1px solid #334155;
 }
 
 .dark-theme .path-group:hover {
