@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dochia - Execution Report</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <script src="chart.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="styles-buckets.css">
@@ -109,10 +110,10 @@
                 <div class="cluster-card">
                     <div class="cluster-header" onclick="toggleErrorCluster(this)">
                         <div class="cluster-header-content">
-                            <h3 class="cluster-title">{{resultReason}}</h3>
+                            <h3 class="cluster-title {{status}}">{{resultReason}}</h3>
                             <div class="cluster-count">{{buckets.size}} buckets</div>
                         </div>
-                        <div class="cluster-toggle"></div>
+                        <span class="material-icons-round cluster-toggle">expand_more</span>
                     </div>
                     <div class="cluster-content">
                         <div class="clusters-container">
@@ -120,10 +121,10 @@
                             <div class="cluster-item" style="border-left: 5px solid {{borderColor}};">
                                 <div class="cluster-item-header" onclick="toggleCluster(this)">
                                     <h4 class="cluster-item-title">
-                                        <span class="cluster-icon">📁</span>
-                                        Bucket {{bucketId}}
+                                        <span class="material-icons-round cluster-icon">folder</span>
+                                        <span class="bucket-title">Bucket {{bucketId}}</span>
                                     </h4>
-                                    <div class="cluster-item-toggle"></div>
+                                    <span class="material-icons-round cluster-item-toggle">expand_more</span>
                                 </div>
                                 <div class="cluster-item-content">
                                     <div class="cluster-detail">
@@ -133,7 +134,7 @@
                                     {{#paths}}
                                     <div class="path-group">
                                         <div class="path-header">
-                                            <span class="path-icon">📍</span>
+                                            <span class="material-icons-round path-icon">insert_link</span>
                                             <code class="path-value">{{path}}</code>
                                         </div>
                                         <div class="test-cases">

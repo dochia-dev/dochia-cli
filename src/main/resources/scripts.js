@@ -285,10 +285,10 @@ function toggleCluster(element) {
     }
     
     // Toggle the arrow icon
-    const toggle = element.querySelector('.cluster-item-toggle');
-    if (toggle) {
-        toggle.textContent = element.classList.contains('collapsed') ? '▶' : '▼';
-    }
+//    const toggle = element.querySelector('.cluster-item-toggle');
+//    if (toggle) {
+//        toggle.textContent = element.classList.contains('collapsed') ? '▶' : '▼';
+//    }
 }
 
 function toggleErrorCluster(element) {
@@ -302,10 +302,10 @@ function toggleErrorCluster(element) {
     }
     
     // Toggle the arrow icon
-    const toggle = element.querySelector('.cluster-toggle');
-    if (toggle) {
-        toggle.textContent = element.classList.contains('collapsed') ? '▶' : '▼';
-    }
+//    const toggle = element.querySelector('.cluster-toggle');
+//    if (toggle) {
+//        toggle.textContent = element.classList.contains('collapsed') ? '▶' : '▼';
+//    }
 }
 
 // Optional: Add function to expand or collapse all clusters

@@ -1691,7 +1691,7 @@ body.dark-theme .report-footer {
 /* Dashboard-style layout */
 .test-dashboard {
     display: grid;
-    grid-template-columns: 380px 1fr;
+    grid-template-columns: 390px 1fr;
     gap: 2rem;
     max-width: 1400px;
     margin: 0 auto;
@@ -1870,7 +1870,6 @@ body.dark-theme .sidebar-label {
     color: var(--text-primary);
     font-weight: 600;
     text-align: right;
-    word-break: break-word;
     font-size: 0.8125rem;
     line-height: 1.3;
 }

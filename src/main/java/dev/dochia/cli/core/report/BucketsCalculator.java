@@ -97,6 +97,7 @@ public class BucketsCalculator {
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put("resultReason", resultReason);
         resultMap.put("buckets", bucketList);
+        resultMap.put("status", testCasesForReason.getFirst().getResult());
         return resultMap;
     }
 
@@ -245,7 +246,7 @@ public class BucketsCalculator {
      * Attempts to add a test case to an existing bucket based on similarity.
      *
      * @param current           Current test case to add
-     * @param buckets          Existing buckets
+     * @param buckets           Existing buckets
      * @param comparisonTracker Tracker for previous comparisons
      * @param similarityChecker Predicate to determine error similarity
      * @return True if added to a bucket, false otherwise
@@ -288,7 +289,7 @@ public class BucketsCalculator {
      *
      * @param current           Current test case
      * @param comparisonTracker Existing comparison tracker
-     * @param bucketSize       Number of buckets
+     * @param bucketSize        Number of buckets
      * @return Comparison tracking array
      */
     private static Boolean[] getOrCreateComparisons(
