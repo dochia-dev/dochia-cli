@@ -26,10 +26,7 @@ import org.fusesource.jansi.Ansi;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -311,7 +308,10 @@ public abstract class TestCaseExporter {
 
         try {
             writer.flush();
-            Files.writeString(Paths.get(reportingPath.toFile().getAbsolutePath(), this.getSummaryReportTitle()), writer.toString(), StandardCharsets.UTF_8);
+            String content = writer.toString();
+            byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
+            Files.write(Paths.get(reportingPath.toFile().getAbsolutePath(), this.getSummaryReportTitle()),
+                    bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             logger.error("There was an error writing the report summary: {}. Please check if dochia has proper right to write in the report location: {}",
                     e.getMessage(), reportingPath.toFile().getAbsolutePath());
