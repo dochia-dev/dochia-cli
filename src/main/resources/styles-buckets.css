@@ -371,10 +371,6 @@
     width: 100%;
 }
 
-.dark-theme .results-section {
-    background: var(--bg-dark-secondary);
-}
-
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -454,6 +450,12 @@
     background: none;
     box-shadow: none;
     border: none;
+}
+
+body.dark-theme .results-table-container {
+      background: none;
+       box-shadow: none;
+       border: none;
 }
 
 /* Custom scrollbar */
