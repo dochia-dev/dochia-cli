@@ -5,16 +5,58 @@ import org.apache.commons.text.similarity.JaccardSimilarity;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Helper class for words operations.
+ * String similarity and normalization utilities.
+ * <p>
+ * Behavior:
+ * <p>
+ * - Precompiled regex patterns for performance.
+ * <p>
+ * - Normalization:
+ * <li>collapses content inside escaped quotes: \"...\"  -> \"\"</li>
+ * <li>masks ID-like, unquoted uppercase tokens (>=3 chars) to TOKEN (with a small whitelist),
+ * UUID, hashes, timestamps, URLs, paths, digits, zero-width marks, etc.</li>
+ * <li>areErrorsSimilar(...) uses a cheap Jaccard gate and a thresholded Levenshtein.</li>
  */
-public abstract class WordUtils {
-    private static final double LEVENSHTEIN_THRESHOLD = 0.85;
-    private static final double JACCARD_THRESHOLD = 0.7;
-    private static final double PATTERN_MATCH_BONUS = 0.2;
+public final class WordUtils {
+
+
+    // --- thresholds (keep aligned with your previous logic) ---
+    public static final double COMBINED_THRESHOLD = 0.85d;
+    public static final double JACCARD_THRESHOLD = 0.70d;  // token gate
+
+    private static final JaccardSimilarity JS = new JaccardSimilarity();
+
+    // --- caches ---
+    private static final Map<String, String> NORMALIZED_CACHE = new ConcurrentHashMap<>(8192);
+
+    // --- precompiled patterns (performance and clarity) ---
+    private static final Pattern TS = Pattern.compile(
+            "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+\\-]\\d{2}:\\d{2})?");
+    private static final Pattern UUID = Pattern.compile(
+            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
+    private static final Pattern HASH = Pattern.compile("[0-9a-fA-F]{32,}");
+    private static final Pattern URL = Pattern.compile("(?:file|https?|ftp)://\\S+");
+    private static final Pattern PATH = Pattern.compile("(?:[A-Za-z]:)?(?:/|\\\\)[\\w .\\-/_]+");
+    private static final Pattern DIGITS = Pattern.compile("\\b\\d+\\b");
+    // Base64-like / URL-safe token chunks
+    private static final Pattern BASE64ISH = Pattern.compile("\\b[A-Za-z0-9+/\\-_]{16,}={0,2}\\b");
+
+    // Uppercase/ID-like tokens (≥3 chars) – replaced with TOKEN unless in whitelist
+    private static final Pattern UPPER_TOKEN = Pattern.compile("\\b[A-Z][A-Z0-9_\\-]{2,}\\b");
+    private static final Set<String> UPPER_WHITELIST = Set.of(
+            "GET", "PUT", "POST", "PATCH", "DELETE", "HEAD", "OPTIONS",
+            "TRUE", "FALSE", "NULL",
+            "INFO", "WARN", "ERROR", "DEBUG",
+            "HTTP", "HTTPS", "TLS", "SSL",
+            "JSON", "XML", "CSV", "UTC"
+    );
 
     private static final Set<String> ERROR_KEYWORDS =
             Set.of(
@@ -209,6 +251,10 @@ public abstract class WordUtils {
                     "DecodingError",
                     "KeyDecodingError");
 
+    // Remove Zs/Cs/marks and odd spaces
+    private static final Pattern ZCMS = Pattern.compile("[\\p{Z}\\p{C}\\p{So}\\p{M}\\p{Sk}]+");
+    private static final Pattern MULTI_SPACE = Pattern.compile("\\s{2,}");
+
     private static final List<String> DELIMITERS = List.of("", "-", "_");
 
     private WordUtils() {
@@ -290,47 +336,135 @@ public abstract class WordUtils {
     }
 
     /**
-     * Compares two error messages and returns true if they are similar enough.
+     * Normalize an error message to a structural form:
+     * - collapse \"...\" content to \"\"
+     * - replace variable-like tokens with placeholders
+     * - squash whitespace/noise
      *
-     * @param error1 the first error message
-     * @param error2 the second error message
+     * @param s the error message to normalize
+     * @return the error message normalized
+     */
+    public static String normalizeErrorMessage(String s) {
+        if (StringUtils.isBlank(s)) {
+            return "";
+        }
+
+        String r = s;
+
+        // 1) Collapse escaped, inner quoted segments so only the quotes remain.
+        r = collapseEscapedQuotedSegments(r);
+
+        // 2) Replace common highly-variable substrings with placeholders.
+        r = TS.matcher(r).replaceAll("TIMESTAMP");
+        r = UUID.matcher(r).replaceAll("UUID");
+        r = HASH.matcher(r).replaceAll("HASH");
+        r = URL.matcher(r).replaceAll("URL");
+        r = PATH.matcher(r).replaceAll("PATH");
+        r = DIGITS.matcher(r).replaceAll("NUM");
+        r = BASE64ISH.matcher(r).replaceAll("TOKEN");
+
+        // 3) Replace uppercase ID-like tokens (generic, handles DYX/XIIR... cases).
+        r = replaceUpperTokens(r);
+
+        // 4) Remove zero-width and spacing noise, normalize whitespace.
+        r = ZCMS.matcher(r).replaceAll(" ");
+        r = MULTI_SPACE.matcher(r).replaceAll(" ").trim();
+
+        return r;
+    }
+
+    // Helper: replace UPPER_TOKEN occurrences with TOKEN unless whitelisted
+    private static String replaceUpperTokens(String s) {
+        StringBuilder out = new StringBuilder(s.length());
+        Matcher m = UPPER_TOKEN.matcher(s);
+        while (m.find()) {
+            String tok = m.group();
+            if (UPPER_WHITELIST.contains(tok)) {
+                m.appendReplacement(out, tok);
+            } else {
+                m.appendReplacement(out, "TOKEN");
+            }
+        }
+        m.appendTail(out);
+        return out.toString();
+    }
+
+    // Helper: collapse occurrences of \" ... \" to \"\"
+    // (works well for messages like: ... parsing \"👩🏾false\" : invalid syntax)
+    private static String collapseEscapedQuotedSegments(String s) {
+        int i = 0, n = s.length();
+        StringBuilder sb = new StringBuilder(n);
+        while (i < n) {
+            int open = s.indexOf("\\\"", i);
+            if (open < 0) {
+                sb.append(s, i, n);
+                break;
+            }
+            // copy up to the start of the escaped quote
+            sb.append(s, i, open);
+            // write collapsed pair \"\"
+            sb.append("\\\"\\\"");
+            // find the next closing escaped quote
+            int j = open + 2;
+            int close = s.indexOf("\\\"", j);
+            if (close < 0) {
+                // no closing pair; append rest and finish
+                sb.append(s, j, n);
+                break;
+            }
+            // skip the content and the closing pair
+            i = close + 2;
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Main similarity predicate (stable and fast).
+     * <p>
+     * - Cheap Jaccard gate on normalized strings.
+     * - Thresholded Levenshtein (banded) based on what remains necessary.
+     *
+     * @param a the first error message
+     * @param b the second error message
      * @return true if the error messages are similar, false otherwise
      */
-    public static boolean areErrorsSimilar(String error1, String error2) {
-        if (StringUtils.isBlank(error1) || StringUtils.isBlank(error2)) {
+    public static boolean areErrorsSimilar(String a, String b) {
+        if (StringUtils.isBlank(a) || StringUtils.isBlank(b)) {
+            return false;
+        }
+        if (a.equals(b)) {
+            return true;
+        }
+
+        // Normalize once with caching
+        final String na = NORMALIZED_CACHE.computeIfAbsent(a, WordUtils::normalizeErrorMessage);
+        final String nb = NORMALIZED_CACHE.computeIfAbsent(b, WordUtils::normalizeErrorMessage);
+
+        // Fast structural equality
+        if (na.equals(nb)) {
+            return true;
+        }
+
+        // Cheap token similarity gate
+        final double token = JS.apply(na, nb);
+        if (token < JACCARD_THRESHOLD) {
             return false;
         }
 
-        int distance = LevenshteinDistance.getDefaultInstance().apply(error1, error2);
-        int maxLength = Math.max(error1.length(), error2.length());
-        double levenshteinSimilarity = 1.0 - ((double) distance / maxLength);
+        // Compute minimal LD similarity still needed to reach combined threshold.
+        // combined = (ldSim + token) / 2 >= COMBINED_THRESHOLD
+        final double minLdSim = Math.max(0.0, 2 * COMBINED_THRESHOLD - token);
 
-        JaccardSimilarity jaccardSimilarity = new JaccardSimilarity();
-        double tokenSimilarity = jaccardSimilarity.apply(error1, error2);
+        // Convert to an edit-distance bound over the normalized strings:
+        final int maxLen = Math.max(na.length(), nb.length());
+        final int maxEdits = (int) Math.ceil(maxLen * (1.0 - minLdSim));
 
-        String pattern1 = normalizeErrorMessage(error1);
-        String pattern2 = normalizeErrorMessage(error2);
-        boolean samePattern = pattern1.equals(pattern2);
-
-        double combinedScore = (levenshteinSimilarity + tokenSimilarity) / 2;
-        if (samePattern) {
-            combinedScore += PATTERN_MATCH_BONUS;
+        final Integer dist = new LevenshteinDistance(maxEdits).apply(na, nb);
+        if (dist < 0) {
+            return false; // exceeded bound
         }
+        final double ldSim = 1.0 - (dist.doubleValue() / maxLen);
 
-        return combinedScore >= LEVENSHTEIN_THRESHOLD ||
-                (tokenSimilarity >= JACCARD_THRESHOLD && samePattern);
-    }
-
-    static String normalizeErrorMessage(String message) {
-        String normalized = message.replaceAll("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", "TIMESTAMP");
-
-        normalized = normalized.replaceAll("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "UUID");
-        normalized = normalized.replaceAll("[0-9a-f]{32,}", "HASH");
-
-        normalized = normalized.replaceAll("(file|https?|ftp)://[^\\s]+", "URL");
-        normalized = normalized.replaceAll("/[\\w/.-]+", "PATH");
-        normalized = normalized.replaceAll("\\b\\d+\\b", "NUM");
-
-        return normalized;
+        return (ldSim + token) / 2.0 >= COMBINED_THRESHOLD;
     }
 }
