@@ -57,6 +57,7 @@ public final class BucketsCalculator {
         result.put("resultReason", resultReason);
         result.put("buckets", createClusterMaps(clusters));
         result.put("status", casesForReason.getFirst().getResult());
+        result.put("totalTests", clusters.stream().map(List::size).reduce(0, Integer::sum));
         return result;
     }
 

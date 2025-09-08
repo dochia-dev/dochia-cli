@@ -111,7 +111,10 @@
                     <div class="cluster-header" onclick="toggleErrorCluster(this)">
                         <div class="cluster-header-content">
                             <h3 class="cluster-title {{status}}">{{resultReason}}</h3>
-                            <div class="cluster-count">{{buckets.size}} buckets</div>
+                            <div class="cluster-count">
+                                <span class="badge badge-buckets">{{buckets.size}} buckets</span>
+                                <span class="badge badge-tests">{{totalTests}} tests</span>
+                            </div>
                         </div>
                         <span class="material-icons-round cluster-toggle">expand_more</span>
                     </div>

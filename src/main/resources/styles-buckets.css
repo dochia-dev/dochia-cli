@@ -85,12 +85,40 @@
 }
 
 .cluster-count {
-    background: #e9ecef;
-    color: #495057;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.badge {
     font-size: 0.75rem;
     font-weight: 500;
     padding: 0.25rem 0.5rem;
     border-radius: 1rem;
+    white-space: nowrap;
+}
+
+.badge-buckets {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+}
+
+.badge-tests {
+    background-color: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.dark-theme .badge-buckets {
+    background-color: #1e3a8a;
+    color: #bfdbfe;
+    border-color: #3b82f6;
+}
+
+.dark-theme .badge-tests {
+    background-color: #14532d;
+    color: #bbf7d0;
+    border-color: #22c55e;
 }
 
 /* Material Icons Base */
