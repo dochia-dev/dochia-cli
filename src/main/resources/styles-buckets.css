@@ -525,8 +525,9 @@ body.dark-theme .results-table-container {
 .path-value {
     font-size: 0.875rem;
     color: #343a40;
-    font-weight: 500;
+    font-weight: 800;
     word-break: break-all;
+    max-width: 500px;
 }
 
 .test-cases {
