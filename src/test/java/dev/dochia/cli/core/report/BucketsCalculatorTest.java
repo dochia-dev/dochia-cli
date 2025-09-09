@@ -3,10 +3,13 @@ package dev.dochia.cli.core.report;
 import dev.dochia.cli.core.model.TestCaseSummary;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -83,6 +86,7 @@ class BucketsCalculatorTest {
             f.setAccessible(true);
             f.set(obj, value);
         } catch (Exception ignored) {
+            //ignore as it doesn't matter for the test
         }
     }
 
@@ -154,43 +158,45 @@ class BucketsCalculatorTest {
         assertThat(paths).hasSize(2);
     }
 
-    @Test
-    void testBucketsByNormalizedResponseBody() {
-        // Use two bodies that normalize to the same string
-        var t1 = summary("1", 404, "reason", "Error: ID=123", true, false, "/a");
-        var t2 = summary("2", 404, "reason", "Error: ID=456", true, false, "/b");
-        List<Map<String, Object>> result = BucketsCalculator.createBuckets(List.of(t1, t2));
+    @ParameterizedTest
+    @MethodSource("bucketsSimilarityProvider")
+    void testBucketsSimilarity(List<TestCaseSummary> summaries, int expectedBucketCount) {
+        List<Map<String, Object>> result = BucketsCalculator.createBuckets(summaries);
         var buckets = (List<?>) result.get(0).get("buckets");
-        assertThat(buckets).hasSize(1);
+        assertThat(buckets).hasSize(expectedBucketCount);
     }
 
-    @Test
-    void testBucketsByJaccardSimilarity() {
-        // Use two bodies with high Jaccard similarity
-        var t1 = summary("1", 404, "reason", "foo bar baz", true, false, "/a");
-        var t2 = summary("2", 404, "reason", "foo bar qux", true, false, "/b");
-        List<Map<String, Object>> result = BucketsCalculator.createBuckets(List.of(t1, t2));
-        var buckets = (List<?>) result.get(0).get("buckets");
-        assertThat(buckets).hasSize(2);
-    }
-
-    @Test
-    void testBucketsByCustomSimilarity() {
-        // Use two bodies that are not exact, not normalized, but areErrorsSimilar returns true
-        var t1 = summary("1", 404, "reason", "Error: code 123", true, false, "/a");
-        var t2 = summary("2", 404, "reason", "Error: code 124", true, false, "/b");
-        List<Map<String, Object>> result = BucketsCalculator.createBuckets(List.of(t1, t2));
-        var buckets = (List<?>) result.get(0).get("buckets");
-        assertThat(buckets).hasSize(1);
-    }
-
-    @Test
-    void testBucketsSeparateWhenNotSimilar() {
-        var t1 = summary("1", 404, "reason", "foo", true, false, "/a");
-        var t2 = summary("2", 404, "reason", "bar", true, false, "/b");
-        List<Map<String, Object>> result = BucketsCalculator.createBuckets(List.of(t1, t2));
-        var buckets = (List<?>) result.get(0).get("buckets");
-        assertThat(buckets).hasSize(2);
+    static Stream<org.junit.jupiter.params.provider.Arguments> bucketsSimilarityProvider() {
+        return Stream.of(
+                org.junit.jupiter.params.provider.Arguments.of(
+                        List.of(
+                                summary("1", 404, "reason", "Error: ID=123", true, false, "/a"),
+                                summary("2", 404, "reason", "Error: ID=456", true, false, "/b")
+                        ),
+                        1
+                ),
+                org.junit.jupiter.params.provider.Arguments.of(
+                        List.of(
+                                summary("1", 404, "reason", "foo bar baz", true, false, "/a"),
+                                summary("2", 404, "reason", "foo bar qux", true, false, "/b")
+                        ),
+                        2
+                ),
+                org.junit.jupiter.params.provider.Arguments.of(
+                        List.of(
+                                summary("1", 404, "reason", "Error: code 123", true, false, "/a"),
+                                summary("2", 404, "reason", "Error: code 124", true, false, "/b")
+                        ),
+                        1
+                ),
+                org.junit.jupiter.params.provider.Arguments.of(
+                        List.of(
+                                summary("1", 404, "reason", "foo", true, false, "/a"),
+                                summary("2", 404, "reason", "bar", true, false, "/b")
+                        ),
+                        2
+                )
+        );
     }
 
     @Test
