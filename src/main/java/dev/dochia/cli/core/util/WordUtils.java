@@ -392,7 +392,8 @@ public final class WordUtils {
     // Helper: collapse occurrences of \" ... \" to \"\"
     // (works well for messages like: ... parsing \"👩🏾false\" : invalid syntax)
     private static String collapseEscapedQuotedSegments(String s) {
-        int i = 0, n = s.length();
+        int i = 0;
+        int n = s.length();
         StringBuilder sb = new StringBuilder(n);
         while (i < n) {
             int open = s.indexOf("\\\"", i);
