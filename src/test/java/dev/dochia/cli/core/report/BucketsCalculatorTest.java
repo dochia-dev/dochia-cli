@@ -127,9 +127,9 @@ class BucketsCalculatorTest {
         var t2 = summary("2", 500, "reason2", "body2", true, false, "/b");
         var t3 = summary("3", 400, "reason1", "body3", true, false, "/c");
         List<Map<String, Object>> result = BucketsCalculator.createBuckets(List.of(t1, t2, t3));
-        assertThat(result).hasSize(2);
-        assertThat(result).anySatisfy(map -> assertThat(map.get("resultReason")).isEqualTo("reason1"));
-        assertThat(result).anySatisfy(map -> assertThat(map.get("resultReason")).isEqualTo("reason2"));
+        assertThat(result).hasSize(2)
+                .anySatisfy(map -> assertThat(map).containsEntry("resultReason", "reason1"))
+                .anySatisfy(map -> assertThat(map).containsEntry("resultReason", "reason2"));
     }
 
     @Test
@@ -139,10 +139,10 @@ class BucketsCalculatorTest {
         var t3 = summary("3", 404, "reason", " ", true, false, "/c");
         List<Map<String, Object>> result = BucketsCalculator.createBuckets(List.of(t1, t2, t3));
         assertThat(result).hasSize(1);
-        var buckets = (List<?>) result.get(0).get("buckets");
+        var buckets = (List<?>) result.getFirst().get("buckets");
         assertThat(buckets).hasSize(1);
-        var bucket = (Map<?, ?>) buckets.get(0);
-        assertThat(bucket.get("errorMessage")).isEqualTo("<empty response body>");
+        Map<String, Object> bucket = (Map<String, Object>) buckets.getFirst();
+        assertThat(bucket).containsEntry("errorMessage", "<empty response body>");
     }
 
     @Test
@@ -150,11 +150,11 @@ class BucketsCalculatorTest {
         var t1 = summary("1", 404, "reason", "body", true, false, "/a");
         var t2 = summary("2", 404, "reason", "body", true, false, "/b");
         List<Map<String, Object>> result = BucketsCalculator.createBuckets(List.of(t1, t2));
-        var buckets = (List<?>) result.get(0).get("buckets");
+        var buckets = (List<?>) result.getFirst().get("buckets");
         assertThat(buckets).hasSize(1);
-        var bucket = (Map<?, ?>) buckets.get(0);
-        assertThat(bucket.get("errorMessage")).isEqualTo("body");
-        var paths = (List<?>) bucket.get("paths");
+        Map<String, Object> bucket = (Map<String, Object>) buckets.getFirst();
+        assertThat(bucket).containsEntry("errorMessage", "body");
+        List<String> paths = (List<String>) bucket.get("paths");
         assertThat(paths).hasSize(2);
     }
 
@@ -162,7 +162,7 @@ class BucketsCalculatorTest {
     @MethodSource("bucketsSimilarityProvider")
     void testBucketsSimilarity(List<TestCaseSummary> summaries, int expectedBucketCount) {
         List<Map<String, Object>> result = BucketsCalculator.createBuckets(summaries);
-        var buckets = (List<?>) result.get(0).get("buckets");
+        var buckets = (List<?>) result.getFirst().get("buckets");
         assertThat(buckets).hasSize(expectedBucketCount);
     }
 

@@ -46,6 +46,6 @@ class WordUtilsTest {
         Assertions.assertThat(WordUtils.normalizeErrorMessage("\\\"foo\\\"")).isEqualTo("\\\"\\\"");
 
         // Empty string
-        Assertions.assertThat(WordUtils.normalizeErrorMessage("")).isEqualTo("");
+        Assertions.assertThat(WordUtils.normalizeErrorMessage("")).isEmpty();
     }
 }
