@@ -65,7 +65,8 @@ import java.nio.charset.StandardCharsets;
                 TestCommand.class,
                 InfoCommand.class,
                 RandomCommand.class,
-                ExplainCommand.class
+                ExplainCommand.class,
+                LegendCommand.class
         })
 @Unremovable
 @Singleton
