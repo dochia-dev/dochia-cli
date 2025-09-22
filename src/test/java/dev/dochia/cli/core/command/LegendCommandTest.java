@@ -45,10 +45,8 @@ class LegendCommandTest {
         assertThat(out)
                 .contains("Nine coats on the hill,")
                 .contains("Spring fooled her, winter returned —")
-                .contains("Stone remembers all.");
-
-        // Ensure no ANSI escape sequences when --no-color is set
-        assertThat(out).doesNotContain("\u001B[");
+                .contains("Stone remembers all.")
+                .doesNotContain("\u001B[");
     }
 
     @Test
@@ -59,9 +57,8 @@ class LegendCommandTest {
                 .contains("   /\\    Baba Dochia climbed high,")
                 .contains("  /  \\   dropping her nine coats…")
                 .contains(" / ❄  \\  …then winter laughed.")
-                .contains("/______\\ Moral: never trust inputs. 😉");
-
-        assertThat(out).doesNotContain("\u001B[");
+                .contains("/______\\ Moral: never trust inputs. 😉")
+                .doesNotContain("\u001B[");
     }
 
     @Test
@@ -76,9 +73,7 @@ class LegendCommandTest {
                         .contains("Stone remembers all."),
                 s -> assertThat(s).contains("Baba Dochia climbed high,")
                         .contains("Moral: never trust inputs.")
-        );
-
-        assertThat(out).doesNotContain("\u001B[");
+        ).doesNotContain("\u001B[");
     }
 }
 

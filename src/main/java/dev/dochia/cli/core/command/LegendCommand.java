@@ -5,7 +5,6 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
 
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.Random;
 import java.util.concurrent.Callable;
 
@@ -36,11 +35,12 @@ public class LegendCommand implements Callable<Integer> {
     @ParentCommand
     Object parent; // optional: access parent config if needed later
 
+    public static final String LINE = "─────────────────────────────";
     private static final String[][] STORY_EN = new String[][]{
             {
-                    "─────────────────────────────",
+                    LINE,
                     "        Dochia’s Legend",
-                    "─────────────────────────────",
+                    LINE,
                     "Baba Dochia climbed the mountain,",
                     "wearing nine coats, one on top of another.",
                     "She thought spring had come,",
@@ -53,10 +53,10 @@ public class LegendCommand implements Callable<Integer> {
                     "Never trust the weather forecast,",
                     "and always test your edge cases. 😉",
                     "",
-                    "─────────────────────────────",
+                    LINE,
                     "Tip: Run `dochia --chaos` to shed",
                     "some coats of your own.",
-                    "─────────────────────────────"
+                    LINE
             }
     };
 
@@ -93,16 +93,12 @@ public class LegendCommand implements Callable<Integer> {
         if (ascii) return Variant.ASCII;
 
         // Random choice for the easter egg when no explicit style is set
-        Random rnd = (seed != null) ? new Random(seed) : seededRandom();
+        Random rnd = (seed != null) ? new Random(seed) : new Random();
         int pick = rnd.nextInt(3);
-        return pick == 0 ? Variant.STORY : (pick == 1 ? Variant.HAIKU : Variant.ASCII);
-    }
-
-    private Random seededRandom() {
-        // Derive a seed from current time, PID hash & some bytes to keep variety but reproducible per run
-        long t = Instant.now().toEpochMilli();
-        long mix = t ^ System.identityHashCode(this);
-        return new Random(mix);
+        if (pick == 0) {
+            return Variant.STORY;
+        }
+        return pick == 1 ? Variant.HAIKU : Variant.ASCII;
     }
 
     private String[][] resolveLines(Variant v) {
@@ -114,7 +110,7 @@ public class LegendCommand implements Callable<Integer> {
     }
 
     private void printBoxed(String[][] content, boolean ansi) {
-        final String top = repeat("─", Math.max(20, Math.min(120, width)));
+        final String top = repeat("─", Math.clamp(width, 20, 120));
         // Only add colored title bars for STORY; keep HAIKU/ASCII clean
         boolean banner = content[0].length > 8; // crude but effective
 
