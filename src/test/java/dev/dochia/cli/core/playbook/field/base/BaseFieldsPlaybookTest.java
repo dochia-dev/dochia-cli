@@ -62,9 +62,7 @@ class BaseFieldsPlaybookTest {
         Set<String> fields = Collections.singleton("field");
         Mockito.when(data.getAllFieldsByHttpMethod()).thenReturn(fields);
         Mockito.when(data.getPayload()).thenReturn("{}");
-        testCaseListener.createAndExecuteTest(Mockito.mock(PrettyLogger.class), Mockito.mock(TestCasePlaybook.class), () -> {
-            baseFieldsPlaybook.process(data, "field", FuzzingStrategy.skip().withData("Skipping test"));
-        }, data);
+        testCaseListener.createAndExecuteTest(Mockito.mock(PrettyLogger.class), Mockito.mock(TestCasePlaybook.class), () -> baseFieldsPlaybook.process(data, "field", FuzzingStrategy.skip().withData("Skipping test")), data);
         Mockito.verify(testCaseListener).skipTest(Mockito.any(), Mockito.eq("Skipping test"));
     }
 
@@ -152,7 +150,7 @@ class BaseFieldsPlaybookTest {
     }
 
     static class MyBaseFieldsPlaybook extends BaseFieldsPlaybook {
-        private String fuzzedValue;
+        private final String fuzzedValue;
 
         public MyBaseFieldsPlaybook(ServiceCaller sc, TestCaseListener lr, FilesArguments cp, String fuzzedValue) {
             super(sc, lr, cp);

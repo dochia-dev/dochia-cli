@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -21,7 +22,7 @@ public class DepthLimitingSerializer extends JsonSerializer<Object> {
 
     public DepthLimitingSerializer(int depth) {
         maxDepth = depth;
-        this.mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        this.mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
     }
 
     @Override

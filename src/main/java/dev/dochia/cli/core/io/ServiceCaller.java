@@ -544,7 +544,7 @@ public class ServiceCaller {
      * @throws IOException If an I/O error occurs while reading the response body.
      */
     public String getAsRawString(Response response) throws IOException {
-        return Optional.ofNullable(response.body().string()).orElse("");
+        return response.body().string();
     }
 
     private void recordServiceData(ServiceData serviceData) {

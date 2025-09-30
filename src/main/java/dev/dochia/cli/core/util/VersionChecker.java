@@ -36,9 +36,7 @@ public class VersionChecker {
     String latestVersion = null;
     String releaseNotes = null;
 
-    try (Response response =
-        httpClient.newCall(new Request.Builder().url(baseUrl).build()).execute()) {
-      if (response.body() != null) {
+    try (Response response = httpClient.newCall(new Request.Builder().url(baseUrl).build()).execute()) {
         String responseBody = response.body().string();
         latestVersion = String.valueOf(JsonUtils.getVariableFromJson(responseBody, "$.tag_name"));
 
@@ -47,7 +45,6 @@ public class VersionChecker {
         updateAvailable = compare(currentVersion, latestVersion) < 0;
 
         releaseNotes = String.valueOf(JsonUtils.getVariableFromJson(responseBody, "$.body"));
-      }
     } catch (Exception e) {
       LOGGER.debug("Exception while checking latest version", e);
     }

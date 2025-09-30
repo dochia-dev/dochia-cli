@@ -398,7 +398,7 @@ class ServiceCallerTest {
 
         List<KeyValuePair<String, Object>> dochiaHeader = headers.stream().filter(header -> header.getKey().equalsIgnoreCase("dochiaFuzzedHeader")).toList();
         Assertions.assertThat(dochiaHeader).hasSize(1);
-        Assertions.assertThat(dochiaHeader.get(0).getValue()).isEqualTo("dochia");
+        Assertions.assertThat(dochiaHeader.getFirst().getValue()).isEqualTo("dochia");
     }
 
     @Test

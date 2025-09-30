@@ -29,7 +29,7 @@ public class RandomDummyInvalidJsonBodyPlaybook implements TestCasePlaybook {
                     """,
             """
                     {"backslash": "\\"}
-                     """,
+                    """,
             """
                     {"ünicode": "ünicode"}
                     """,

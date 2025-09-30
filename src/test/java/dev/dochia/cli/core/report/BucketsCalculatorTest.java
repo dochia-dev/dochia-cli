@@ -205,8 +205,8 @@ class BucketsCalculatorTest {
         var t2 = summary("2", 404, "reason", "body", true, false, "/api/foo");
         var t3 = summary("3", 404, "reason", "body", true, false, "/api/bar");
         List<Map<String, Object>> result = BucketsCalculator.createBuckets(List.of(t1, t2, t3));
-        var buckets = (List<?>) result.get(0).get("buckets");
-        var bucket = (Map<?, ?>) buckets.get(0);
+        var buckets = (List<?>) result.getFirst().get("buckets");
+        var bucket = (Map<?, ?>) buckets.getFirst();
         var paths = (List<?>) bucket.get("paths");
         assertThat(paths).hasSize(2);
         var foo = (Map<?, ?>) paths.stream().filter(p -> ((Map<?, ?>) p).get("path").equals("/api/foo")).findFirst().orElseThrow();
@@ -219,8 +219,8 @@ class BucketsCalculatorTest {
     void testColorFormat() {
         var t1 = summary("1", 404, "reason", "body", true, false, "/a");
         List<Map<String, Object>> result = BucketsCalculator.createBuckets(List.of(t1));
-        var buckets = (List<?>) result.get(0).get("buckets");
-        var bucket = (Map<?, ?>) buckets.get(0);
+        var buckets = (List<?>) result.getFirst().get("buckets");
+        var bucket = (Map<?, ?>) buckets.getFirst();
         String color = (String) bucket.get("borderColor");
         assertThat(color).matches(Pattern.compile("#([0-9a-fA-F]{6})"));
     }

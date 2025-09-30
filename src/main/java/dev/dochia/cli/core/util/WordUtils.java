@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * UUID, hashes, timestamps, URLs, paths, digits, zero-width marks, etc.</li>
  * <li>areErrorsSimilar(...) uses a cheap Jaccard gate and a thresholded Levenshtein.</li>
  */
-public final class WordUtils {
+public abstract class WordUtils {
 
 
     // --- thresholds (keep aligned with your previous logic) ---

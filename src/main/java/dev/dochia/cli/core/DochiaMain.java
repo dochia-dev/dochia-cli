@@ -32,7 +32,7 @@ public class DochiaMain implements QuarkusApplication {
 
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(DochiaMain.class);
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         checkForSummaryReport(args);
 
         Quarkus.run(DochiaMain.class, args);

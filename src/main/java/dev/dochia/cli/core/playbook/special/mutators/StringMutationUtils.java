@@ -88,8 +88,8 @@ public class StringMutationUtils {
     }
 
     private static class Insertion {
-        int position;
-        String characters;
+        final int position;
+        final String characters;
         int offset = 0;
 
         Insertion(int position, String characters) {
