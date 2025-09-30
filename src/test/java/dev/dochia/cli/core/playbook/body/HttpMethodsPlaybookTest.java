@@ -6,6 +6,7 @@ import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.report.TestReportsGenerator;
+import dev.dochia.cli.core.util.KeyValuePair;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import io.swagger.v3.oas.models.Operation;
@@ -57,7 +58,12 @@ class HttpMethodsPlaybookTest {
     @Test
     void givenAnOperation_whenCallingTheHttpMethodsPlaybook_thenResultsAreCorrectlyReported() {
         PlaybookData data = PlaybookData.builder().pathItem(new PathItem()).reqSchema(new StringSchema()).requestContentTypes(List.of("application/json")).build();
-        HttpResponse httpResponse = HttpResponse.builder().body("{}").responseCode(405).httpMethod("POST").build();
+        HttpResponse httpResponse = HttpResponse.builder()
+                .body("{}")
+                .responseCode(405)
+                .httpMethod("POST")
+                .headers(List.of(new KeyValuePair<>("Allow", "GET, PUT, DELETE")))
+                .build();
         Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
 
         httpMethodsPlaybook.run(data);
@@ -99,5 +105,60 @@ class HttpMethodsPlaybookTest {
         Mockito.verify(testCaseListener, Mockito.times(7)).reportResultError(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), AdditionalMatchers.aryEq(new Object[]{"POST", 405, 200}));
         httpMethodsPlaybook.run(data);
         Mockito.verify(testCaseListener, Mockito.times(7)).reportResultError(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), AdditionalMatchers.aryEq(new Object[]{"POST", 405, 200}));
+    }
+
+    @Test
+    void givenAnOperation_whenCallingTheHttpMethodsPlaybookAndTheServiceResponsesWithNon2xxNon405_thenWarningIsReported() {
+        PlaybookData data = PlaybookData.builder().pathItem(new PathItem()).reqSchema(new StringSchema()).requestContentTypes(List.of("application/json")).build();
+        HttpResponse httpResponse = HttpResponse.builder().body("{}").responseCode(500).httpMethod("POST").build();
+        Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
+
+        httpMethodsPlaybook.run(data);
+        Mockito.verify(testCaseListener, Mockito.times(7)).reportResultWarn(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), AdditionalMatchers.aryEq(new Object[]{"POST", 405, 500}));
+    }
+
+    @Test
+    void givenAnOperation_whenCallingTheHttpMethodsPlaybookAndTheServiceResponsesWith405ButMissingAllowHeader_thenWarningIsReported() {
+        PlaybookData data = PlaybookData.builder().pathItem(new PathItem()).reqSchema(new StringSchema()).requestContentTypes(List.of("application/json")).build();
+        HttpResponse httpResponse = HttpResponse.builder()
+                .body("{}")
+                .responseCode(405)
+                .httpMethod("POST")
+                .headers(List.of())
+                .build();
+        Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
+
+        httpMethodsPlaybook.run(data);
+        Mockito.verify(testCaseListener, Mockito.times(7)).reportResultWarn(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq("POST"), AdditionalMatchers.aryEq(new Object[]{405}));
+    }
+
+    @Test
+    void givenAnOperation_whenCallingTheHttpMethodsPlaybookAndTheServiceResponsesWith405AndAllowHeaderContainsMethod_thenWarningIsReported() {
+        PlaybookData data = PlaybookData.builder().pathItem(new PathItem()).reqSchema(new StringSchema()).requestContentTypes(List.of("application/json")).build();
+        HttpResponse httpResponse = HttpResponse.builder()
+                .body("{}")
+                .responseCode(405)
+                .httpMethod("POST")
+                .headers(List.of(new KeyValuePair<>("Allow", "GET, POST, PUT")))
+                .build();
+        Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
+
+        httpMethodsPlaybook.run(data);
+        Mockito.verify(testCaseListener, Mockito.times(7)).reportResultWarn(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.eq("POST"), AdditionalMatchers.aryEq(new Object[]{405, "POST"}));
+    }
+
+    @Test
+    void givenAnOperation_whenCallingTheHttpMethodsPlaybookAndTheServiceResponsesWith405AndValidAllowHeader_thenInfoIsReported() {
+        PlaybookData data = PlaybookData.builder().pathItem(new PathItem()).reqSchema(new StringSchema()).requestContentTypes(List.of("application/json")).build();
+        HttpResponse httpResponse = HttpResponse.builder()
+                .body("{}")
+                .responseCode(405)
+                .httpMethod("POST")
+                .headers(List.of(new KeyValuePair<>("Allow", "GET, PUT, DELETE")))
+                .build();
+        Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
+
+        httpMethodsPlaybook.run(data);
+        Mockito.verify(testCaseListener, Mockito.times(7)).reportResultInfo(Mockito.any(), Mockito.any(), Mockito.anyString(), AdditionalMatchers.aryEq(new Object[]{"POST", 405}));
     }
 }
