@@ -5,15 +5,12 @@ import com.google.gson.JsonParser;
 import dev.dochia.cli.core.model.ann.Exclude;
 import dev.dochia.cli.core.util.KeyValuePair;
 import dev.dochia.cli.core.util.WordUtils;
-import java.io.IOException;
-import java.net.ProtocolException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.io.IOException;
+import java.net.ProtocolException;
+import java.util.*;
 
 /**
  * Model class used to hold http response details.
@@ -101,7 +98,7 @@ public class HttpResponse {
      * @return A key-value pair representing the header, or {@code null} if no such header is found.
      */
     public KeyValuePair<String, String> getHeader(String name) {
-        return headers.stream()
+        return Optional.ofNullable(headers).orElse(List.of()).stream()
                 .filter(header -> WordUtils.matchesAsLowerCase(header.getKey(), name))
                 .findFirst()
                 .orElse(null);

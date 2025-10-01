@@ -6,6 +6,7 @@ import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.report.TestReportsGenerator;
+import dev.dochia.cli.core.util.KeyValuePair;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import io.swagger.v3.oas.models.PathItem;
@@ -51,7 +52,7 @@ class NonRestHttpMethodsPlaybookTest {
     @Test
     void shouldCallServiceAndReportInfoWhenServiceRespondsWith405() {
         PlaybookData data = PlaybookData.builder().pathItem(new PathItem()).reqSchema(new StringSchema()).requestContentTypes(List.of("application/json")).build();
-        HttpResponse httpResponse = HttpResponse.builder().body("{}").responseCode(405).httpMethod("POST").build();
+        HttpResponse httpResponse = HttpResponse.builder().body("{}").responseCode(405).headers(List.of(new KeyValuePair<>("Allow","GET"))).httpMethod("POST").build();
         Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
 
         nonRestHttpMethodsPlaybook.run(data);
@@ -71,7 +72,7 @@ class NonRestHttpMethodsPlaybookTest {
     @Test
     void shouldRunOncePerPath() {
         PlaybookData data = PlaybookData.builder().pathItem(new PathItem()).reqSchema(new StringSchema()).path("/test").requestContentTypes(List.of("application/json")).build();
-        HttpResponse httpResponse = HttpResponse.builder().body("{}").responseCode(405).httpMethod("POST").build();
+        HttpResponse httpResponse = HttpResponse.builder().body("{}").responseCode(405).headers(List.of(new KeyValuePair<>("Allow","GET"))).httpMethod("POST").build();
         Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
 
         nonRestHttpMethodsPlaybook.run(data);
