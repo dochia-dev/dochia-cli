@@ -1,10 +1,6 @@
 package dev.dochia.cli.core.command;
 
-import dev.dochia.cli.core.args.ApiArguments;
-import dev.dochia.cli.core.args.FilterArguments;
-import dev.dochia.cli.core.args.MatchArguments;
-import dev.dochia.cli.core.args.ProcessingArguments;
-import dev.dochia.cli.core.args.StopArguments;
+import dev.dochia.cli.core.args.*;
 import dev.dochia.cli.core.http.HttpMethod;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -69,6 +65,7 @@ class RandomCommandTest {
         apiArguments.setContract("contract");
         apiArguments.setServer("server");
         randomCommand.apiArguments = apiArguments;
-        Assertions.assertThatThrownBy(() -> randomCommand.run()).isInstanceOf(CommandLine.ParameterException.class);
+        Assertions.assertThatThrownBy(() -> randomCommand.apiArguments.validateValidServer(randomCommand.spec, null))
+                .isInstanceOf(CommandLine.ParameterException.class);
     }
 }

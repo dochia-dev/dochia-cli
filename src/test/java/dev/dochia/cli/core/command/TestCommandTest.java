@@ -205,6 +205,8 @@ class TestCommandTest {
         Mockito.when(spec.commandLine()).thenReturn(Mockito.mock(CommandLine.class));
         ReflectionTestUtils.setField(testCommand, "spec", spec);
         ReflectionTestUtils.setField(apiArguments, "server", "server");
+        ReflectionTestUtils.setField(apiArguments, "contract", null);
+
         Assertions.assertThatThrownBy(() -> testCommand.run()).isInstanceOf(CommandLine.ParameterException.class);
     }
 }

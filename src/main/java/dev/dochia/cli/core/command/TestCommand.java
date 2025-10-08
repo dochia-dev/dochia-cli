@@ -203,6 +203,7 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
         this.prepareRun();
         OpenAPI openAPI = this.createOpenAPI();
         this.checkOpenAPI(openAPI);
+        apiArguments.validateValidServer(spec, openAPI);
         // reporting path is initialized only if OpenAPI spec is successfully parsed
         testCaseListener.initReportingPath();
         this.printConfiguration(openAPI);
@@ -322,7 +323,6 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
         ConsoleUtils.initTerminalWidth(spec);
         reportingArguments.processLogData();
         apiArguments.validateRequired(spec);
-        apiArguments.validateValidServer(spec);
         filesArguments.loadConfig();
     }
 
