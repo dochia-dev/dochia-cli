@@ -85,7 +85,7 @@ class BucketsCalculatorTest {
             var f = obj.getClass().getDeclaredField(field);
             f.setAccessible(true);
             f.set(obj, value);
-        } catch (Exception ignored) {
+        } catch (Exception _) {
             //ignore as it doesn't matter for the test
         }
     }

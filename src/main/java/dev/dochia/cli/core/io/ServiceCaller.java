@@ -694,7 +694,7 @@ public class ServiceCaller {
                 boolean mergeFuzzing = data.getTestedFields().contains(entry.getKey());
                 payload = FuzzingStrategy.replaceField(payload, entry.getKey(), fuzzingStrategy, mergeFuzzing).json();
             }
-        } catch (PathNotFoundException e) {
+        } catch (PathNotFoundException _) {
             logger.debug("Ref data key {} was not found within the payload!", entry.getKey());
         }
         return payload;

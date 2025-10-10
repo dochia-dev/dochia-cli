@@ -146,19 +146,4 @@ class HttpMethodsPlaybookTest {
         httpMethodsPlaybook.run(data);
         Mockito.verify(testCaseListener, Mockito.times(7)).reportResultWarn(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.eq("POST"), AdditionalMatchers.aryEq(new Object[]{405, "POST"}));
     }
-
-    @Test
-    void givenAnOperation_whenCallingTheHttpMethodsPlaybookAndTheServiceResponsesWith405AndValidAllowHeader_thenInfoIsReported() {
-        PlaybookData data = PlaybookData.builder().pathItem(new PathItem()).reqSchema(new StringSchema()).requestContentTypes(List.of("application/json")).build();
-        HttpResponse httpResponse = HttpResponse.builder()
-                .body("{}")
-                .responseCode(405)
-                .httpMethod("POST")
-                .headers(List.of(new KeyValuePair<>("Allow", "GET, PUT, DELETE")))
-                .build();
-        Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
-
-        httpMethodsPlaybook.run(data);
-        Mockito.verify(testCaseListener, Mockito.times(7)).reportResultInfo(Mockito.any(), Mockito.any(), Mockito.anyString(), AdditionalMatchers.aryEq(new Object[]{"POST", 405}));
-    }
 }

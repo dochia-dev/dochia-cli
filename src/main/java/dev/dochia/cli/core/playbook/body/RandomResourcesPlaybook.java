@@ -173,7 +173,7 @@ public class RandomResourcesPlaybook implements TestCasePlaybook {
     try {
       UUID.fromString(value);
       return true;
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException _) {
       return false;
     }
   }
@@ -182,7 +182,7 @@ public class RandomResourcesPlaybook implements TestCasePlaybook {
     try {
       Long.parseLong(value);
       return true;
-    } catch (NumberFormatException e) {
+    } catch (NumberFormatException _) {
       return false;
     }
   }

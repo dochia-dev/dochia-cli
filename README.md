@@ -5,7 +5,7 @@
 > simple 🤷‍♀️
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Java Version](https://img.shields.io/badge/Java-21+-blue.svg)](https://openjdk.org)
+[![Java Version](https://img.shields.io/badge/Java-25+-blue.svg)](https://openjdk.org)
 [![GraalVM](https://img.shields.io/badge/GraalVM-Native-orange.svg)](https://www.graalvm.org)
 [![Release](https://img.shields.io/github/v/release/dochia-dev/dochia-cli.svg)](https://github.com/dochia-dev/dochia-cli/releases)
 

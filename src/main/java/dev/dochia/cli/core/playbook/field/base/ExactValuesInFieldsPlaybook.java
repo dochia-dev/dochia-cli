@@ -73,10 +73,10 @@ public abstract class ExactValuesInFieldsPlaybook extends BaseBoundaryFieldPlayb
           So we generate a larger one and substring the right size. */
         try {
             return generateWithAdjustedLength(schema, 0);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException _) {
             try {
                 return generateWithAdjustedLength(schema, 15);
-            } catch (Exception ex) {
+            } catch (Exception _) {
                 testCaseListener.recordError("Playbook %s could not generate a value for patten %s, min %s, max %s"
                         .formatted(this.getClass().getSimpleName(), schema.getPattern(), schema.getMinLength(), schema.getMaxLength()));
                 return null;

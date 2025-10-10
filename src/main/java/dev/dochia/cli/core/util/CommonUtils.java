@@ -298,7 +298,7 @@ public abstract class CommonUtils {
       URI.create(urlString).toURL();
 
       return true;
-    } catch (Exception e) {
+    } catch (Exception _) {
       return false;
     }
   }

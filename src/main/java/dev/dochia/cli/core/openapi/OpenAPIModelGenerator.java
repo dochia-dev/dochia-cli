@@ -780,7 +780,7 @@ public class OpenAPIModelGenerator {
         if (DochiaModelUtils.isBinarySchema(property) || DochiaModelUtils.isByteArraySchema(property)) {
             try {
                 return Base64.getDecoder().decode((byte[]) example);
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException _) {
                 return example;
             }
         }
@@ -980,7 +980,7 @@ public class OpenAPIModelGenerator {
     public String generateAndRecordIfExceptionThrown(String propertyName, String pattern, Supplier<String> toExecute) {
         try {
             return toExecute.get();
-        } catch (Exception e) {
+        } catch (Exception _) {
             globalContext.recordError("A valid string could not be generated for the property '" + propertyName + "' using the pattern '" + pattern + "'. Please consider either changing the pattern or simplifying it.");
             return DEFAULT_STRING_WHEN_GENERATION_FAILS;
         }
