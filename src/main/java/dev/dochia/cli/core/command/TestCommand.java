@@ -48,7 +48,7 @@ import static org.fusesource.jansi.Ansi.ansi;
         synopsisHeading = "@|bold,underline Usage:|@%n",
         customSynopsis = {
                 "@|bold dochia|@ @|fg(yellow) test -c|@ <contract> @|fg(yellow) -s|@ <server> [ADDITIONAL OPTIONS]",
-                "@|bold dochia (test | fuzz | replay | list | info | explain)|@ [OPTIONS]"
+                ""
         },
         exitCodeListHeading = "%n@|bold,underline Exit Codes:|@%n",
         exitCodeList = {
