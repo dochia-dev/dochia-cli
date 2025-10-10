@@ -48,7 +48,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @QuarkusTest
-class TestCasePlaybookContextFactoryTest {
+class PlaybookDataFactoryTest {
     @Inject
     GlobalContext globalContext;
     @Inject
@@ -72,6 +72,23 @@ class TestCasePlaybookContextFactoryTest {
         globalContext.getRecordedErrors().clear();
     }
 
+    @Test
+    void shouldGenerateArrayWithSingleEnumItem() throws Exception {
+        List<PlaybookData> data = setupFuzzingData("/test-array", "src/test/resources/openapi_array_single_enum.yml");
+        Assertions.assertThat(data).hasSize(1);
+
+        PlaybookData firstData = data.getFirst();
+        String firstPayload = firstData.getPayload();
+
+        // When maxFromEnum is 1, the array size should be clamped to 1 (max becomes 1)
+        // even though minItems is 2, because maxFromEnum takes precedence
+        int arraySize = Integer.parseInt(JsonUtils.getVariableFromJson(firstPayload, "$.statuses.length()").toString());
+        Object firstElement = JsonUtils.getVariableFromJson(firstPayload, "$.statuses[0]");
+
+        Assertions.assertThat(arraySize).isEqualTo(1);
+        Assertions.assertThat(firstElement).isEqualTo("ACTIVE");
+        assertPropertiesExistInRequestPropertyTypes(firstData);
+    }
 
     private static void assertPropertiesExistInRequestPropertyTypes(PlaybookData firstData) {
         Set<DochiaField> allFieldsAsDochiaFields = firstData.getAllFieldsAsDochiaFields();
