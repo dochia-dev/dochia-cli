@@ -24,12 +24,12 @@
         <maven.compiler.target>25</maven.compiler.target>
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <commons-lang3.version>3.19.0</commons-lang3.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
         <jansi.version>2.4.2</jansi.version>
         <lombok.version>1.18.42</lombok.version>
         <rgxgen.version>3.1</rgxgen.version>
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
-        <openapi-generator.version>7.16.0</openapi-generator.version>
+        <openapi-generator.version>7.17.0</openapi-generator.version>
         <sonar.coverage.exclusions>
             **/*TestCaseExporter*.*, **/*TestCase*.*, **/*TestReport*.*, **/*Aspect*.*, **/*DochiaMain*.*,
             **/*VersionProvider*.*, **/*ReflectionConfig*.*,**/*TimeExecution*.*, **/*FormEncoder*.*,
@@ -39,22 +39,22 @@
         <sonar.coverage.jacoco.xmlReportPaths>target/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <maven-site-plugin.version>4.0.0-M16</maven-site-plugin.version>
         <maven-project-info-reports-plugin.version>3.9.0</maven-project-info-reports-plugin.version>
-        <spotbugs-maven-plugin.version>4.9.6.0</spotbugs-maven-plugin.version>
-        <sonar-maven-plugin.version>5.2.0.4988</sonar-maven-plugin.version>
+        <spotbugs-maven-plugin.version>4.9.8.2</spotbugs-maven-plugin.version>
+        <sonar-maven-plugin.version>5.3.0.6276</sonar-maven-plugin.version>
         <pretty-logger.version>1.16</pretty-logger.version>
         <compiler.version>0.9.14</compiler.version>
-        <json-path.version>2.9.0</json-path.version>
+        <json-path.version>2.10.0</json-path.version>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-        <quarkus.platform.version>3.28.1</quarkus.platform.version>
+        <quarkus.platform.version>3.30.1</quarkus.platform.version>
         <surefire-plugin.version>3.5.4</surefire-plugin.version>
         <compiler-plugin.version>3.14.1</compiler-plugin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
-        <spring.version>6.2.1</spring.version>
+        <spring.version>7.0.1</spring.version>
         <assertj-core.version>4.0.0-M1</assertj-core.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
         <maven-install-plugin.version>3.1.4</maven-install-plugin.version>
-        <spring-integration-core.version>6.5.0</spring-integration-core.version>
+        <spring-integration-core.version>7.0.0</spring-integration-core.version>
         <json.version>20250517</json.version>
         <error-prone.version>2.37.0</error-prone.version>
         <archunit-junit5.version>1.4.1</archunit-junit5.version>
@@ -69,14 +69,14 @@
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
         <okhttp.version>5.1.0-dochia</okhttp.version>
         <swagger.parser.version>2.1.31-dochia</swagger.parser.version>
-        <okio.version>3.16.0</okio.version>
+        <okio.version>3.16.4</okio.version>
         <wiremock.version>3.12.1</wiremock.version>
         <maven-enforcer-plugin.version>3.6.1</maven-enforcer-plugin.version>
         <regexp-gen.version>2.0.1</regexp-gen.version>
         <slf4j-ext.version>2.0.12</slf4j-ext.version>
         <javafaker.version>1.0.2</javafaker.version>
         <kotlin-reflect.version>2.1.20</kotlin-reflect.version>
-        <jackson.version>2.20.0</jackson.version>
+        <jackson.version>2.20.1</jackson.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -318,7 +318,7 @@
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
-                <version>1.20.3</version>
+                <version>1.22.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.pitest</groupId>
@@ -502,6 +502,16 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>${okhttp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>3.0.2</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okio</groupId>
