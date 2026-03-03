@@ -169,4 +169,11 @@ class CommonUtilsTest {
         String result = CommonUtils.randomizeCase(value);
         Assertions.assertThat(result).isNullOrEmpty();
     }
+
+    @Test
+    void shouldReturnSameWhenNoLetters() {
+        String input = "12345!";
+        String result = CommonUtils.randomizeCase(input);
+        Assertions.assertThat(result).isEqualTo(input);
+    }
 }

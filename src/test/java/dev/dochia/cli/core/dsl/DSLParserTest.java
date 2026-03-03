@@ -85,4 +85,9 @@ class DSLParserTest {
         String actual = DSLParser.parseAndGetResult(input, Map.of("name", "john"));
         Assertions.assertThat(actual).isEqualTo(parsedOutput);
     }
+
+    @Test
+    void shouldReturnNullWhenValueIsNull() {
+        Assertions.assertThat(DSLParser.parseAndGetResult(null, Map.of())).isNull();
+    }
 }

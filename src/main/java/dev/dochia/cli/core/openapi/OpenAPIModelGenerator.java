@@ -52,6 +52,8 @@ import java.util.stream.Collectors;
 public class OpenAPIModelGenerator {
     public static final String SYNTH_SCHEMA_NAME = "DochiaGetSchema";
     public static final String DEFAULT_STRING_WHEN_GENERATION_FAILS = "addOrChangeOrSimplifyThePattern";
+    public static final int REQUEST_TOTAL_DEPTH = 200;
+    public static final int RESPONSE_TOTAL_DEPTH = 50;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final BigDecimal MAX = new BigDecimal("99999999999");
     public static final int LIMIT_OF_EXAMPLES = 500;
@@ -96,7 +98,7 @@ public class OpenAPIModelGenerator {
         this.maxArraySize = maxArraySize;
 
         this.resolveAnyOfAsMultipleSchema = true;
-        this.totalDepth = 200;
+        this.totalDepth = REQUEST_TOTAL_DEPTH;
     }
 
     /**
@@ -120,7 +122,7 @@ public class OpenAPIModelGenerator {
         this.useDefaults = useDefaults;
         this.maxArraySize = maxArraySize;
         this.resolveAnyOfAsMultipleSchema = resolveAnyOfAsMultipleSchema;
-        this.totalDepth = 50;
+        this.totalDepth = RESPONSE_TOTAL_DEPTH;
     }
 
     private void addExampleAndKeepDepth(String propertyName, Object propertyExample, Map<String, Object> newExample, List<Map<String, Object>> combinedExamples) {

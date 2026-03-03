@@ -94,6 +94,7 @@ public class RandomCommand implements Runnable, CommandLine.IExitCodeGenerator {
 
         // these are all throwing a ParameterException in case a mandatory argument is not provided
         apiArguments.validateRequired(spec);
+        apiArguments.validateValidServer(spec, null);
 
         testCommand.filterArguments.customFilter("RandomPlaybook");
         testCommand.filesArguments = filesArguments;

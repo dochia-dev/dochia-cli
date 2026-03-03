@@ -2,9 +2,11 @@ package dev.dochia.cli.core.http;
 
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -184,9 +186,9 @@ public enum HttpMethod {
      */
     INDEX;
 
-    private static final List<HttpMethod> REST_METHODS = Arrays.asList(POST, PUT, GET, TRACE, DELETE, PATCH, HEAD);
+    private static final List<HttpMethod> REST_METHODS = List.of(POST, PUT, GET, TRACE, DELETE, PATCH, HEAD);
 
-    private static final List<HttpMethod> NON_REST_METHODS = Arrays.asList(CONNECT, COPY, MOVE,
+    private static final List<HttpMethod> NON_REST_METHODS = List.of(CONNECT, COPY, MOVE,
             PROPPATCH, PROPFIND, MKCOL, LOCK, UNLOCK, SEARCH,
             BIND, UNBIND, REBIND, MKREDIRECTREF,
             UPDATEREDIRECTREF, ORDERPATCH, ACL, REPORT);
@@ -265,7 +267,7 @@ public enum HttpMethod {
      * @throws IllegalArgumentException If the provided method String is not a valid HTTP method.
      */
     public static boolean requiresBody(String method) {
-        return requiresBody(HttpMethod.valueOf(method));
+        return requiresBody(HttpMethod.valueOf(method.toUpperCase(Locale.ROOT)));
     }
 
     /**
@@ -278,7 +280,11 @@ public enum HttpMethod {
      * @throws IllegalArgumentException If the provided HTTP method is not supported or the PathItem does not contain the specified method.
      */
     public static Operation getOperation(HttpMethod method, PathItem pathItem) {
-        return OPERATIONS.get(method).apply(pathItem);
+        Function<PathItem, Operation> extractor = OPERATIONS.get(method);
+        if (extractor == null) {
+            throw new IllegalArgumentException("Unsupported HTTP method: " + method);
+        }
+        return extractor.apply(pathItem);
     }
 
     /**
@@ -286,7 +292,6 @@ public enum HttpMethod {
      *
      * @param httpM The HTTP method string to convert.
      * @return An Optional containing the HttpMethod enum if found, or empty if not found.
-     * @throws NullPointerException If the provided HTTP method string is null.
      */
     public static Optional<HttpMethod> fromString(String httpM) {
         return Arrays.stream(values())
