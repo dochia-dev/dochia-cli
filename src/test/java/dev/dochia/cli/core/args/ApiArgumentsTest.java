@@ -120,4 +120,21 @@ class ApiArgumentsTest {
         Assertions.assertThatCode(() -> args.validateValidServer(spec, null))
                 .doesNotThrowAnyException();
     }
+
+    @Test
+    void shouldPreferCliServerOverOpenApiConcreteServer() {
+        CommandLine.Model.CommandSpec spec = Mockito.mock(CommandLine.Model.CommandSpec.class);
+        Mockito.when(spec.commandLine()).thenReturn(Mockito.mock(CommandLine.class));
+        ApiArguments args = new ApiArguments();
+        args.setServer("http://localhost:8080");
+
+        OpenAPI openAPI = new OpenAPI();
+        openAPI.setServers(Collections.singletonList(
+                new io.swagger.v3.oas.models.servers.Server().url("https://api.example.com")
+        ));
+
+        args.validateValidServer(spec, openAPI);
+
+        Assertions.assertThat(args.getServer()).isEqualTo("http://localhost:8080");
+    }
 }

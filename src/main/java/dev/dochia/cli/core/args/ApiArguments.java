@@ -102,8 +102,17 @@ public class ApiArguments {
 
         if (openAPI != null) {
             List<String> servers = OpenApiServerExtractor.getServerUrls(openAPI);
-            log.debug("--server not provided. Loaded from OpenAPI: {}", servers);
-            servers.stream().findFirst().ifPresent(theServer -> this.server = theServer);
+            log.debug("Servers from OpenAPI: {}", servers);
+
+            if (serverFromInput == null) {
+                servers.stream().findFirst().ifPresent(theServer -> this.server = theServer);
+            } else {
+                servers.stream().findFirst().ifPresent(openApiServer -> {
+                    if (openApiServer.contains("{") || !openApiServer.startsWith("http")) {
+                        this.server = openApiServer;
+                    }
+                });
+            }
         }
 
         if (this.server != null && serverFromInput != null) {
