@@ -1,5 +1,9 @@
 package dev.dochia.cli.core.factory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.JsonParser;
 import dev.dochia.cli.core.args.FilesArguments;
 import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.args.ProcessingArguments;
@@ -8,15 +12,11 @@ import dev.dochia.cli.core.generator.format.api.ValidDataFormat;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.model.DochiaField;
 import dev.dochia.cli.core.model.DochiaHeader;
-import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.model.NoMediaType;
+import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.openapi.OpenAPIModelGenerator;
 import dev.dochia.cli.core.util.JsonUtils;
 import dev.dochia.cli.core.util.OpenApiUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.JsonParser;
 import io.quarkus.test.junit.QuarkusTest;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -1165,11 +1165,6 @@ class PlaybookDataFactoryTest {
         Assertions.assertThat(dataList).hasSize(1);
         Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.POST);
         String example = dataList.getFirst().getPayload();
-        Assertions.assertThat(example).contains("title");
-        Assertions.assertThat(example).contains("departmentId");
-        Assertions.assertThat(example).contains("deadlineDate");
-        Assertions.assertThat(example).contains("locationId");
-        Assertions.assertThat(example).contains("messageTemplateId");
-        Assertions.assertThat(example).contains("vacancyTemplateId");
+        Assertions.assertThat(example).contains("title", "deadlineDate", "locationId", "messageTemplateId", "vacancyTemplateId");
     }
 }

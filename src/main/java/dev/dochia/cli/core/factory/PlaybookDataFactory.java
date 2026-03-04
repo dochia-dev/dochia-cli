@@ -120,6 +120,9 @@ public class PlaybookDataFactory {
      * @return a Set with all the query parameters
      */
     private Set<String> extractQueryParams(Schema<?> schema) {
+        if (schema.getProperties() == null) {
+            return Collections.emptySet();
+        }
         return schema.getProperties().entrySet().stream().filter(entry -> entry.getValue().getName().endsWith("query")).map(Map.Entry::getKey).collect(Collectors.toSet());
     }
 
@@ -235,6 +238,8 @@ public class PlaybookDataFactory {
         KeyValuePair<String, Schema<?>> paramsSchema = this.createSyntheticSchemaForGet(operation);
         //we need this in order to be able to generate path params if not supplied by the user
         String pathParamsExample = this.getRequestPayloadsSamples(null, paramsSchema.getKey()).examplePayloads().getFirst();
+        Set<String> queryParams = this.extractQueryParams(paramsSchema.getValue());
+        logger.debug("Query params for path {}, method {}: {}", path, method, queryParams);
 
         Set<Object> examples = this.extractExamples(mediaType);
         Map<String, List<String>> responses = this.getResponsePayloads(operation);
@@ -271,6 +276,7 @@ public class PlaybookDataFactory {
                             .skippedFieldsForAllPlaybooks(filterArguments.getSkipFieldsToBeSkippedForAllPlaybooks())
                             .responseHeaders(responseHeaders)
                             .pathParamsPayload(pathParamsExample)
+                            .queryParams(queryParams)
                             .build()).toList());
         }
 

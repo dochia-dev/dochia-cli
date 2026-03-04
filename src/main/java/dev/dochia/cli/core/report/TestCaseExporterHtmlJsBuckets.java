@@ -20,10 +20,10 @@ public class TestCaseExporterHtmlJsBuckets extends TestCaseExporter {
      * Constructs a new instance of TestCaseExporterHtmlJs with the specified reporting arguments.
      *
      * @param reportingArguments the reporting arguments for configuring the TestCaseExporterHtmlJs
-     * @param catsGlobalContext  the global context for the CATS application
+     * @param globalContext  the global context for the dochia application
      */
-    public TestCaseExporterHtmlJsBuckets(ReportingArguments reportingArguments, GlobalContext catsGlobalContext) {
-        super(reportingArguments, catsGlobalContext);
+    public TestCaseExporterHtmlJsBuckets(ReportingArguments reportingArguments, GlobalContext globalContext) {
+        super(reportingArguments, globalContext);
     }
 
     @Override

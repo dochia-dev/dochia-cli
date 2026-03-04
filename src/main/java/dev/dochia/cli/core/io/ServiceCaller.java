@@ -22,16 +22,33 @@ import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.playbook.api.DryRun;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.strategy.FuzzingStrategy;
-import dev.dochia.cli.core.util.*;
+import dev.dochia.cli.core.util.CommonUtils;
+import dev.dochia.cli.core.util.DSLWords;
+import dev.dochia.cli.core.util.JsonUtils;
+import dev.dochia.cli.core.util.KeyValuePair;
+import dev.dochia.cli.core.util.OpenApiUtils;
+import dev.dochia.cli.core.util.WordUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import okhttp3.*;
+import okhttp3.ConnectionPool;
+import okhttp3.Headers;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.net.ssl.*;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +58,19 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -233,10 +262,11 @@ public class ServiceCaller {
      *
      * @param data             the service data context
      * @param processedPayload current payload
-     * @return an url with path params replaced by urlParams or refData + additional query params
+     * @return a url with path params replaced by urlParams or refData + additional query params
      */
     String constructUrl(ServiceData data, String processedPayload) {
         String decodedUrl = CommonUtils.unescapeCurlyBrackets(apiArguments.getServer() + data.getRelativePath());
+        logger.debug("Decoded URL: {}", decodedUrl);
         if (!data.isReplaceUrlParams()) {
             String actualUrl = this.replacePathParams(decodedUrl, processedPayload, data);
             return this.replaceRemovedParams(actualUrl);
@@ -247,6 +277,8 @@ public class ServiceCaller {
         if (!HttpMethod.requiresBody(data.getHttpMethod())) {
             url = this.getPathWithRefDataReplacedForNonHttpEntityRequests(data, apiArguments.getServer() + data.getRelativePath());
             url = this.addUriParams(processedPayload, data, url);
+        } else {
+            url = this.addQueryParamsFromPathParamsPayload(url, data);
         }
         url = this.addPathParamsIfNotReplaced(url, data.getPathParamsPayload());
         url = this.addAdditionalQueryParams(url, data.getRelativePath());
@@ -261,9 +293,30 @@ public class ServiceCaller {
 
         for (String pathVariable : pathVariables) {
             String pathValue = String.valueOf(JsonUtils.getVariableFromJson(pathParamsPayload, pathVariable));
-            url = url.replace("{" + pathVariable + "}", pathValue);
+            url = url.replace("{" + pathVariable + "}", URLEncoder.encode(pathValue, StandardCharsets.UTF_8));
         }
         return url;
+    }
+
+    String addQueryParamsFromPathParamsPayload(String url, ServiceData data) {
+        String pathParamsPayload = data.getPathParamsPayload();
+        Set<String> queryParams = data.getQueryParams();
+
+        if (StringUtils.isEmpty(pathParamsPayload) || queryParams.isEmpty()) {
+            return url;
+        }
+
+        logger.debug("Adding query params {} from pathParamsPayload {} for body method", queryParams, pathParamsPayload);
+        HttpUrl.Builder httpUrl = HttpUrl.get(url).newBuilder();
+
+        for (String queryParam : queryParams) {
+            Object paramValue = JsonUtils.getVariableFromJson(pathParamsPayload, queryParam);
+            if (paramValue != null && !JsonUtils.NOT_SET.equals(String.valueOf(paramValue))) {
+                httpUrl.addQueryParameter(queryParam, String.valueOf(paramValue));
+            }
+        }
+
+        return httpUrl.build().toString();
     }
 
     String addAdditionalQueryParams(String startingUrl, String currentPath) {
@@ -632,7 +685,7 @@ public class ServiceCaller {
 
         for (Map.Entry<String, Object> entry : currentPathRefData.entrySet()) {
             String valueToReplace = DSLParser.parseAndGetResult(String.valueOf(entry.getValue()), Map.of());
-            currentUrl = currentUrl.replace("{" + entry.getKey() + "}", valueToReplace);
+            currentUrl = currentUrl.replace("{" + entry.getKey() + "}", URLEncoder.encode(valueToReplace, StandardCharsets.UTF_8));
             data.getPathParams().add(entry.getKey());
         }
 
