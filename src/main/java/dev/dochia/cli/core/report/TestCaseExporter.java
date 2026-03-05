@@ -385,7 +385,8 @@ public abstract class TestCaseExporter {
     private void writeJsonTestCase(TestCase testCase) {
         String testFileName = testCase.getTestId().replace(" ", "").concat(JSON);
         try {
-            Files.writeString(Paths.get(reportingPath.toFile().getAbsolutePath(), testFileName), maskingSerializer.toJson(testCase), StandardCharsets.UTF_8);
+            // Write raw bytes to preserve exact payload for replay - don't sanitize
+            Files.write(Paths.get(reportingPath.toFile().getAbsolutePath(), testFileName), maskingSerializer.toJson(testCase).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             logger.error("There was a problem writing test case {}: {}. Please check if dochia has proper right to write in the report location: {}",
                     testCase.getTestId(), e.getMessage(), reportingPath.toFile().getAbsolutePath());
@@ -405,7 +406,7 @@ public abstract class TestCaseExporter {
         Writer writer = TEST_CASE_MUSTACHE.execute(stringWriter, context);
         String testFileName = testCase.getTestId().replace(" ", "").concat(HTML);
         try {
-            Files.writeString(Paths.get(reportingPath.toFile().getAbsolutePath(), testFileName), writer.toString(), StandardCharsets.UTF_8);
+            Files.write(Paths.get(reportingPath.toFile().getAbsolutePath(), testFileName), writer.toString().getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             logger.error("There was a problem writing test case {}: {}. Please check if dochia has proper right to write in the report location: {}",
                     testCase.getTestId(), e.getMessage(), reportingPath.toFile().getAbsolutePath());
