@@ -1,6 +1,7 @@
 package dev.dochia.cli.core.playbook.field;
 
 import dev.dochia.cli.core.args.FilesArguments;
+import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.report.TestCaseListener;
@@ -54,5 +55,12 @@ class HangulFillerFieldsValidateSanitizePlaybookTest {
     void shouldSkipFuzzingForSpecialChars() {
         PlaybookData data = mockFuzzingData();
         Assertions.assertThat(hangulFillerFieldsSanitizeValidatePlaybook.isPlaybookApplicable(data, "testField")).isFalse();
+    }
+
+    @Test
+    void shouldHaveExpectedResponseCode4xx() {
+        Assertions.assertThat(hangulFillerFieldsSanitizeValidatePlaybook.getExpectedHttpCodeWhenRequiredFieldsAreFuzzed()).isEqualTo(ResponseCodeFamilyPredefined.FOURXX);
+        Assertions.assertThat(hangulFillerFieldsSanitizeValidatePlaybook.getExpectedHttpCodeWhenFuzzedValueNotMatchesPattern()).isEqualTo(ResponseCodeFamilyPredefined.FOURXX);
+        Assertions.assertThat(hangulFillerFieldsSanitizeValidatePlaybook.getExpectedHttpCodeWhenOptionalFieldsAreFuzzed()).isEqualTo(ResponseCodeFamilyPredefined.FOURXX);
     }
 }

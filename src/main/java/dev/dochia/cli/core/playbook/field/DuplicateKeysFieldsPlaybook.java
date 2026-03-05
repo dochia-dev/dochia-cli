@@ -1,19 +1,19 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.playbook.api.FieldPlaybook;
-import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.io.ServiceData;
 import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
+import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.JsonUtils;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
 import jakarta.inject.Singleton;
@@ -21,7 +21,6 @@ import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.StringJoiner;
 
 /**
@@ -60,22 +59,10 @@ public class DuplicateKeysFieldsPlaybook implements TestCasePlaybook {
     }
 
     private void executeFieldMutations(PlaybookData data) {
-        Set<String> fields = data.getAllFieldsByHttpMethod();
-        int executedCount = 0;
-
-        for (String field : fields) {
-            if (executedCount >= MAX_MUTATIONS_PER_REQUEST) {
-                logger.debug("Reached maximum mutations limit ({}), stopping", MAX_MUTATIONS_PER_REQUEST);
-                break;
-            }
-
-            if (shouldSkipField(field, data.getPayload())) {
-                continue;
-            }
-
-            executedCount++;
-            executeFieldDuplication(data, field);
-        }
+        data.getAllFieldsByHttpMethod().stream()
+                .filter(field -> !shouldSkipField(field, data.getPayload()))
+                .limit(MAX_MUTATIONS_PER_REQUEST)
+                .forEach(field -> executeFieldDuplication(data, field));
     }
 
     private boolean shouldSkipField(String field, String payload) {
