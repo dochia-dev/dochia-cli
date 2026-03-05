@@ -10,12 +10,15 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 
 @QuarkusTest
@@ -28,11 +31,17 @@ class ReplayCommandTest {
     @InjectSpy
     private TestCaseListener testCaseListener;
 
+    @TempDir
+    Path tempDir;
+
     @BeforeEach
-    void setup() {
+    void setup() throws IOException {
         replayCommand = new ReplayCommand(serviceCaller, testCaseListener);
         replayCommand.authArgs = Mockito.mock(AuthArguments.class);
         ReflectionTestUtils.setField(testCaseListener, "testReportsGenerator", Mockito.mock(TestReportsGenerator.class));
+        if (tempDir == null) {
+            tempDir = Files.createTempDirectory("replay-test-temp");
+        }
     }
 
     @Test
@@ -84,5 +93,89 @@ class ReplayCommandTest {
         ReplayCommand spyReplay = Mockito.spy(replayCommand);
         spyReplay.run();
         Mockito.verify(spyReplay, Mockito.times(1)).showResponseCodesDifferences(Mockito.any(), Mockito.argThat(httpResponse -> httpResponse.getResponseCode() == 953));
+    }
+
+    @Test
+    void shouldRetryErrorsFromSummaryReport() throws Exception {
+        Path reportFolder = tempDir.resolve("dochia-report-retry");
+        Files.createDirectories(reportFolder);
+        String summaryJson = "{\"testCases\": [{\"id\": \"Test 12\", \"result\": \"error\"}]}";
+        Files.writeString(reportFolder.resolve("dochia-summary-report.json"), summaryJson);
+        String testContent = Files.readString(Path.of("src/test/resources/Test12.json"));
+        Files.writeString(reportFolder.resolve("Test12.json"), testContent);
+
+        ReflectionTestUtils.setField(replayCommand, "reportFolder", reportFolder.toString());
+        ReflectionTestUtils.setField(replayCommand, "errors", true);
+
+        HttpResponse response = Mockito.mock(HttpResponse.class);
+        Mockito.when(response.getBody()).thenReturn("");
+        Mockito.when(serviceCaller.callService(Mockito.any(), Mockito.anySet())).thenReturn(response);
+
+        replayCommand.run();
+        Mockito.verify(serviceCaller, Mockito.times(1)).callService(Mockito.any(), Mockito.eq(Collections.emptySet()));
+    }
+
+    @Test
+    void shouldRetryWarningsFromSummaryReport() throws Exception {
+        Path reportFolder = tempDir.resolve("dochia-report-warnings");
+        Files.createDirectories(reportFolder);
+        String summaryJson = "{\"testCases\": [{\"id\": \"Test 12\", \"result\": \"warn\"}]}";
+        Files.writeString(reportFolder.resolve("dochia-summary-report.json"), summaryJson);
+        String testContent = Files.readString(Path.of("src/test/resources/Test12.json"));
+        Files.writeString(reportFolder.resolve("Test12.json"), testContent);
+
+        ReflectionTestUtils.setField(replayCommand, "reportFolder", reportFolder.toString());
+        ReflectionTestUtils.setField(replayCommand, "warnings", true);
+
+        HttpResponse response = Mockito.mock(HttpResponse.class);
+        Mockito.when(response.getBody()).thenReturn("");
+        Mockito.when(serviceCaller.callService(Mockito.any(), Mockito.anySet())).thenReturn(response);
+
+        replayCommand.run();
+        Mockito.verify(serviceCaller, Mockito.times(1)).callService(Mockito.any(), Mockito.eq(Collections.emptySet()));
+    }
+
+    @Test
+    void shouldNotRetrySuccessTests() throws Exception {
+        Path reportFolder = tempDir.resolve("dochia-report-success");
+        Files.createDirectories(reportFolder);
+        String summaryJson = "{\"testCases\": [{\"id\": \"Test 1\", \"result\": \"success\"}]}";
+        Files.writeString(reportFolder.resolve("dochia-summary-report.json"), summaryJson);
+
+        ReflectionTestUtils.setField(replayCommand, "reportFolder", reportFolder.toString());
+        ReflectionTestUtils.setField(replayCommand, "errors", true);
+
+        replayCommand.run();
+        Mockito.verifyNoInteractions(serviceCaller);
+    }
+
+    @Test
+    void shouldHandleMissingSummaryReport() {
+        ReflectionTestUtils.setField(replayCommand, "reportFolder", "/non/existent/path");
+        ReflectionTestUtils.setField(replayCommand, "errors", true);
+
+        replayCommand.run();
+        Mockito.verifyNoInteractions(serviceCaller);
+    }
+
+    @Test
+    void shouldCombineRetryAndExplicitTests() throws Exception {
+        Path reportFolder = tempDir.resolve("dochia-report-combined");
+        Files.createDirectories(reportFolder);
+        String summaryJson = "{\"testCases\": [{\"id\": \"Test 12\", \"result\": \"error\"}]}";
+        Files.writeString(reportFolder.resolve("dochia-summary-report.json"), summaryJson);
+        String testContent = Files.readString(Path.of("src/test/resources/Test12.json"));
+        Files.writeString(reportFolder.resolve("Test12.json"), testContent);
+
+        ReflectionTestUtils.setField(replayCommand, "reportFolder", reportFolder.toString());
+        ReflectionTestUtils.setField(replayCommand, "errors", true);
+        replayCommand.tests = new String[]{"src/test/resources/Test12.json"};
+
+        HttpResponse response = Mockito.mock(HttpResponse.class);
+        Mockito.when(response.getBody()).thenReturn("");
+        Mockito.when(serviceCaller.callService(Mockito.any(), Mockito.anySet())).thenReturn(response);
+
+        replayCommand.run();
+        Mockito.verify(serviceCaller, Mockito.times(2)).callService(Mockito.any(), Mockito.eq(Collections.emptySet()));
     }
 }

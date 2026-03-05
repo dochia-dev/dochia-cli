@@ -8,7 +8,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import dev.dochia.cli.core.args.ReportingArguments;
 import dev.dochia.cli.core.context.GlobalContext;
-import dev.dochia.cli.core.model.*;
+import dev.dochia.cli.core.model.DochiaConfiguration;
+import dev.dochia.cli.core.model.TestCase;
+import dev.dochia.cli.core.model.TestCaseExecutionSummary;
+import dev.dochia.cli.core.model.TestCaseSummary;
+import dev.dochia.cli.core.model.TestReport;
+import dev.dochia.cli.core.model.TimeExecution;
+import dev.dochia.cli.core.model.TimeExecutionDetails;
 import dev.dochia.cli.core.model.ann.ExcludeTestCaseStrategy;
 import dev.dochia.cli.core.playbook.api.DryRun;
 import dev.dochia.cli.core.util.ConsoleUtils;
@@ -24,9 +30,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.fusesource.jansi.Ansi;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -34,7 +48,12 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -50,6 +69,7 @@ public abstract class TestCaseExporter {
     static final String REPORT_HTML = "index.html";
     static final MustacheFactory mustacheFactory = new DefaultMustacheFactory();
     static final Mustache SUMMARY_MUSTACHE = mustacheFactory.compile("summary.mustache");
+    public static final String REPORT_JS = "dochia-summary-report.json";
     private static final String HTML = ".html";
     private static final String JSON = ".json";
     private static final Mustache TEST_CASE_MUSTACHE = mustacheFactory.compile("test-case.mustache");
@@ -308,10 +328,10 @@ public abstract class TestCaseExporter {
 
         try {
             writer.flush();
-            String content = writer.toString();
-            byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
             Files.write(Paths.get(reportingPath.toFile().getAbsolutePath(), this.getSummaryReportTitle()),
-                    bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                    writer.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(Paths.get(reportingPath.toFile().getAbsolutePath(), REPORT_JS), maskingSerializer.toJson(report).getBytes(StandardCharsets.UTF_8));
+
         } catch (IOException e) {
             logger.error("There was an error writing the report summary: {}. Please check if dochia has proper right to write in the report location: {}",
                     e.getMessage(), reportingPath.toFile().getAbsolutePath());
