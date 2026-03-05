@@ -1,6 +1,13 @@
 package dev.dochia.cli.core.command;
 
-import dev.dochia.cli.core.args.*;
+import dev.dochia.cli.core.args.ApiArguments;
+import dev.dochia.cli.core.args.AuthArguments;
+import dev.dochia.cli.core.args.CheckArguments;
+import dev.dochia.cli.core.args.FilesArguments;
+import dev.dochia.cli.core.args.FilterArguments;
+import dev.dochia.cli.core.args.IgnoreArguments;
+import dev.dochia.cli.core.args.ProcessingArguments;
+import dev.dochia.cli.core.args.ReportingArguments;
 import dev.dochia.cli.core.command.model.ConfigOptions;
 import dev.dochia.cli.core.command.model.HelpFullOption;
 import dev.dochia.cli.core.context.GlobalContext;
@@ -12,7 +19,11 @@ import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.report.ExecutionStatisticsListener;
 import dev.dochia.cli.core.report.TestCaseListener;
-import dev.dochia.cli.core.util.*;
+import dev.dochia.cli.core.util.CommonUtils;
+import dev.dochia.cli.core.util.ConsoleUtils;
+import dev.dochia.cli.core.util.OpenApiUtils;
+import dev.dochia.cli.core.util.VersionChecker;
+import dev.dochia.cli.core.util.VersionProvider;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
 import io.quarkus.arc.Unremovable;
@@ -25,8 +36,16 @@ import org.fusesource.jansi.Ansi;
 import picocli.CommandLine;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import static org.fusesource.jansi.Ansi.ansi;
@@ -459,6 +478,11 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
     }
 
     private void runSinglePlaybook(TestCasePlaybook testCasePlaybook, PlaybookData data) {
+        if (data.shouldSkipPlaybookForPath(testCasePlaybook.toString())) {
+            logger.skip("Skipping Playbook {} for path {} due to OpenAPI extension configuration",
+                    ansi().fgYellow().a(testCasePlaybook.toString()).reset(), data.getPath());
+            return;
+        }
         logPlaybookStart(testCasePlaybook, data);
 
         testCaseListener.beforeFuzz(testCasePlaybook.getClass(), data.getContractPath(), data.getMethod().name());

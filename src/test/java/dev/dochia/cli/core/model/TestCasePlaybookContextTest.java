@@ -240,6 +240,43 @@ class TestCasePlaybookContextTest {
                 .doesNotContain(Set.of("a", "b", "c", "d"));
     }
 
+    @Test
+    void shouldSkipFuzzerForPathWhenMatchingExtension() {
+        PlaybookData data = PlaybookData.builder()
+                .skippedPlaybooksForPath(List.of("BypassAuthentication", "RemoveAuthHeaders"))
+                .build();
+
+        Assertions.assertThat(data.shouldSkipPlaybookForPath("BypassAuthenticationPlaybook")).isTrue();
+        Assertions.assertThat(data.shouldSkipPlaybookForPath("RemoveAuthHeadersPlaybook")).isTrue();
+    }
+
+    @Test
+    void shouldNotSkipFuzzerForPathWhenNoMatch() {
+        PlaybookData data = PlaybookData.builder()
+                .skippedPlaybooksForPath(List.of("BypassAuthentication"))
+                .build();
+
+        Assertions.assertThat(data.shouldSkipPlaybookForPath("HappyPathPlaybook")).isFalse();
+    }
+
+    @Test
+    void shouldNotSkipFuzzerForPathWhenEmptyList() {
+        PlaybookData data = PlaybookData.builder()
+                .skippedPlaybooksForPath(Collections.emptyList())
+                .build();
+
+        Assertions.assertThat(data.shouldSkipPlaybookForPath("BypassAuthenticationPlaybook")).isFalse();
+    }
+
+    @Test
+    void shouldSkipFuzzerForPathCaseInsensitive() {
+        PlaybookData data = PlaybookData.builder()
+                .skippedPlaybooksForPath(List.of("bypassauthentication"))
+                .build();
+
+        Assertions.assertThat(data.shouldSkipPlaybookForPath("BypassAuthenticationPlaybook")).isTrue();
+    }
+
     public Map<String, Schema> getBasePropertiesRequired() {
         Map<String, Schema> schemaMap = new HashMap<>();
         schemaMap.put("address", new StringSchema());

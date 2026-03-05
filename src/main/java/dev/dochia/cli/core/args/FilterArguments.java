@@ -1,7 +1,17 @@
 package dev.dochia.cli.core.args;
 
 import dev.dochia.cli.core.http.HttpMethod;
-import dev.dochia.cli.core.playbook.api.*;
+import dev.dochia.cli.core.playbook.api.BodyPlaybook;
+import dev.dochia.cli.core.playbook.api.EmojiPlaybook;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
+import dev.dochia.cli.core.playbook.api.HeaderPlaybook;
+import dev.dochia.cli.core.playbook.api.SanitizeAndValidate;
+import dev.dochia.cli.core.playbook.api.SpecialPlaybook;
+import dev.dochia.cli.core.playbook.api.StatefulPlaybook;
+import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import dev.dochia.cli.core.playbook.api.TrimAndValidate;
+import dev.dochia.cli.core.playbook.api.ValidateAndSanitize;
+import dev.dochia.cli.core.playbook.api.ValidateAndTrim;
 import dev.dochia.cli.core.util.CommonUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
@@ -15,7 +25,16 @@ import org.springframework.core.annotation.AnnotationUtils;
 import picocli.CommandLine;
 
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -124,7 +143,16 @@ public class FilterArguments {
             description = "A comma separated list of tags to ignore. If no tag is supplied, no tag will be ignored. All available tags can be listed using: @|bold dochia list --tags -c api.yml|@", split = ",")
     private List<String> skipTags;
 
+    @CommandLine.Option(names = {"--skip-playbooks-for-extension", "--skip-playbook-for-extension"},
+            description = "Skip specific playbooks for endpoints with certain OpenAPI extension values. " +
+                    "Format: @|bold x-extension-name=value:Playbook1,Playbook2|@. " +
+                    "Example: @|bold --skip-playbooks-for-extension \"x-public-endpoint=true:BypassAuthentication\"|@ " +
+                    "will skip BypassAuthentication playbook for all endpoints that have x-public-endpoint extension set to true.", split = ",")
+    private List<String> skipPlaybooksForExtension;
+
+
     private Map<String, List<String>> skipPathPlaybooks = new HashMap<>();
+    private Map<String, Map<String, List<String>>> skipPlaybooksForExtensionMap = new HashMap<>();
 
     /**
      * Gets the list of fields to skip during processing. If the list is not set, an empty list is returned.
@@ -250,6 +278,67 @@ public class FilterArguments {
      */
     public List<String> getSkippedTags() {
         return Optional.ofNullable(this.skipTags).orElse(Collections.emptyList());
+    }
+
+    /**
+     * Parses the {@code --skip-playbooks-for-extension} argument and returns a map of extension name to
+     * a map of extension value to list of playbooks to skip.
+     * Format: x-extension-name=value:Playbook1,Playbook2
+     *
+     * @return a map of extension name -> (extension value -> list of playbooks to skip)
+     */
+    public Map<String, Map<String, List<String>>> getSkipPlaybooksForExtension() {
+        if (skipPlaybooksForExtensionMap.isEmpty() && skipPlaybooksForExtension != null) {
+            for (String entry : skipPlaybooksForExtension) {
+                String[] parts = entry.split(":", 2);
+                if (parts.length == 2) {
+                    String[] extensionParts = parts[0].split("=", 2);
+                    if (extensionParts.length == 2) {
+                        String extensionName = extensionParts[0].trim();
+                        String extensionValue = extensionParts[1].trim();
+                        List<String> playbooksList = Stream.of(parts[1].split(","))
+                                .map(String::trim)
+                                .toList();
+                        skipPlaybooksForExtensionMap
+                                .computeIfAbsent(extensionName, k -> new HashMap<>())
+                                .put(extensionValue, playbooksList);
+                    }
+                }
+            }
+        }
+        return skipPlaybooksForExtensionMap;
+    }
+
+    /**
+     * Returns the list of playbooks to skip for a given operation based on its extensions.
+     *
+     * @param operationExtensions the extensions map from the OpenAPI operation
+     * @return a list of playbooks names to skip for this operation
+     */
+    public List<String> getPlaybooksToSkipForOperationExtensions(Map<String, Object> operationExtensions) {
+        if (operationExtensions == null || operationExtensions.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> playbooksToSkip = new ArrayList<>();
+        Map<String, Map<String, List<String>>> extensionConfig = getSkipPlaybooksForExtension();
+
+        for (Map.Entry<String, Object> extension : operationExtensions.entrySet()) {
+            String extensionName = extension.getKey();
+            String extensionValue = String.valueOf(extension.getValue());
+
+            Map<String, List<String>> valueToPlaybookss = extensionConfig.get(extensionName);
+            if (valueToPlaybookss != null) {
+                List<String> playbooksFromExtesion = valueToPlaybookss.get(extensionValue);
+                if (playbooksFromExtesion != null) {
+                    playbooksToSkip.addAll(playbooksFromExtesion);
+                }
+            }
+        }
+
+        logger.debug("Playbooks to skip for path based on extensions: {}", playbooksToSkip);
+
+        return playbooksToSkip;
     }
 
     /**

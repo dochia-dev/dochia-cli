@@ -12,7 +12,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +74,9 @@ public class PlaybookData {
     private List<String> skipFieldTypes = Collections.emptyList();
 
     @Builder.Default
+    private List<String> skippedPlaybooksForPath = Collections.emptyList();
+
+    @Builder.Default
     private List<String> includeFieldFormats = Collections.emptyList();
 
     @Builder.Default
@@ -106,6 +117,18 @@ public class PlaybookData {
 
         return processedPayload;
     }
+
+    /**
+     * Checks if a playbook should be skipped for this path based on operation extensions.
+     *
+     * @param playbookName the name of the playbook to check
+     * @return true if the playbook should be skipped, false otherwise
+     */
+    public boolean shouldSkipPlaybookForPath(String playbookName) {
+        return skippedPlaybooksForPath.stream()
+                .anyMatch(skipped -> playbookName.toLowerCase(Locale.ROOT).contains(skipped.toLowerCase(Locale.ROOT)));
+    }
+
 
     private String removeReadWrite() {
         if (HttpMethod.requiresBody(method)) {

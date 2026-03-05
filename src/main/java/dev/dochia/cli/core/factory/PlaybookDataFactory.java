@@ -274,6 +274,7 @@ public class PlaybookDataFactory {
                             .includeFieldFormats(filterArguments.getFieldFormats())
                             .skipFieldFormats(filterArguments.getSkipFieldFormats())
                             .skippedFieldsForAllPlaybooks(filterArguments.getSkipFieldsToBeSkippedForAllPlaybooks())
+                            .skippedPlaybooksForPath(filterArguments.getPlaybooksToSkipForOperationExtensions(operation.getExtensions()))
                             .responseHeaders(responseHeaders)
                             .pathParamsPayload(pathParamsExample)
                             .queryParams(queryParams)
@@ -358,6 +359,7 @@ public class PlaybookDataFactory {
                         .includeFieldFormats(filterArguments.getFieldFormats())
                         .skipFieldFormats(filterArguments.getSkipFieldFormats())
                         .skippedFieldsForAllPlaybooks(filterArguments.getSkipFieldsToBeSkippedForAllPlaybooks())
+                        .skippedPlaybooksForPath(filterArguments.getPlaybooksToSkipForOperationExtensions(operation.getExtensions()))
                         .responseHeaders(responseHeaders)
                         .build())
                 .toList();

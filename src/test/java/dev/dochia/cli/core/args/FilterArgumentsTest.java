@@ -45,6 +45,8 @@ class FilterArgumentsTest {
         ReflectionTestUtils.setField(filterArguments, "skipFields", Collections.emptyList());
         ReflectionTestUtils.setField(filterArguments, "paths", Collections.emptyList());
         ReflectionTestUtils.setField(filterArguments, "playbooksToBeRunComputed", false);
+        ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtension", null);
+        ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtensionMap", new java.util.HashMap<>());
 
         FilterArguments.ALL_TEST_CASE_PLAYBOOKS.clear();
         FilterArguments.PLAYBOOKS_TO_BE_RUN.clear();
@@ -362,5 +364,85 @@ class FilterArgumentsTest {
     @Test
     void shouldCountTotalPlaybooks() {
         Assertions.assertThat(filterArguments.getTotalPlaybooks()).isEqualTo(124);
+    }
+
+    @Test
+    void shouldParseSkipPlaybooksForExtension() {
+        ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtension",
+                List.of("x-public-endpoint=true:BypassAuthentication,RemoveAuthHeaders"));
+
+        var result = filterArguments.getSkipPlaybooksForExtension();
+
+        Assertions.assertThat(result).containsKey("x-public-endpoint");
+        Assertions.assertThat(result.get("x-public-endpoint")).containsKey("true");
+        Assertions.assertThat(result.get("x-public-endpoint").get("true"))
+                .containsExactly("BypassAuthentication", "RemoveAuthHeaders");
+    }
+
+    @Test
+    void shouldParseMultipleSkipPlaybooksForExtension() {
+        ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtension",
+                List.of("x-public-endpoint=true:BypassAuthentication", "x-auth-required=false:RemoveAuthHeaders"));
+
+        var result = filterArguments.getSkipPlaybooksForExtension();
+
+        Assertions.assertThat(result).containsKeys("x-public-endpoint", "x-auth-required");
+        Assertions.assertThat(result.get("x-public-endpoint").get("true")).containsExactly("BypassAuthentication");
+        Assertions.assertThat(result.get("x-auth-required").get("false")).containsExactly("RemoveAuthHeaders");
+    }
+
+    @Test
+    void shouldReturnEmptyMapWhenNoSkipPlaybooksForExtension() {
+        ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtension", null);
+
+        var result = filterArguments.getSkipPlaybooksForExtension();
+
+        Assertions.assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldGetPlaybooksToSkipForOperationExtensions() {
+        ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtension",
+                List.of("x-public-endpoint=true:BypassAuthentication,RemoveAuthHeaders"));
+
+        var extensions = new java.util.HashMap<String, Object>();
+        extensions.put("x-public-endpoint", "true");
+
+        var result = filterArguments.getPlaybooksToSkipForOperationExtensions(extensions);
+
+        Assertions.assertThat(result).containsExactly("BypassAuthentication", "RemoveAuthHeaders");
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenExtensionValueDoesNotMatch() {
+        ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtension",
+                List.of("x-public-endpoint=true:BypassAuthentication"));
+
+        var extensions = new java.util.HashMap<String, Object>();
+        extensions.put("x-public-endpoint", "false");
+
+        var result = filterArguments.getPlaybooksToSkipForOperationExtensions(extensions);
+
+        Assertions.assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoExtensions() {
+        ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtension",
+                List.of("x-public-endpoint=true:BypassAuthentication"));
+
+        var result = filterArguments.getPlaybooksToSkipForOperationExtensions(null);
+
+        Assertions.assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenEmptyExtensions() {
+        ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtension",
+                List.of("x-public-endpoint=true:BypassAuthentication"));
+
+        var result = filterArguments.getPlaybooksToSkipForOperationExtensions(Collections.emptyMap());
+
+        Assertions.assertThat(result).isEmpty();
     }
 }
