@@ -21,12 +21,10 @@ public class PolicyNumberGenerator implements ValidDataFormatGenerator, InvalidD
     public Object generate(Schema<?> schema) {
         // Generate insurance policy number in various formats
         int format = CommonUtils.random().nextInt(3);
-        
+
         return switch (format) {
-            case 0 -> {
-                // Format: POL-12345678
-                yield "POL-" + String.format("%08d", CommonUtils.random().nextInt(100000000));
-            }
+            case 0 -> // Format: POL-12345678
+                    "POL-" + String.format("%08d", CommonUtils.random().nextInt(100000000));
             case 1 -> {
                 // Format: AB-1234-5678-90
                 String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -37,10 +35,8 @@ public class PolicyNumberGenerator implements ValidDataFormatGenerator, InvalidD
                                 CommonUtils.random().nextInt(10000),
                                 CommonUtils.random().nextInt(100));
             }
-            default -> {
-                // Format: 123456789012 (12 digits)
-                yield String.format("%012d", CommonUtils.random().nextLong(1000000000000L));
-            }
+            default -> // Format: 123456789012 (12 digits)
+                    String.format("%012d", CommonUtils.random().nextLong(1000000000000L));
         };
     }
 

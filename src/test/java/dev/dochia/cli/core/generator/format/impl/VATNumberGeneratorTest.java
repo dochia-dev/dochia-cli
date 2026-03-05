@@ -43,7 +43,6 @@ class VATNumberGeneratorTest {
     @Test
     void givenAVATNumberFormatGeneratorStrategy_whenGenerating_thenValidVATNumberIsReturned() {
         String generated = (String) vatNumberGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated).matches("[A-Z]{2}\\d{8,10}");
+        Assertions.assertThat(generated).isNotNull().matches("[A-Z]{2}\\d{8,10}");
     }
 }

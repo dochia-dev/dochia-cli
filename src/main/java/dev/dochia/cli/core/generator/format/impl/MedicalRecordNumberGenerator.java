@@ -21,16 +21,12 @@ public class MedicalRecordNumberGenerator implements ValidDataFormatGenerator, I
     public Object generate(Schema<?> schema) {
         // Generate MRN in common healthcare formats
         int format = CommonUtils.random().nextInt(3);
-        
+
         return switch (format) {
-            case 0 -> {
-                // Format: MRN-1234567
-                yield "MRN-" + String.format("%07d", CommonUtils.random().nextInt(10000000));
-            }
-            case 1 -> {
-                // Format: 12345678 (8 digits)
-                yield String.format("%08d", CommonUtils.random().nextInt(100000000));
-            }
+            case 0 -> // Format: MRN-1234567
+                    "MRN-" + String.format("%07d", CommonUtils.random().nextInt(10000000));
+            case 1 -> // Format: 12345678 (8 digits)
+                    String.format("%08d", CommonUtils.random().nextInt(100000000));
             default -> {
                 // Format: A12345678 (letter + 8 digits)
                 String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

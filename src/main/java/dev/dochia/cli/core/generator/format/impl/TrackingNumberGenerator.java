@@ -22,25 +22,17 @@ public class TrackingNumberGenerator implements ValidDataFormatGenerator, Invali
     public Object generate(Schema<?> schema) {
         // Generate tracking number in various carrier formats
         int format = CommonUtils.random().nextInt(4);
-        
+
         return switch (format) {
-            case 0 -> {
-                // UPS format: 1Z999AA10123456784
-                yield "1Z" + generateAlphanumeric(6, true).toUpperCase(Locale.ROOT) + generateNumeric(10);
-            }
-            case 1 -> {
-                // FedEx format: 123456789012
-                yield generateNumeric(12);
-            }
-            case 2 -> {
-                // USPS format: 9400 1000 0000 0000 0000 00
-                yield "9400" + generateNumeric(4) + generateNumeric(4) + generateNumeric(4) + 
-                        generateNumeric(4) + generateNumeric(2);
-            }
-            default -> {
-                // DHL format: 1234567890
-                yield generateNumeric(10);
-            }
+            case 0 -> // UPS format: 1Z999AA10123456784
+                    "1Z" + generateAlphanumeric(6, true).toUpperCase(Locale.ROOT) + generateNumeric(10);
+            case 1 -> // FedEx format: 123456789012
+                    generateNumeric(12);
+            case 2 -> // USPS format: 9400 1000 0000 0000 0000 00
+                    "9400" + generateNumeric(4) + generateNumeric(4) + generateNumeric(4) +
+                            generateNumeric(4) + generateNumeric(2);
+            default -> // DHL format: 1234567890
+                    generateNumeric(10);
         };
     }
 

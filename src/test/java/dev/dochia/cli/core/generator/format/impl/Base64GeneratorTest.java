@@ -43,7 +43,6 @@ class Base64GeneratorTest {
     @Test
     void givenABase64FormatGeneratorStrategy_whenGenerating_thenValidBase64IsReturned() {
         String generated = (String) base64Generator.generate(null);
-        Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated).matches("^[A-Za-z0-9+/]+=*$");
+        Assertions.assertThat(generated).isNotNull().matches("^[A-Za-z0-9+/]+=*$");
     }
 }

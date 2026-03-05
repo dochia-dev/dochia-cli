@@ -44,7 +44,6 @@ class SemVerGeneratorTest {
     @Test
     void givenASemVerFormatGeneratorStrategy_whenGenerating_thenValidSemVerIsReturned() {
         String generated = (String) semVerGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated).containsPattern("\\d+\\.\\d+\\.\\d+");
+        Assertions.assertThat(generated).isNotNull().containsPattern("\\d+\\.\\d+\\.\\d+");
     }
 }

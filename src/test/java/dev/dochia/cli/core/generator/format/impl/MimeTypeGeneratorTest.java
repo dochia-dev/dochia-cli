@@ -44,7 +44,6 @@ class MimeTypeGeneratorTest {
     @Test
     void givenAMimeTypeFormatGeneratorStrategy_whenGenerating_thenValidMimeTypeIsReturned() {
         String generated = (String) mimeTypeGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated).contains("/");
+        Assertions.assertThat(generated).isNotNull().contains("/");
     }
 }

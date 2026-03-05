@@ -44,7 +44,6 @@ class TaxIdGeneratorTest {
     @Test
     void givenATaxIdFormatGeneratorStrategy_whenGenerating_thenValidTaxIdIsReturned() {
         String generated = (String) taxIdGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated).matches("\\d{2}-\\d{7}");
+        Assertions.assertThat(generated).isNotNull().matches("\\d{2}-\\d{7}");
     }
 }

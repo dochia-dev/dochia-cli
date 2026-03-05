@@ -44,7 +44,6 @@ class MACAddressGeneratorTest {
     @Test
     void givenAMACAddressFormatGeneratorStrategy_whenGenerating_thenValidMACAddressIsReturned() {
         String generated = (String) macAddressGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated).matches("^([0-9A-F]{2}:){5}[0-9A-F]{2}$");
+        Assertions.assertThat(generated).isNotNull().matches("^([0-9A-F]{2}:){5}[0-9A-F]{2}$");
     }
 }

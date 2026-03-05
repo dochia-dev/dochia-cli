@@ -45,7 +45,6 @@ class HexColorGeneratorTest {
     @Test
     void givenAHexColorFormatGeneratorStrategy_whenGenerating_thenValidHexColorIsReturned() {
         String generated = (String) hexColorGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated).matches("^#[0-9A-F]{6}$");
+        Assertions.assertThat(generated).isNotNull().matches("^#[0-9A-F]{6}$");
     }
 }

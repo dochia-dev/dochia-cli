@@ -47,7 +47,6 @@ class LatLongGeneratorTest {
     @Test
     void givenALatLongFormatGeneratorStrategy_whenGenerating_thenValidCoordinateIsReturned() {
         String generated = (String) latLongGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated).containsPattern("-?\\d+\\.\\d+");
+        Assertions.assertThat(generated).isNotNull().containsPattern("-?\\d+\\.\\d+");
     }
 }

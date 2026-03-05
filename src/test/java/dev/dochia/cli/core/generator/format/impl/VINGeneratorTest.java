@@ -44,7 +44,6 @@ class VINGeneratorTest {
     void givenAVINFormatGeneratorStrategy_whenGenerating_thenValidVINIsReturned() {
         String generated = (String) vinGenerator.generate(null);
         Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated).hasSize(17);
-        Assertions.assertThat(generated).matches("[A-HJ-NPR-Z0-9]{17}");
+        Assertions.assertThat(generated).hasSize(17).matches("[A-HJ-NPR-Z0-9]{17}");
     }
 }

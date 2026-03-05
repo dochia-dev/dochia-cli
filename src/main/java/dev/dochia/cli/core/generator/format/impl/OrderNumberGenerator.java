@@ -21,16 +21,14 @@ public class OrderNumberGenerator implements ValidDataFormatGenerator, InvalidDa
     public Object generate(Schema<?> schema) {
         // Generate order number in e-commerce format
         int format = CommonUtils.random().nextInt(3);
-        
+
         return switch (format) {
             case 0 -> "ORD-" + System.currentTimeMillis(); // ORD-1234567890123
-            case 1 -> {
-                // Amazon-style: 123-1234567-1234567
-                yield String.format("%03d-%07d-%07d",
-                        CommonUtils.random().nextInt(1000),
-                        CommonUtils.random().nextInt(10000000),
-                        CommonUtils.random().nextInt(10000000));
-            }
+            case 1 -> // Amazon-style: 123-1234567-1234567
+                    String.format("%03d-%07d-%07d",
+                            CommonUtils.random().nextInt(1000),
+                            CommonUtils.random().nextInt(10000000),
+                            CommonUtils.random().nextInt(10000000));
             default -> {
                 // Alphanumeric: AB12CD34EF56
                 String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

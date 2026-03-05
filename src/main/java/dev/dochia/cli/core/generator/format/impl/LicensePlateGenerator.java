@@ -21,24 +21,16 @@ public class LicensePlateGenerator implements ValidDataFormatGenerator, InvalidD
     public Object generate(Schema<?> schema) {
         // Generate license plate in various formats
         int format = CommonUtils.random().nextInt(4);
-        
+
         return switch (format) {
-            case 0 -> {
-                // US format: ABC-1234
-                yield generateLetters(3) + "-" + generateNumbers(4);
-            }
-            case 1 -> {
-                // US format: 1ABC234
-                yield generateNumbers(1) + generateLetters(3) + generateNumbers(3);
-            }
-            case 2 -> {
-                // EU format: AB-123-CD
-                yield generateLetters(2) + "-" + generateNumbers(3) + "-" + generateLetters(2);
-            }
-            default -> {
-                // Simple format: ABC1234
-                yield generateLetters(3) + generateNumbers(4);
-            }
+            case 0 -> // US format: ABC-1234
+                    generateLetters(3) + "-" + generateNumbers(4);
+            case 1 -> // US format: 1ABC234
+                    generateNumbers(1) + generateLetters(3) + generateNumbers(3);
+            case 2 -> // EU format: AB-123-CD
+                    generateLetters(2) + "-" + generateNumbers(3) + "-" + generateLetters(2);
+            default -> // Simple format: ABC1234
+                    generateLetters(3) + generateNumbers(4);
         };
     }
 

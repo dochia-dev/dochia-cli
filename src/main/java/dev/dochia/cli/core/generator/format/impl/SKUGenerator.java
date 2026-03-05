@@ -31,10 +31,8 @@ public class SKUGenerator implements ValidDataFormatGenerator, InvalidDataFormat
                         CommonUtils.selectRandom(List.of(brands)) + "-" +
                         String.format("%05d", CommonUtils.random().nextInt(100000));
             }
-            case 1 -> {
-                // Simple numeric with prefix: SKU-123456
-                yield "SKU-" + String.format("%06d", CommonUtils.random().nextInt(1000000));
-            }
+            case 1 -> // Simple numeric with prefix: SKU-123456
+                    "SKU-" + String.format("%06d", CommonUtils.random().nextInt(1000000));
             default -> {
                 // Alphanumeric: AB12-CD34-EF56
                 String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
