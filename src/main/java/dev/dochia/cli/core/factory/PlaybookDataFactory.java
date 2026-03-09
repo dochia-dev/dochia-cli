@@ -8,8 +8,8 @@ import dev.dochia.cli.core.context.GlobalContext;
 import dev.dochia.cli.core.generator.format.api.ValidDataFormat;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.model.DochiaHeader;
-import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.model.NoMediaType;
+import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.openapi.OpenAPIModelGenerator;
 import dev.dochia.cli.core.util.DochiaModelUtils;
 import dev.dochia.cli.core.util.JsonUtils;
@@ -32,7 +32,17 @@ import jakarta.inject.Inject;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import static dev.dochia.cli.core.openapi.OpenAPIModelGenerator.SYNTH_SCHEMA_NAME;
@@ -225,6 +235,11 @@ public class PlaybookDataFactory {
             return Collections.emptyList();
         }
 
+        if (this.isNotIncludedOperationId(operation)) {
+            logger.info("Operation {} {} will be skipped as operationId [{}] is not included", path, method, operation.getOperationId());
+            return Collections.emptyList();
+        }
+
         List<PlaybookData> playbookDataList = new ArrayList<>();
         MediaType mediaType = this.getMediaType(operation, openAPI);
 
@@ -322,6 +337,11 @@ public class PlaybookDataFactory {
             return Collections.emptyList();
         }
 
+        if (this.isNotIncludedOperationId(operation)) {
+            logger.info("Operation {} {} will be skipped as operationId [{}] is not included", path, method, operation.getOperationId());
+            return Collections.emptyList();
+        }
+
         KeyValuePair<String, Schema<?>> syntheticSchema = createSyntheticSchemaForGet(operation);
         Set<String> queryParams = this.extractQueryParams(syntheticSchema.getValue());
         logger.debug("Query params for path {}, method {}: {}", path, method, queryParams);
@@ -363,6 +383,20 @@ public class PlaybookDataFactory {
                         .responseHeaders(responseHeaders)
                         .build())
                 .toList();
+    }
+
+    private boolean isNotIncludedOperationId(Operation operation) {
+        String operationId = operation.getOperationId();
+
+        boolean isNotIncluded = !filterArguments.getOperationIds().isEmpty() &&
+                (operationId == null || filterArguments.getOperationIds().stream()
+                        .noneMatch(operationId::equalsIgnoreCase));
+
+        boolean isSkipped = !filterArguments.getSkipOperationIds().isEmpty() && operationId != null &&
+                filterArguments.getSkipOperationIds().stream()
+                        .anyMatch(operationId::equalsIgnoreCase);
+
+        return isNotIncluded || isSkipped;
     }
 
     private KeyValuePair<String, Schema<?>> createSyntheticSchemaForGet(Operation operation) {

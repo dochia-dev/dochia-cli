@@ -135,6 +135,15 @@ public class FilterArguments {
     @Getter
     private boolean skipDeprecated;
 
+    @CommandLine.Option(names = {"--operation-ids", "--operation-id"},
+            description = "A comma separated list of operationIds to include. If no operationId is supplied, all operations will be considered. All available operationIds can be listed using: @|bold dochia list -p -c api.yml|@", split = ",")
+    private List<String> operationIds;
+
+    @CommandLine.Option(names = {"--skip-operation-ids", "--skip-operation-id"},
+            description = "A comma separated list of operationIds to ignore. If no operationId is supplied, no operation will be ignored. All available operationIds can be listed using: @|bold dochia list -p -c api.yml|@", split = ",")
+    private List<String> skipOperationIds;
+
+
     @CommandLine.Option(names = {"-t", "--tags", "--tag"}, paramLabel = "<tag>",
             description = "A comma separated list of tags to include. If no tag is supplied, all tags will be considered. All available tags can be listed using: @|bold dochia list --tags -c api.yml|@", split = ",")
     private List<String> tags;
@@ -278,6 +287,26 @@ public class FilterArguments {
      */
     public List<String> getSkippedTags() {
         return Optional.ofNullable(this.skipTags).orElse(Collections.emptyList());
+    }
+
+    /**
+     * Creates a list of operationIds to be included based on the supplied {@code --operationIds} argument.
+     * If no operationId is supplied, all operations will be considered.
+     *
+     * @return the list of operationIds to include if any supplied, or an empty list otherwise
+     */
+    public List<String> getOperationIds() {
+        return Optional.ofNullable(this.operationIds).orElse(Collections.emptyList());
+    }
+
+    /**
+     * Creates a list of operationIds to be skipped based on the supplied {@code --skipOperationIds} argument.
+     * If no operationId is supplied, no operation will be skipped.
+     *
+     * @return the list of operationIds to skip if any supplied, or an empty list otherwise
+     */
+    public List<String> getSkipOperationIds() {
+        return Optional.ofNullable(this.skipOperationIds).orElse(Collections.emptyList());
     }
 
     /**

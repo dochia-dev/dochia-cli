@@ -74,7 +74,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldGenerateArrayWithSingleEnumItem() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/test-array", "src/test/resources/openapi_array_single_enum.yml");
+        List<PlaybookData> data = setupPlaybookData("/test-array", "src/test/resources/openapi_array_single_enum.yml");
         Assertions.assertThat(data).hasSize(1);
 
         PlaybookData firstData = data.getFirst();
@@ -102,7 +102,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
         Mockito.when(processingArguments.examplesFlags()).thenReturn(new ProcessingArguments.ExamplesFlags(false, false, false, false));
 
-        List<PlaybookData> dataList = setupFuzzingData("/api/v2/meta/tables/{tableId}/columns", "src/test/resources/nocodb.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/api/v2/meta/tables/{tableId}/columns", "src/test/resources/nocodb.yaml");
 
         Assertions.assertThat(dataList).hasSize(20);
         PlaybookData firstData = dataList.get(1);
@@ -113,7 +113,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldGenerateMultiplePayloadsWhenRootOneOfAndDiscriminatorAndAllOfAndMappings() throws Exception {
         Mockito.when(processingArguments.isResolveXxxOfCombinationForResponses()).thenReturn(true);
-        List<PlaybookData> data = setupFuzzingData("/variant", "src/test/resources/issue_69.yml");
+        List<PlaybookData> data = setupPlaybookData("/variant", "src/test/resources/issue_69.yml");
         Assertions.assertThat(data).hasSize(3);
 
         PlaybookData firstData = data.get(2);
@@ -127,10 +127,10 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldAddDefaultContentTypeForResponses() throws Exception {
         Mockito.doCallRealMethod().when(processingArguments).getDefaultContentType();
-        List<PlaybookData> data = setupFuzzingData("/parents", "src/test/resources/issue127.json");
+        List<PlaybookData> data = setupPlaybookData("/parents", "src/test/resources/issue127.json");
 
         Assertions.assertThat(data).hasSizeGreaterThanOrEqualTo(2);
-        Optional<PlaybookData> getRequest = data.stream().filter(fuzzingData -> fuzzingData.getMethod() == HttpMethod.GET).findFirst();
+        Optional<PlaybookData> getRequest = data.stream().filter(playbookData -> playbookData.getMethod() == HttpMethod.GET).findFirst();
         Assertions.assertThat(getRequest).isPresent();
         Assertions.assertThat(getRequest.get().getResponseContentTypes().values()).containsOnly(List.of("application/json"));
 
@@ -150,7 +150,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldResolveResponseBodyWhenRefInRef() throws Exception {
         Mockito.doCallRealMethod().when(processingArguments).getDefaultContentType();
-        List<PlaybookData> data = setupFuzzingData("/api/v1/auditevents", "src/test/resources/1password.yaml");
+        List<PlaybookData> data = setupPlaybookData("/api/v1/auditevents", "src/test/resources/1password.yaml");
 
         Assertions.assertThat(data).hasSizeGreaterThanOrEqualTo(2);
         PlaybookData firstData = data.getFirst();
@@ -162,8 +162,8 @@ class PlaybookDataFactoryTest {
     }
 
     @Test
-    void givenAContract_whenParsingThePathItemDetailsForPost_thenCorrectFuzzingDataAreBeingReturned() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/pets", "src/test/resources/petstore.yml");
+    void givenAContract_whenParsingThePathItemDetailsForPost_thenCorrectPlaybookDataAreBeingReturned() throws Exception {
+        List<PlaybookData> data = setupPlaybookData("/pets", "src/test/resources/petstore.yml");
 
         Assertions.assertThat(data).hasSizeGreaterThanOrEqualTo(2);
         PlaybookData firstData = data.getFirst();
@@ -176,7 +176,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldIgnoreOneOfAnyOfWhenAdditionalSchemaIsNull() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/path1", "src/test/resources/oneOf_with_null_additional.yml");
+        List<PlaybookData> data = setupPlaybookData("/path1", "src/test/resources/oneOf_with_null_additional.yml");
         Assertions.assertThat(data).hasSize(1);
         PlaybookData firstData = data.getFirst();
         Assertions.assertThat(firstData.getPayload()).contains("dateFrom", "age");
@@ -188,7 +188,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldNotGenerateRequestBodyWhenPostButSchemaEmpty() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/pets", "src/test/resources/petstore_empty_body.json");
+        List<PlaybookData> data = setupPlaybookData("/pets", "src/test/resources/petstore_empty_body.json");
         Assertions.assertThat(data).hasSize(1);
         Assertions.assertThat(data.getFirst().getMethod()).isEqualTo(HttpMethod.GET);
         Assertions.assertThat(data.getFirst().getPayload()).contains("limit");
@@ -197,7 +197,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldResolveCrossPathExamples() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/v2/apps/{app_id}/deployments/{deployment_id}", "src/test/resources/digitalocean.yaml");
+        List<PlaybookData> data = setupPlaybookData("/v2/apps/{app_id}/deployments/{deployment_id}", "src/test/resources/digitalocean.yaml");
 
         Object example = globalContext.getObjectFromPathsReference("#/paths/~1v2~1apps~1%7Bapp_id%7D~1deployments/post/responses/200/content/application~1json/examples/deployment");
         Assertions.assertThat(example).isInstanceOf(Example.class);
@@ -210,7 +210,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldLoadExamples() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/pets", "src/test/resources/petstore.yml");
+        List<PlaybookData> data = setupPlaybookData("/pets", "src/test/resources/petstore.yml");
         Assertions.assertThat(data.getFirst().getExamples()).hasSize(2);
         Assertions.assertThat(data.getFirst().getExamples())
                 .anyMatch(example -> Objects.toString(example).contains("dog-example"))
@@ -221,7 +221,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldResolveExampleCrossSchemas() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/pet-types-rec", "src/test/resources/petstore-examples.yml");
+        List<PlaybookData> data = setupPlaybookData("/pet-types-rec", "src/test/resources/petstore-examples.yml");
         Assertions.assertThat(data).hasSize(2);
 
         PlaybookData firstData = data.getFirst();
@@ -236,7 +236,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.examplesFlags()).thenReturn(new ProcessingArguments.ExamplesFlags(true, false, false, false));
         Mockito.when(processingArguments.getDefaultContentType()).thenReturn("application/json");
 
-        List<PlaybookData> data = setupFuzzingData("/pets-batch", "src/test/resources/petstore-examples.yml");
+        List<PlaybookData> data = setupPlaybookData("/pets-batch", "src/test/resources/petstore-examples.yml");
         Assertions.assertThat(data).hasSize(2);
 
         PlaybookData firstData = data.getFirst();
@@ -253,7 +253,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.isUseRequestBodyExamples()).thenReturn(false);
         Mockito.when(processingArguments.examplesFlags()).thenReturn(new ProcessingArguments.ExamplesFlags(false, false, true, true));
 
-        List<PlaybookData> data = setupFuzzingData("/pets-small", "src/test/resources/petstore-examples.yml");
+        List<PlaybookData> data = setupPlaybookData("/pets-small", "src/test/resources/petstore-examples.yml");
         Assertions.assertThat(data).hasSize(1);
 
         PlaybookData firstData = data.getFirst();
@@ -269,7 +269,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.isUseRequestBodyExamples()).thenReturn(false);
         Mockito.when(processingArguments.examplesFlags()).thenReturn(new ProcessingArguments.ExamplesFlags(false, false, false, true));
 
-        List<PlaybookData> data = setupFuzzingData("/pets-small", "src/test/resources/petstore-examples.yml");
+        List<PlaybookData> data = setupPlaybookData("/pets-small", "src/test/resources/petstore-examples.yml");
         Assertions.assertThat(data).hasSize(1);
 
         PlaybookData firstData = data.getFirst();
@@ -282,7 +282,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.getUseExamples()).thenReturn(false);
         Mockito.when(processingArguments.isUseRequestBodyExamples()).thenReturn(true);
         Mockito.when(processingArguments.examplesFlags()).thenReturn(new ProcessingArguments.ExamplesFlags(false, true, false, true));
-        List<PlaybookData> data = setupFuzzingData("/pets-batch", "src/test/resources/petstore-examples.yml");
+        List<PlaybookData> data = setupPlaybookData("/pets-batch", "src/test/resources/petstore-examples.yml");
         Assertions.assertThat(data).hasSize(1);
 
         PlaybookData firstData = data.getFirst();
@@ -296,7 +296,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.isUseRequestBodyExamples()).thenReturn(false);
         Mockito.when(processingArguments.examplesFlags()).thenReturn(new ProcessingArguments.ExamplesFlags(false, false, false, false));
 
-        List<PlaybookData> data = setupFuzzingData("/pets-batch", "src/test/resources/petstore-examples.yml");
+        List<PlaybookData> data = setupPlaybookData("/pets-batch", "src/test/resources/petstore-examples.yml");
         Assertions.assertThat(data).hasSize(2);
 
         PlaybookData firstData = data.getFirst();
@@ -311,7 +311,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldGenerateValidAnyOfCombinationWhenForLevel3Nesting() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/api/some-endpoint", "src/test/resources/issue66.yml");
+        List<PlaybookData> data = setupPlaybookData("/api/some-endpoint", "src/test/resources/issue66.yml");
         Assertions.assertThat(data).hasSize(2);
         Assertions.assertThat(data.getFirst().getPayload()).contains("someSubObjectKey3");
         Assertions.assertThat(data.get(1).getPayload()).doesNotContain("someSubObjectKey3");
@@ -321,7 +321,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldGenerateArraySchemaBasedOnMinItemsAndMaxItems() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/api/some-endpoint", "src/test/resources/issue66_2.yml");
+        List<PlaybookData> data = setupPlaybookData("/api/some-endpoint", "src/test/resources/issue66_2.yml");
         Assertions.assertThat(data).hasSize(2);
         String firstPayload = data.getFirst().getPayload();
         int firstArraySize = Integer.parseInt(JsonUtils.getVariableFromJson(firstPayload, "$.someRequestBodyKey1.someObjectKey1.someSubObjectKey1.length()").toString());
@@ -337,7 +337,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldProperlyParseOneOfWithBaseClass() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/path1", "src/test/resources/oneOf_with_base_class.yml");
+        List<PlaybookData> data = setupPlaybookData("/path1", "src/test/resources/oneOf_with_base_class.yml");
         Assertions.assertThat(data).hasSize(2);
 
         String firstPayload = data.get(1).getPayload();
@@ -354,7 +354,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldReturnRequiredFieldsWhenAllOfSchemaAndRequiredInRoot() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/pets", "src/test/resources/allof-with-required-in-root.yml");
+        List<PlaybookData> data = setupPlaybookData("/pets", "src/test/resources/allof-with-required-in-root.yml");
 
         Assertions.assertThat(data).hasSize(1);
         PlaybookData playbookData = data.getFirst();
@@ -364,7 +364,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldReturnRequiredFieldsWhenAllOfSchemaAndRequiredPropertiesInBothSchemas() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/pets", "src/test/resources/allof-with-required-for-both-schemas.yml");
+        List<PlaybookData> data = setupPlaybookData("/pets", "src/test/resources/allof-with-required-for-both-schemas.yml");
 
         Assertions.assertThat(data).hasSize(1);
         PlaybookData playbookData = data.getFirst();
@@ -374,15 +374,15 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldLoadExample() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/pet-types-rec", "src/test/resources/petstore.yml");
+        List<PlaybookData> data = setupPlaybookData("/pet-types-rec", "src/test/resources/petstore.yml");
         Assertions.assertThat(data.getFirst().getExamples()).hasSize(1);
         Assertions.assertThat(data.getFirst().getExamples()).anyMatch(example -> Objects.toString(example).contains("dog-simple-example"));
         assertPropertiesExistInRequestPropertyTypes(data.getFirst());
     }
 
     @Test
-    void shouldCreateFuzzingDataForEmptyPut() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/pets/{id}", "src/test/resources/petstore-empty.yml");
+    void shouldCreatePlaybookDataForEmptyPut() throws Exception {
+        List<PlaybookData> data = setupPlaybookData("/pets/{id}", "src/test/resources/petstore-empty.yml");
         Assertions.assertThat(data).hasSize(1);
         Assertions.assertThat(data.getFirst().getMethod()).isEqualByComparingTo(HttpMethod.PUT);
         assertPropertiesExistInRequestPropertyTypes(data.getFirst());
@@ -390,7 +390,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldUseExamplesForPathParams() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/pets/{id}", "src/test/resources/petstore.yml");
+        List<PlaybookData> data = setupPlaybookData("/pets/{id}", "src/test/resources/petstore.yml");
         Assertions.assertThat(data).hasSize(1);
         Assertions.assertThat(data.getFirst().getPayload()).contains("78").contains("test");
         assertPropertiesExistInRequestPropertyTypes(data.getFirst());
@@ -398,7 +398,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldNotIncludeReadOnlyFields() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/pets", "src/test/resources/petstore-readonly.yml");
+        List<PlaybookData> data = setupPlaybookData("/pets", "src/test/resources/petstore-readonly.yml");
         Assertions.assertThat(data).hasSize(2);
         PlaybookData postData = data.getFirst();
         Assertions.assertThat(postData.getPayload()).doesNotContain("id", "details").contains("age", "data", "name");
@@ -408,11 +408,11 @@ class PlaybookDataFactoryTest {
         Assertions.assertThat(allFields).containsOnly("data#name", "data", "age");
     }
 
-    private List<PlaybookData> setupFuzzingData(String path, String contract) throws IOException {
-        return this.setupFuzzingData(path, contract, true);
+    private List<PlaybookData> setupPlaybookData(String path, String contract) throws IOException {
+        return this.setupPlaybookData(path, contract, true);
     }
 
-    private List<PlaybookData> setupFuzzingData(String path, String contract, boolean resolve) throws IOException {
+    private List<PlaybookData> setupPlaybookData(String path, String contract, boolean resolve) throws IOException {
         OpenAPIParser openAPIV3Parser = new OpenAPIParser();
         ParseOptions options = new ParseOptions();
         options.setResolve(resolve);
@@ -434,7 +434,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldCorrectlyParseRefOneOf() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/pet-types", "src/test/resources/petstore.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/pet-types", "src/test/resources/petstore.yml");
         Assertions.assertThat(dataList).hasSize(2);
         Assertions.assertThat(dataList.getFirst().getPayload()).contains("\"petType\":{\"breedType\":\"Husky");
         Assertions.assertThat(dataList.get(1).getPayload()).contains("\"petType\":{\"breedType\":\"Labrador");
@@ -444,7 +444,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldCreateArraysOfPrimitivesWhenItemsUsingRef() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/pets/pet-enum", "src/test/resources/petstore.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/pets/pet-enum", "src/test/resources/petstore.yml");
         Assertions.assertThat(dataList).hasSize(1);
         boolean isEnumsArray = JsonUtils.isArray(dataList.getFirst().getPayload(), "$.colors");
         Object notSetColors = JsonUtils.getVariableFromJson(dataList.getFirst().getPayload(), "$.colors[0].colors");
@@ -455,7 +455,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldGenerateMultiplePayloadsWhenContractGeneratedFromNSwagAndMultipleOneOf() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/api/groopits/create", "src/test/resources/nswag_gen_oneof.json");
+        List<PlaybookData> dataList = setupPlaybookData("/api/groopits/create", "src/test/resources/nswag_gen_oneof.json");
 
         Assertions.assertThat(dataList).hasSize(9);
         long sizeOfPictureData = dataList.stream().map(PlaybookData::getPayload)
@@ -467,7 +467,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldGenerateWhenAllOfHaveOnlyASingleSubject() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/datasets/{datasetId}", "src/test/resources/keatext.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/datasets/{datasetId}", "src/test/resources/keatext.yaml");
 
         Assertions.assertThat(dataList).hasSize(3);
         PlaybookData firstData = dataList.getFirst();
@@ -480,7 +480,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldProperlyParseKeysWithSquareBrackets() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/tags", "src/test/resources/getresp.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/tags", "src/test/resources/getresp.yaml");
 
         Assertions.assertThat(dataList).hasSize(5);
         PlaybookData firstData = dataList.get(1);
@@ -493,7 +493,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldProperlyCreateAllXxxCombinations() throws Exception {
         Mockito.when(processingArguments.getLimitXxxOfCombinations()).thenReturn(100);
-        List<PlaybookData> dataList = setupFuzzingData("/shipments", "src/test/resources/shippo.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/shipments", "src/test/resources/shippo.yaml");
         Assertions.assertThat(dataList).hasSize(65);
         assertPropertiesExistInRequestPropertyTypes(dataList.getFirst());
     }
@@ -502,7 +502,7 @@ class PlaybookDataFactoryTest {
     void shouldProperlyGenerateFromArrayWithAnyOfElements() throws Exception {
         Mockito.when(processingArguments.getUseExamples()).thenReturn(false);
         Mockito.when(processingArguments.getLimitXxxOfCombinations()).thenReturn(50);
-        List<PlaybookData> dataList = setupFuzzingData("/api/v1/studies", "src/test/resources/prolific.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/api/v1/studies", "src/test/resources/prolific.yaml");
 
         Assertions.assertThat(dataList).hasSize(26);
 
@@ -515,7 +515,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldLimitXxxCombinationsWhenCombinationsExceedArgument() throws Exception {
         Mockito.when(processingArguments.getLimitXxxOfCombinations()).thenReturn(100);
-        List<PlaybookData> dataList = setupFuzzingData("/v0/organizations/{organization-id}/onboarding/applications", "src/test/resources/griffin.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/v0/organizations/{organization-id}/onboarding/applications", "src/test/resources/griffin.yaml");
 
         Assertions.assertThat(dataList).hasSize(100);
 
@@ -527,7 +527,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldGenerateCombinationWhenXxxArraysAndSimpleTypes() throws IOException {
-        List<PlaybookData> dataList = setupFuzzingData("/api/database/tokens/{token_id}", "src/test/resources/baserow.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/api/database/tokens/{token_id}", "src/test/resources/baserow.yaml");
 
         Assertions.assertThat(dataList).hasSize(12);
 
@@ -548,7 +548,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldGenerateCombinationsWhenXxxAsInlineSchemas() throws IOException {
         Mockito.when(processingArguments.getUseExamples()).thenReturn(false);
-        List<PlaybookData> dataList = setupFuzzingData("/v1/employee_benefits/{employee_benefit_id}", "src/test/resources/gusto.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/v1/employee_benefits/{employee_benefit_id}", "src/test/resources/gusto.yaml");
 
         Assertions.assertThat(dataList).hasSize(4);
 
@@ -566,7 +566,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldProperlyParseRootAllOfAndOneOfElements() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/payouts", "src/test/resources/token.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/payouts", "src/test/resources/token.yml");
 
         Assertions.assertThat(dataList).hasSize(11);
 
@@ -581,7 +581,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldProperlyGenerateOneOfAnyOfPayloads() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/pets-batch", "src/test/resources/petstore.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/pets-batch", "src/test/resources/petstore.yml");
 
         Assertions.assertThat(dataList).hasSize(2);
         PlaybookData firstData = dataList.getFirst();
@@ -598,7 +598,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldGenerateRequestWhenContentTypeFormUrlEncoded() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/pet/url-encoded/{hook_id}", "src/test/resources/petstore.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/pet/url-encoded/{hook_id}", "src/test/resources/petstore.yml");
 
         Assertions.assertThat(dataList).hasSize(1);
         PlaybookData firstData = dataList.getFirst();
@@ -609,7 +609,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldReturnMediaTypeExample() throws Exception {
         Mockito.when(processingArguments.isUseRequestBodyExamples()).thenReturn(true);
-        List<PlaybookData> dataList = setupFuzzingData("/sum", "src/test/resources/issue144.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/sum", "src/test/resources/issue144.yml");
 
         Assertions.assertThat(dataList).hasSize(1);
         PlaybookData firstData = dataList.getFirst();
@@ -621,7 +621,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldGenerateInlineArrayWithOpenApi31() throws Exception {
         Mockito.when(processingArguments.getUseExamples()).thenReturn(false);
-        List<PlaybookData> dataList = setupFuzzingData("/sum", "src/test/resources/issue144.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/sum", "src/test/resources/issue144.yml");
 
         Assertions.assertThat(dataList).hasSize(1);
 
@@ -637,7 +637,7 @@ class PlaybookDataFactoryTest {
     void shouldGeneratePayloadsWithCrossPathsReferences() throws Exception {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
 
-        List<PlaybookData> dataList = setupFuzzingData("/v2/account/keys", "src/test/resources/digitalocean.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/v2/account/keys", "src/test/resources/digitalocean.yaml");
 
         Assertions.assertThat(dataList).hasSize(2);
         PlaybookData firstData = dataList.getFirst();
@@ -652,7 +652,7 @@ class PlaybookDataFactoryTest {
     void shouldGenerateWhenCrossPathBodyReference() throws Exception {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
 
-        List<PlaybookData> dataList = setupFuzzingData("/v2/account/keys/{ssh_key_identifier}", "src/test/resources/digitalocean.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/v2/account/keys/{ssh_key_identifier}", "src/test/resources/digitalocean.yaml");
 
         Assertions.assertThat(dataList).hasSize(5);
         PlaybookData firstData = dataList.getFirst();
@@ -665,7 +665,7 @@ class PlaybookDataFactoryTest {
     void shouldResolveElementsWithEmptyTitle() throws Exception {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
 
-        List<PlaybookData> dataList = setupFuzzingData("/pet-types", "src/test/resources/petstore.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/pet-types", "src/test/resources/petstore.yml");
 
         Assertions.assertThat(dataList).hasSize(2);
         Schema<?> creatorSchema = globalContext.getOpenAPI().getComponents().getSchemas().get("generated_MegaPet_creator");
@@ -679,7 +679,7 @@ class PlaybookDataFactoryTest {
     void shouldGenerateCrossPathReferenceParameters() throws Exception {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
 
-        List<PlaybookData> dataList = setupFuzzingData("/v2/actions", "src/test/resources/digitalocean.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/v2/actions", "src/test/resources/digitalocean.yaml");
 
         Assertions.assertThat(dataList).hasSize(1);
         PlaybookData firstData = dataList.getFirst();
@@ -697,7 +697,7 @@ class PlaybookDataFactoryTest {
     void shouldGenerateCrossPathReferenceHeaders() throws Exception {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
 
-        List<PlaybookData> dataList = setupFuzzingData("/v2/1-clicks", "src/test/resources/digitalocean.yaml", false);
+        List<PlaybookData> dataList = setupPlaybookData("/v2/1-clicks", "src/test/resources/digitalocean.yaml", false);
 
         Assertions.assertThat(dataList).hasSize(1);
         PlaybookData firstData = dataList.getFirst();
@@ -720,7 +720,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(10);
         Mockito.when(processingArguments.getDefaultContentType()).thenReturn("application/json");
 
-        List<PlaybookData> dataList = setupFuzzingData("/comments", "src/test/resources/sellsy.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/comments", "src/test/resources/sellsy.yaml");
 
         Assertions.assertThat(dataList).hasSize(3);
         PlaybookData firstData = dataList.getFirst();
@@ -737,7 +737,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
         Mockito.when(processingArguments.getDefaultContentType()).thenReturn("application/json");
 
-        List<PlaybookData> dataList = setupFuzzingData("/mimic/agent/{agentNum}/value/mset", "src/test/resources/petstore.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/mimic/agent/{agentNum}/value/mset", "src/test/resources/petstore.yml");
 
         Assertions.assertThat(dataList).hasSize(1);
         PlaybookData firstData = dataList.getFirst();
@@ -760,7 +760,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
         Mockito.when(processingArguments.getDefaultContentType()).thenReturn("application/json");
 
-        List<PlaybookData> dataList = setupFuzzingData("/v2/account/keys/{ssh_key_identifier}", "src/test/resources/digitalocean.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/v2/account/keys/{ssh_key_identifier}", "src/test/resources/digitalocean.yaml");
 
         Assertions.assertThat(dataList).hasSize(5);
 
@@ -776,7 +776,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
         Mockito.when(processingArguments.getDefaultContentType()).thenReturn("application/json");
 
-        List<PlaybookData> dataList = setupFuzzingData("/vehicles", "src/test/resources/enode.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/vehicles", "src/test/resources/enode.yaml");
         Assertions.assertThat(dataList).hasSize(1);
 
         PlaybookData getData = dataList.getFirst();
@@ -793,7 +793,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
         Mockito.when(processingArguments.getDefaultContentType()).thenReturn("application/json");
 
-        List<PlaybookData> dataList = setupFuzzingData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
 
         Assertions.assertThat(dataList).hasSize(4);
         Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.POST);
@@ -802,7 +802,7 @@ class PlaybookDataFactoryTest {
         Assertions.assertThat(dataList.get(3).getMethod()).isEqualTo(HttpMethod.DELETE);
 
         Mockito.when(filterArguments.isSkipDeprecated()).thenReturn(true);
-        List<PlaybookData> secondTimeFuzzDataList = setupFuzzingData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
+        List<PlaybookData> secondTimeFuzzDataList = setupPlaybookData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
         Assertions.assertThat(secondTimeFuzzDataList).hasSize(1);
         Assertions.assertThat(secondTimeFuzzDataList.getFirst().getMethod()).isEqualTo(HttpMethod.GET);
     }
@@ -812,7 +812,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
         Mockito.when(processingArguments.getDefaultContentType()).thenReturn("application/json");
 
-        List<PlaybookData> dataList = setupFuzzingData("/containers", "src/test/resources/petstore.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/containers", "src/test/resources/petstore.yml");
         Assertions.assertThat(dataList).hasSize(1);
         Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.POST);
         String payload = dataList.getFirst().getPayload();
@@ -829,7 +829,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
         Mockito.when(processingArguments.getDefaultContentType()).thenReturn("application/json");
 
-        List<PlaybookData> dataList = setupFuzzingData("/payments", "src/test/resources/sellsy.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/payments", "src/test/resources/sellsy.yaml");
         Assertions.assertThat(dataList).hasSize(2);
         Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.GET);
         String payload = dataList.getFirst().getPayload();
@@ -843,7 +843,7 @@ class PlaybookDataFactoryTest {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(3);
         Mockito.when(processingArguments.getDefaultContentType()).thenReturn("application/json");
 
-        List<PlaybookData> dataList = setupFuzzingData("/apis/{api}/{version}/rest", "src/test/resources/discovery.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/apis/{api}/{version}/rest", "src/test/resources/discovery.yaml");
         Assertions.assertThat(dataList).hasSize(1);
         Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.GET);
         String payload = dataList.getFirst().getPayload();
@@ -860,7 +860,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldOnlyIncludeProvidedTags() throws Exception {
         Mockito.when(filterArguments.getTags()).thenReturn(List.of("pets"));
-        List<PlaybookData> dataList = setupFuzzingData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
 
         Assertions.assertThat(dataList).hasSize(2);
         Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.GET);
@@ -870,7 +870,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldSkipProvidedTags() throws Exception {
         Mockito.when(filterArguments.getSkippedTags()).thenReturn(List.of("pets"));
-        List<PlaybookData> dataList = setupFuzzingData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
 
         Assertions.assertThat(dataList).hasSize(2);
         Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.POST);
@@ -880,7 +880,7 @@ class PlaybookDataFactoryTest {
     @Test
     void testAnyOfPrimitiveTypes() throws Exception {
         Mockito.when(processingArguments.isResolveXxxOfCombinationForResponses()).thenReturn(true);
-        List<PlaybookData> dataList = setupFuzzingData("/mfm/v1/services/", "src/test/resources/issue86.json");
+        List<PlaybookData> dataList = setupPlaybookData("/mfm/v1/services/", "src/test/resources/issue86.json");
 
         Assertions.assertThat(dataList).hasSize(5);
         PlaybookData firstData = dataList.getFirst();
@@ -895,14 +895,14 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldLimitOneOfAnyOfCombinations() throws Exception {
         Mockito.when(processingArguments.getLimitXxxOfCombinations()).thenReturn(1);
-        List<PlaybookData> dataList = setupFuzzingData("/mfm/v1/services/", "src/test/resources/issue86.json");
+        List<PlaybookData> dataList = setupPlaybookData("/mfm/v1/services/", "src/test/resources/issue86.json");
         Assertions.assertThat(dataList).hasSize(2);
     }
 
     @Test
     void shouldGenerateValidResponseForOneOfNestedCombinations() throws Exception {
         Mockito.when(processingArguments.isResolveXxxOfCombinationForResponses()).thenReturn(true);
-        List<PlaybookData> dataList = setupFuzzingData("/api/groops/{groopId}/StartGroopitPaging", "src/test/resources/nswag_gen_oneof.json");
+        List<PlaybookData> dataList = setupPlaybookData("/api/groops/{groopId}/StartGroopitPaging", "src/test/resources/nswag_gen_oneof.json");
         Assertions.assertThat(dataList).hasSize(1);
         PlaybookData firstData = dataList.getFirst();
         assertPropertiesExistInRequestPropertyTypes(firstData);
@@ -914,8 +914,37 @@ class PlaybookDataFactoryTest {
     }
 
     @Test
+    void shouldOnlyIncludeProvidedOperationIds() throws Exception {
+        Mockito.when(filterArguments.getOperationIds()).thenReturn(List.of("listPets"));
+        List<PlaybookData> dataList = setupPlaybookData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
+
+        Assertions.assertThat(dataList).hasSize(1);
+        Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.GET);
+    }
+
+    @Test
+    void shouldSkipProvidedOperationIds() throws Exception {
+        Mockito.when(filterArguments.getSkipOperationIds()).thenReturn(List.of("listPets", "deletePets"));
+        List<PlaybookData> dataList = setupPlaybookData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
+
+        // Only addPet operation remains (2 PlaybookData entries for POST with different content types)
+        Assertions.assertThat(dataList).hasSize(2);
+        Assertions.assertThat(dataList.stream().map(PlaybookData::getMethod).toList())
+                .containsOnly(HttpMethod.POST);
+    }
+
+    @Test
+    void shouldHandleOperationIdCaseInsensitive() throws Exception {
+        Mockito.when(filterArguments.getOperationIds()).thenReturn(List.of("LISTPETS"));
+        List<PlaybookData> dataList = setupPlaybookData("/pets", "src/test/resources/petstore-deprecated-tags.yml");
+
+        Assertions.assertThat(dataList).hasSize(1);
+        Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.GET);
+    }
+
+    @Test
     void shouldGenerateValidDataWhenPrimitiveArrays() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/pets", "src/test/resources/issue94.json");
+        List<PlaybookData> dataList = setupPlaybookData("/pets", "src/test/resources/issue94.json");
         Assertions.assertThat(dataList).hasSize(2);
         PlaybookData firstData = dataList.getFirst();
         Map<String, List<String>> responses = firstData.getResponses();
@@ -928,7 +957,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldProperlyGenerateArraysWhenElementsUsingXXXOf() throws Exception {
-        List<PlaybookData> data = setupFuzzingData("/path2", "src/test/resources/oneOf_with_base_class.yml");
+        List<PlaybookData> data = setupPlaybookData("/path2", "src/test/resources/oneOf_with_base_class.yml");
         Assertions.assertThat(data).hasSize(2);
         String payload = data.get(1).getPayload();
 
@@ -944,7 +973,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldGetPathItemFromReference() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/reference-pets", "src/test/resources/petstore.yml", false);
+        List<PlaybookData> dataList = setupPlaybookData("/reference-pets", "src/test/resources/petstore.yml", false);
         Assertions.assertThat(dataList).hasSize(1);
         PlaybookData data = dataList.getFirst();
         Assertions.assertThat(data.getMethod()).isEqualByComparingTo(HttpMethod.GET);
@@ -953,12 +982,12 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldThrowExceptionWhenSchemeDoesNotExist() {
-        Assertions.assertThatThrownBy(() -> setupFuzzingData("/pet-types", "src/test/resources/petstore-no-schema.yml")).isInstanceOf(IllegalArgumentException.class);
+        Assertions.assertThatThrownBy(() -> setupPlaybookData("/pet-types", "src/test/resources/petstore-no-schema.yml")).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldGetAllFieldsWhenSchemaDoesNotExist() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/rest/1/pdf/", "src/test/resources/issue98.json");
+        List<PlaybookData> dataList = setupPlaybookData("/rest/1/pdf/", "src/test/resources/issue98.json");
         Assertions.assertThat(dataList).hasSize(1);
         PlaybookData data = dataList.getFirst();
         Set<DochiaField> fields = data.getAllFieldsAsDochiaFields();
@@ -969,7 +998,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldStopWhenComplexSelfReferencesOnResponseSchemas() throws Exception {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(2);
-        List<PlaybookData> dataList = setupFuzzingData("/Charts/Details/{id}", "src/test/resources/presalytics.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/Charts/Details/{id}", "src/test/resources/presalytics.yml");
         Assertions.assertThat(dataList).hasSize(1);
         assertPropertiesExistInRequestPropertyTypes(dataList.getFirst());
         PlaybookData data = dataList.getFirst();
@@ -981,7 +1010,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldProperlyFormatDateAndDatetimeExamples() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/dates", "src/test/resources/issue146.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/dates", "src/test/resources/issue146.yml");
         Assertions.assertThat(dataList).hasSize(1);
         PlaybookData data = dataList.getFirst();
         Assertions.assertThat(data.getPayload()).isEqualTo("{\"startDate\":\"2018-10-09\",\"startDateTime\":\"2018-10-09T08:16:29.234Z\"}");
@@ -989,7 +1018,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldResolveWhenOpenApiHasMalformedAllOfSchemas() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/arns", "src/test/resources/petstore.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/arns", "src/test/resources/petstore.yml");
         Assertions.assertThat(dataList).hasSize(1);
         String payload = dataList.getFirst().getPayload();
         int parametersArraySize = Integer.parseInt(JsonUtils.getVariableFromJson(payload, "$.Parameters.StringParameters.length()").toString());
@@ -1008,7 +1037,7 @@ class PlaybookDataFactoryTest {
     void shouldDetectCyclicDependenciesWhenPropertiesNamesDontMatch() throws Exception {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(1);
 
-        List<PlaybookData> dataList = setupFuzzingData("/pets", "src/test/resources/issue117.json");
+        List<PlaybookData> dataList = setupPlaybookData("/pets", "src/test/resources/issue117.json");
         Assertions.assertThat(dataList).hasSize(2);
         PlaybookData data = dataList.getFirst();
         String var1 = String.valueOf(JsonUtils.getVariableFromJson(data.getPayload(), "$.credentialSource.updatedBy"));
@@ -1022,7 +1051,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldConsiderSelfReferenceDepthWhenDetectingCyclicDependencies() throws Exception {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(3);
-        List<PlaybookData> dataList = setupFuzzingData("/pets", "src/test/resources/issue117.json");
+        List<PlaybookData> dataList = setupPlaybookData("/pets", "src/test/resources/issue117.json");
         Assertions.assertThat(dataList).hasSize(2);
         PlaybookData data = dataList.getFirst();
         String updatedByExisting = String.valueOf(JsonUtils.getVariableFromJson(data.getPayload(), "$.credentialSource.updatedBy.credentialSource.updatedBy.credentialSource.updatedBy"));
@@ -1041,7 +1070,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldGenerateOpenApi31Specs() throws Exception {
         System.getProperties().setProperty("bind-type", "true");
-        List<PlaybookData> dataList = setupFuzzingData("/pet", "src/test/resources/petstore31.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/pet", "src/test/resources/petstore31.yaml");
         Assertions.assertThat(dataList).hasSize(2);
         PlaybookData data = dataList.getFirst();
         List<String> fields = data.getAllFieldsAsDochiaFields().stream().map(DochiaField::getName).toList();
@@ -1061,7 +1090,7 @@ class PlaybookDataFactoryTest {
     @Test
     void shouldGenerateUniqueValuesWhenUniqueItemsTrue() throws Exception {
         System.getProperties().setProperty("bind-type", "true");
-        List<PlaybookData> dataList = setupFuzzingData("/pet/findByStatus", "src/test/resources/petstore31.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/pet/findByStatus", "src/test/resources/petstore31.yaml");
         Assertions.assertThat(dataList).hasSize(1);
         PlaybookData data = dataList.getFirst();
         String payload = data.getPayload();
@@ -1087,7 +1116,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldRecordErrorWhenParamRefDoesNotExist() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/pet-types", "src/test/resources/petstore.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/pet-types", "src/test/resources/petstore.yml");
         Assertions.assertThat(dataList).hasSize(2);
 
         Parameter param1 = new Parameter();
@@ -1101,7 +1130,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldGenerateHeadersWhenParamsHaveContentType() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/pets", "src/test/resources/petstore.yml");
+        List<PlaybookData> dataList = setupPlaybookData("/pets", "src/test/resources/petstore.yml");
         Assertions.assertThat(dataList).hasSize(3);
 
         PlaybookData getData = dataList.stream().filter(data -> data.getMethod() == HttpMethod.GET).findFirst().orElseThrow();
@@ -1160,7 +1189,7 @@ class PlaybookDataFactoryTest {
 
     @Test
     void shouldParseOpenApi311WithNullAndStringSchema() throws Exception {
-        List<PlaybookData> dataList = setupFuzzingData("/vacancies", "src/test/resources/openapi_311.yaml");
+        List<PlaybookData> dataList = setupPlaybookData("/vacancies", "src/test/resources/openapi_311.yaml");
 
         Assertions.assertThat(dataList).hasSize(1);
         Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.POST);

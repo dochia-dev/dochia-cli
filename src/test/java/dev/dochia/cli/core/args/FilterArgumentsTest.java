@@ -401,6 +401,16 @@ class FilterArgumentsTest {
     }
 
     @Test
+    void shouldReturnEmptyOnlyOperationIds() {
+        Assertions.assertThat(filterArguments.getOperationIds()).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptySkipOperationIds() {
+        Assertions.assertThat(filterArguments.getSkipOperationIds()).isEmpty();
+    }
+
+    @Test
     void shouldGetPlaybooksToSkipForOperationExtensions() {
         ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtension",
                 List.of("x-public-endpoint=true:BypassAuthentication,RemoveAuthHeaders"));
