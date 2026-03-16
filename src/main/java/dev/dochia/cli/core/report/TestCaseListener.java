@@ -12,7 +12,13 @@ import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamily;
 import dev.dochia.cli.core.http.ResponseCodeFamilyDynamic;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.model.*;
+import dev.dochia.cli.core.model.HttpRequest;
+import dev.dochia.cli.core.model.HttpResponse;
+import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.model.ResultFactory;
+import dev.dochia.cli.core.model.TestCase;
+import dev.dochia.cli.core.model.TestCaseExecutionSummary;
+import dev.dochia.cli.core.model.TestCaseSummary;
 import dev.dochia.cli.core.playbook.api.DryRun;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.util.ConsoleUtils;
@@ -28,7 +34,19 @@ import org.slf4j.event.Level;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -276,7 +294,9 @@ public class TestCaseListener {
      */
     public void addResponse(HttpResponse response) {
         currentTestCase().setResponse(response);
-        extractErrorLeaks();
+        if (!ignoreArguments.isIgnoreErrorLeaksCheck()) {
+            extractErrorLeaks();
+        }
     }
 
     /**
@@ -491,10 +511,11 @@ public class TestCaseListener {
 
     private void extractErrorLeaks() {
         TestCase testCase = currentTestCase();
-        if (testCase.getResponse() == null) {
+        if (testCase.getResponse() == null || testCase.getResponse().getBody() == null) {
             return;
         }
-        List<String> keywords = WordUtils.getKeywordsMatching(testCase.getResponse().getBody(), globalContext.getErrorLeaksKeywords());
+        String bodyToLowerCase = testCase.getResponse().getBody().toLowerCase(Locale.ROOT);
+        List<String> keywords = WordUtils.getKeywordsMatching(bodyToLowerCase, globalContext.getErrorLeaksKeywords());
         testCase.setErrorLeaks(keywords);
     }
 
@@ -711,7 +732,7 @@ public class TestCaseListener {
      * @param shouldMatchContentType      a flag indicating whether the response content type should match the one from the OpenAPI spec
      */
     public void reportResult(PrettyLogger logger, PlaybookData data, HttpResponse response, ResponseCodeFamily expectedResultCode, boolean shouldMatchToResponseSchema, boolean shouldMatchContentType) {
-        expectedResultCode = this.getExpectedResponseCodeConfiguredFor(MDC.get(PLAYBOOK_KEY), expectedResultCode);
+        expectedResultCode = this.getExpectedResponseCodeConfiguredFor(MDC.get(PLAYBOOK_KEY), data.getPath(), String.valueOf(data.getMethod()).toLowerCase(Locale.ROOT), expectedResultCode);
         boolean matchesResponseSchema = !shouldMatchToResponseSchema || this.matchesResponseSchema(response, data);
         boolean responseCodeExpected = this.isResponseCodeExpected(response, expectedResultCode);
         boolean responseCodeDocumented = this.isResponseCodeDocumented(data, response);
@@ -834,25 +855,36 @@ public class TestCaseListener {
     }
 
     /**
-     * Returns the expected HTTP response code from the --playbooks-config file
+     * Returns the expected HTTP response code from the --fuzzConfig file
      *
-     * @param playbook     the name of the playbook
+     * @param fuzzer       the name of the fuzzer
      * @param defaultValue default value when property is not found
+     * @param path         the current path being fuzzed
+     * @param method       the current http method being fuzzed
      * @return the value of the property if found or null otherwise
      */
-    public ResponseCodeFamily getExpectedResponseCodeConfiguredFor(String playbook, ResponseCodeFamily defaultValue) {
-        String keyToLookup = playbook + "." + "expectedResponseCode";
-        String valueFound = globalContext.getExpectedResponseCodeConfigured(keyToLookup);
-        logger.debug("Configuration key {}, value {}", keyToLookup, valueFound);
+    public ResponseCodeFamily getExpectedResponseCodeConfiguredFor(String fuzzer, String path, String method, ResponseCodeFamily defaultValue) {
+        List<String> keysToTry = new ArrayList<>();
+        keysToTry.add(fuzzer + "." + path + "." + method + ".expectedResponseCode");
+        keysToTry.add(fuzzer + "." + path + ".expectedResponseCode");
+        keysToTry.add(fuzzer + "." + method + ".expectedResponseCode");
+        keysToTry.add(fuzzer + ".expectedResponseCode");
 
-        if (valueFound == null) {
-            return defaultValue;
+        for (String key : keysToTry) {
+            String value = globalContext.getExpectedResponseCodeConfigured(key);
+            logger.debug("Checking configuration key {}, value {}", key, value);
+
+            if (value != null) {
+                List<String> responseCodes = Arrays.stream(value.split(",", -1))
+                        .map(String::trim)
+                        .filter(item -> item.length() == 3)
+                        .toList();
+                return new ResponseCodeFamilyDynamic(responseCodes);
+            }
         }
-        List<String> responseCodes = Arrays.stream(valueFound.split(",", -1))
-                .map(String::trim)
-                .filter(item -> item.length() == 3)
-                .toList();
-        return new ResponseCodeFamilyDynamic(responseCodes);
+
+        logger.debug("No configuration found, using default value");
+        return defaultValue;
     }
 
     private void recordResult(String message, Object[] params, String result, PrettyLogger logger) {

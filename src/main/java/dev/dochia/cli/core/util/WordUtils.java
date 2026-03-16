@@ -4,7 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.JaccardSimilarity;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
@@ -64,11 +69,15 @@ public abstract class WordUtils {
                     "BadRequest",
                     "InternalServerError",
                     "Unauthorized",
-                    "Forbidden",
-                    "ServiceUnavailable",
-                    "Timeout",
+                    "Forbidden", "ServiceUnavailable",
+                    "SocketTimeout",
                     "PermissionDenied",
                     "InvalidToken",
+                    "ReadTimeout",
+                    "WriteTimeout",
+                    "ConnectTimeout",
+                    "RequestTimeout",
+                    "ResponseTimeout",
                     "MethodNotAllowed",
                     "ResourceNotFound",
                     "RateLimitExceeded",

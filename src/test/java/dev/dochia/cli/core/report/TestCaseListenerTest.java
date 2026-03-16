@@ -766,7 +766,7 @@ class TestCaseListenerTest {
     @Test
     void shouldReturnDefaultResponseCodeFamilyWhenConfigNotFound() {
         globalContext.getPlaybooksConfiguration().put("AnotherDummy.expectedResponseCode", "999");
-        ResponseCodeFamily resultCodeFromFile = testCaseListener.getExpectedResponseCodeConfiguredFor("Dummy", ResponseCodeFamilyPredefined.TWOXX);
+        ResponseCodeFamily resultCodeFromFile = testCaseListener.getExpectedResponseCodeConfiguredFor("Dummy", "test", "post", ResponseCodeFamilyPredefined.TWOXX);
 
         Assertions.assertThat(resultCodeFromFile).isEqualTo(ResponseCodeFamilyPredefined.TWOXX);
     }
@@ -785,7 +785,7 @@ class TestCaseListenerTest {
         globalContext = new GlobalContext();
         globalContext.getPlaybooksConfiguration().setProperty("playbook.expectedResponseCode", "201,202");
         ReflectionTestUtils.setField(testCaseListener, "globalContext", globalContext);
-        ResponseCodeFamily family = testCaseListener.getExpectedResponseCodeConfiguredFor("playbook", ResponseCodeFamilyPredefined.TWOXX);
+        ResponseCodeFamily family = testCaseListener.getExpectedResponseCodeConfiguredFor("playbook", "test", "post", ResponseCodeFamilyPredefined.TWOXX);
 
         Assertions.assertThat(family).isInstanceOf(ResponseCodeFamilyDynamic.class);
 
@@ -794,9 +794,40 @@ class TestCaseListenerTest {
     }
 
     @Test
+    void shouldLoadPathSpecificResponseCode() {
+        globalContext = new GlobalContext();
+        globalContext.getPlaybooksConfiguration().setProperty("playbook.expectedResponseCode", "201,202");
+        globalContext.getPlaybooksConfiguration().setProperty("playbook.test.expectedResponseCode", "400");
+
+        ReflectionTestUtils.setField(testCaseListener, "globalContext", globalContext);
+        ResponseCodeFamily family = testCaseListener.getExpectedResponseCodeConfiguredFor("playbook", "test", "post", ResponseCodeFamilyPredefined.TWOXX);
+
+        Assertions.assertThat(family).isInstanceOf(ResponseCodeFamilyDynamic.class);
+
+        ResponseCodeFamilyDynamic familyDynamic = (ResponseCodeFamilyDynamic) family;
+        Assertions.assertThat(familyDynamic.allowedResponseCodes()).containsOnly("400");
+    }
+
+    @Test
+    void shouldLoadMethodSpecificResponseCode() {
+        globalContext = new GlobalContext();
+        globalContext.getPlaybooksConfiguration().setProperty("playbook.expectedResponseCode", "201,202");
+        globalContext.getPlaybooksConfiguration().setProperty("playbook.test.expectedResponseCode", "400");
+        globalContext.getPlaybooksConfiguration().setProperty("playbook.test.post.expectedResponseCode", "500");
+
+        ReflectionTestUtils.setField(testCaseListener, "globalContext", globalContext);
+        ResponseCodeFamily family = testCaseListener.getExpectedResponseCodeConfiguredFor("playbook", "test", "post", ResponseCodeFamilyPredefined.TWOXX);
+
+        Assertions.assertThat(family).isInstanceOf(ResponseCodeFamilyDynamic.class);
+
+        ResponseCodeFamilyDynamic familyDynamic = (ResponseCodeFamilyDynamic) family;
+        Assertions.assertThat(familyDynamic.allowedResponseCodes()).containsOnly("500");
+    }
+
+    @Test
     void shouldReturnDefaultResponseCodeWhenNoConfiguration() {
         ReflectionTestUtils.setField(testCaseListener, "globalContext", new GlobalContext());
-        ResponseCodeFamily family = testCaseListener.getExpectedResponseCodeConfiguredFor("playbook", ResponseCodeFamilyPredefined.TWOXX);
+        ResponseCodeFamily family = testCaseListener.getExpectedResponseCodeConfiguredFor("playbook", "test", "post", ResponseCodeFamilyPredefined.TWOXX);
 
         Assertions.assertThat(family).isInstanceOf(ResponseCodeFamilyPredefined.class);
 
