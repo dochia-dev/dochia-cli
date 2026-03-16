@@ -1,8 +1,8 @@
 package dev.dochia.cli.core.generator.simple;
 
-import dev.dochia.cli.core.util.DochiaModelUtils;
-import dev.dochia.cli.core.util.CommonUtils;
 import com.github.curiousoddman.rgxgen.RgxGen;
+import dev.dochia.cli.core.util.CommonUtils;
+import dev.dochia.cli.core.util.DochiaModelUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
 import io.swagger.v3.oas.models.media.Schema;
@@ -10,6 +10,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.cornutum.regexpgen.RandomGen;
 import org.cornutum.regexpgen.RegExpGen;
+import org.cornutum.regexpgen.RegExpGenBuilder;
 import org.cornutum.regexpgen.js.Provider;
 import org.cornutum.regexpgen.random.RandomBoundsGen;
 import org.springframework.util.CollectionUtils;
@@ -303,7 +304,7 @@ public class StringGenerator {
         int min = generatorParams.min;
         int max = generatorParams.max;
 
-        RegExpGen generator = REGEXPGEN_PROVIDER.matchingExact(pattern);
+        RegExpGen generator = RegExpGenBuilder.generateRegExp(REGEXPGEN_PROVIDER).exactly().matching(pattern);
 
         for (int i = 0; i < MAX_ATTEMPTS_GENERATE; i++) {
             if (min == max) {
@@ -318,7 +319,10 @@ public class StringGenerator {
         }
 
         LOGGER.debug("Returning alphanumeric random string using REGEXP");
-        return REGEXPGEN_PROVIDER.matchingExact(ALPHANUMERIC_PLUS).generate(REGEXP_RANDOM_GEN, min, max);
+        return RegExpGenBuilder.generateRegExp(REGEXPGEN_PROVIDER)
+                .exactly()
+                .matching(ALPHANUMERIC_PLUS)
+                .generate(REGEXP_RANDOM_GEN, min, max);
     }
 
     private static String generateUsingDochiaRegexGenerator(GeneratorParams generatorParams) {
