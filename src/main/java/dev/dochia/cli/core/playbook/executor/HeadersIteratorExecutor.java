@@ -8,6 +8,7 @@ import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.io.ServiceData;
 import dev.dochia.cli.core.model.DochiaHeader;
 import dev.dochia.cli.core.model.HttpResponse;
+import dev.dochia.cli.core.model.ResultFactory;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.strategy.FuzzingStrategy;
 import jakarta.inject.Singleton;
@@ -97,7 +98,7 @@ public class HeadersIteratorExecutor {
         if (expectedResponseCode != null) {
             testCaseListener.reportResult(context.getLogger(), context.getPlaybookData(), response, expectedResponseCode, context.isMatchResponseSchema(), context.isShouldMatchContentType());
         } else if (matchArguments.isMatchResponse(response) || !matchArguments.isAnyMatchArgumentSupplied()) {
-            testCaseListener.reportResultError(context.getLogger(), context.getPlaybookData(), "Response matches arguments", "Response matches" + matchArguments.getMatchString());
+            testCaseListener.reportResultError(context.getLogger(), context.getPlaybookData(), ResultFactory.Reason.RESPONSE_MATCHES_ARGUMENTS.value(), "Response matches" + matchArguments.getMatchString());
         } else {
             testCaseListener.skipTest(context.getLogger(), "Skipping test as response does not match given matchers!");
         }

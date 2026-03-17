@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.playbook.header;
 
+import dev.dochia.cli.core.model.ResultFactory;
 import dev.dochia.cli.core.playbook.api.HeaderPlaybook;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
@@ -77,7 +78,7 @@ public class CheckSecurityHeadersPlaybook implements TestCasePlaybook {
     private void checkResponse(HttpResponse response, PlaybookData data) {
         List<KeyValuePair<String, String>> missingSecurityHeaders = this.getMissingSecurityHeaders(response);
         if (!missingSecurityHeaders.isEmpty()) {
-            testCaseListener.reportResultError(log, data, "Missing recommended security headers",
+            testCaseListener.reportResultError(log, data, ResultFactory.Reason.MISSING_SECURITY_HEADERS.value(),
                     "Missing recommended Security Headers: {}", missingSecurityHeaders.stream().map(pair -> pair.getKey() + "=" + pair.getValue()).collect(Collectors.toSet()));
         } else {
             testCaseListener.reportResult(log, data, response, ResponseCodeFamilyPredefined.TWOXX);

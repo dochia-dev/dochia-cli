@@ -5,6 +5,7 @@ import dev.dochia.cli.core.args.MatchArguments;
 import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.io.ServiceData;
 import dev.dochia.cli.core.model.HttpResponse;
+import dev.dochia.cli.core.model.ResultFactory;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.strategy.FuzzingStrategy;
 import dev.dochia.cli.core.util.CommonUtils;
@@ -125,7 +126,7 @@ public class FieldsIteratorExecutor {
         if (context.getExpectedResponseCode() != null) {
             testCaseListener.reportResult(context.getLogger(), context.getPlaybookData(), response, context.getExpectedResponseCode());
         } else if (!matchArguments.isAnyMatchArgumentSupplied() || matchArguments.isMatchResponse(response) || matchArguments.isInputReflected(response, currentValue)) {
-            testCaseListener.reportResultError(context.getLogger(), context.getPlaybookData(), "Response matches arguments", "Response matches" + matchArguments.getMatchString());
+            testCaseListener.reportResultError(context.getLogger(), context.getPlaybookData(), ResultFactory.Reason.RESPONSE_MATCHES_ARGUMENTS.value(), "Response matches" + matchArguments.getMatchString());
         } else {
             testCaseListener.skipTest(context.getLogger(), "Skipping test as response does not match given matchers!");
         }

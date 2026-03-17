@@ -6,6 +6,7 @@ import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.model.DochiaConfiguration;
 import dev.dochia.cli.core.model.NoMediaType;
 import dev.dochia.cli.core.model.ProcessingError;
+import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.DochiaModelUtils;
 import dev.dochia.cli.core.util.OpenApiUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
@@ -24,7 +25,6 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import jakarta.inject.Singleton;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 
@@ -124,7 +124,7 @@ public class GlobalContext {
         String discriminatorKey = (StringUtils.isBlank(currentProperty) ? "" : currentProperty + "#") + discriminator.getPropertyName();
         Set<Object> discriminatorValuesSet = this.discriminatorValues.computeIfAbsent(discriminatorKey, k -> new HashSet<>());
         discriminators.add(discriminator);
-        if (CollectionUtils.isNotEmpty(examples)) {
+        if (CommonUtils.isNotEmpty(examples)) {
             discriminatorValuesSet.addAll(examples);
         } else {
             logger.warn("No examples found for discriminator property {}", discriminator.getPropertyName());

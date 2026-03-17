@@ -47,7 +47,7 @@ class DSLParserTest {
     @CsvSource({"request,${request.expiry}", "response,expiry"})
     @ParameterizedTest
     void shouldParseFromRequest(String context, String expression) {
-        String initial = "T(java.time.LocalDate).now().isAfter(T(java.time.LocalDate).parse(" + expression + ".toString()))";
+        String initial = "T(java.time.LocalDate).now().isAfter(T(java.time.LocalDate).parse(" + expression + "))";
         String actual = DSLParser.parseAndGetResult(initial, Map.of(context, JSON));
 
         Assertions.assertThat(actual).isEqualTo("true");
@@ -80,9 +80,9 @@ class DSLParserTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"2023-02-02,2023-02-02", "${2023-02-02},2019"})
+    @CsvSource({"2023-02-02,2023-02-02", "${variable}-02-02,2023-02-02"})
     void shouldParseDateStringAsDate(String input, String parsedOutput) {
-        String actual = DSLParser.parseAndGetResult(input, Map.of("name", "john"));
+        String actual = DSLParser.parseAndGetResult(input, Map.of("name", "john", "variable","2023"));
         Assertions.assertThat(actual).isEqualTo(parsedOutput);
     }
 

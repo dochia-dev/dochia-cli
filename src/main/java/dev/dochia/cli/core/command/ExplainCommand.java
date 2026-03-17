@@ -68,8 +68,8 @@ public class ExplainCommand implements Runnable {
     }
 
     void displayErrorReason() {
-        Arrays.stream(ResultFactory.Reason.values()).filter(reason -> reason.name()
-                        .toLowerCase(Locale.ROOT).contains(info.toLowerCase(Locale.ROOT)))
+        Arrays.stream(ResultFactory.Reason.values()).filter(reason -> reason.value()
+                        .toLowerCase(Locale.ROOT).contains(info.toLowerCase(Locale.ROOT))|| info.isBlank())
                 .sorted()
                 .forEach(reason -> logger.noFormat("* Reason {} - {}", reason.value(), reason.description()));
     }

@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.playbook.header;
 
+import dev.dochia.cli.core.model.ResultFactory;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.playbook.api.HeaderPlaybook;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
@@ -71,7 +72,7 @@ public class ResponseHeadersMatchContractHeadersPlaybook implements TestCasePlay
         if (notReturnedHeaders.isEmpty()) {
             testCaseListener.reportResult(logger, playbookData, httpResponse, ResponseCodeFamilyPredefined.TWOXX);
         } else {
-            testCaseListener.reportResultError(logger, playbookData, "Missing response headers",
+            testCaseListener.reportResultError(logger, playbookData, ResultFactory.Reason.MISSING_RESPONSE_HEADERS.value(),
                     "The following response headers defined in the contract are missing: {}", notReturnedHeaders.toArray());
         }
     }

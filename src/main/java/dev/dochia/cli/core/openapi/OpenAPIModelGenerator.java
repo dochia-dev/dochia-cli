@@ -16,7 +16,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -143,7 +142,7 @@ public class OpenAPIModelGenerator {
     private static boolean isNullSchema(Schema innerType) {
         return (innerType.getType() == null || "null".equalsIgnoreCase(innerType.getType()))
                 && innerType.get$ref() == null && !DochiaModelUtils.isComposedSchema(innerType)
-                && innerType.getProperties() == null && CollectionUtils.isEmpty(innerType.getTypes());
+                && innerType.getProperties() == null && CommonUtils.isEmpty(innerType.getTypes());
     }
 
 
@@ -234,7 +233,7 @@ public class OpenAPIModelGenerator {
 
     private Schema normalizeDiscriminatorMappingsToOneOf(String name, Schema<?> schema) {
         logger.trace("normalizeDiscriminatorMappingsToOneOf for schema {}", name);
-        if (schema != null && schema.getDiscriminator() != null && !CollectionUtils.isEmpty(schema.getDiscriminator().getMapping())
+        if (schema != null && schema.getDiscriminator() != null && !CommonUtils.isEmpty(schema.getDiscriminator().getMapping())
                 && !DochiaModelUtils.isComposedSchema(schema) && !isAnyComposedSchemaInChain(name)) {
             Schema<?> composedSchema = new Schema<>();
             composedSchema.setOneOf(schema.getDiscriminator().getMapping().values()
@@ -751,7 +750,7 @@ public class OpenAPIModelGenerator {
     private <T> Object getEnumOrDefault(Schema<T> propertySchema) {
         List<T> enumValues = propertySchema.getEnum();
 
-        if (!CollectionUtils.isEmpty(enumValues)) {
+        if (!CommonUtils.isEmpty(enumValues)) {
             List<T> nonNullEnumValues = enumValues.stream()
                     .filter(Objects::nonNull)
                     .toList();

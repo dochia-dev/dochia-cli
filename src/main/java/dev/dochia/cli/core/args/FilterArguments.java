@@ -12,6 +12,7 @@ import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.playbook.api.TrimAndValidate;
 import dev.dochia.cli.core.playbook.api.ValidateAndSanitize;
 import dev.dochia.cli.core.playbook.api.ValidateAndTrim;
+import dev.dochia.cli.core.util.AnnotationUtils;
 import dev.dochia.cli.core.util.CommonUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
@@ -21,7 +22,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.core.annotation.AnnotationUtils;
 import picocli.CommandLine;
 
 import java.lang.annotation.Annotation;

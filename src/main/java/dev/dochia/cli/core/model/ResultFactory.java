@@ -215,7 +215,16 @@ public interface ResultFactory {
         "The response content type does not match the one defined in the OpenAPI contract"),
     UNEXPECTED_BEHAVIOUR(
         "Unexpected behaviour",
-        "dochia run the test case successfully, but the response code was not expected, nor documented, nor known to typically be documented");
+        "dochia run the test case successfully, but the response code was not expected, nor documented, nor known to typically be documented"),
+    RESPONSE_MATCHES_ARGUMENTS(
+        "Response matches arguments",
+        "The response matches the expected arguments supplied to the fuzzer"),
+    MISSING_SECURITY_HEADERS(
+        "Missing recommended security headers",
+        "The response is missing recommended security headers that help protect against common web vulnerabilities"),
+    MISSING_RESPONSE_HEADERS(
+        "Missing response headers",
+        "The response is missing headers that are documented in the OpenAPI contract");
 
     private final String value;
     private final String description;

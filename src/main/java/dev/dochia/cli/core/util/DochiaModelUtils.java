@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.util;
 
+import dev.dochia.cli.core.util.CommonUtils;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -19,7 +20,6 @@ import io.swagger.v3.oas.models.media.UUIDSchema;
 import io.swagger.v3.parser.util.SchemaTypeUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.openapitools.codegen.utils.ModelUtils;
-import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -261,13 +261,13 @@ public abstract class DochiaModelUtils {
         return schema != null &&
                 (StringUtils.isNotBlank(schema.get$ref()) ||
                         StringUtils.isNotBlank(schema.getType()) ||
-                        !CollectionUtils.isEmpty(schema.getTypes()) ||
-                        !CollectionUtils.isEmpty(schema.getProperties()) ||
-                        !CollectionUtils.isEmpty(schema.getAllOf()) ||
-                        !CollectionUtils.isEmpty(schema.getAnyOf()) ||
-                        !CollectionUtils.isEmpty(schema.getOneOf()) ||
+                        !CommonUtils.isEmpty(schema.getTypes()) ||
+                        !CommonUtils.isEmpty(schema.getProperties()) ||
+                        !CommonUtils.isEmpty(schema.getAllOf()) ||
+                        !CommonUtils.isEmpty(schema.getAnyOf()) ||
+                        !CommonUtils.isEmpty(schema.getOneOf()) ||
                         schema.getItems() != null ||
-                        !CollectionUtils.isEmpty(schema.getRequired()));
+                        !CommonUtils.isEmpty(schema.getRequired()));
     }
 
     /**

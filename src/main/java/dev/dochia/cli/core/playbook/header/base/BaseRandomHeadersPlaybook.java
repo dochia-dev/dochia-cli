@@ -1,6 +1,7 @@
 package dev.dochia.cli.core.playbook.header.base;
 
 import dev.dochia.cli.core.args.ProcessingArguments;
+import dev.dochia.cli.core.model.ResultFactory;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutorContext;
@@ -74,7 +75,8 @@ public abstract class BaseRandomHeadersPlaybook implements TestCasePlaybook {
             testCaseListener.reportResultInfo(logger, data, "Request returned as expected for http method [{}] with response code [{}]",
                     response.getHttpMethod(), response.getResponseCode());
         } else {
-            testCaseListener.reportResultError(logger, data, "Unexpected response code: %s".formatted(response.getResponseCode()),
+            testCaseListener.reportResultError(logger, data,
+                    ResultFactory.createUnexpectedResponseCode(String.valueOf(response.getResponseCode()), ResponseCodeFamilyPredefined.FOURXX.allowedResponseCodes().toString()).reason(),
                     "Request failed unexpectedly for http method [{}]: expected {}, actual [{}]", response.getHttpMethod(),
                     ResponseCodeFamilyPredefined.FOURXX.allowedResponseCodes(), response.getResponseCode());
         }

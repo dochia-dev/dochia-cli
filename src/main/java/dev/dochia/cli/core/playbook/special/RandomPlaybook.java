@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import dev.dochia.cli.core.model.ResultFactory;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.playbook.api.SpecialPlaybook;
 import dev.dochia.cli.core.args.FilesArguments;
@@ -120,7 +121,7 @@ public class RandomPlaybook implements TestCasePlaybook {
 
     void processResponse(HttpResponse httpResponse, PlaybookData playbookData) {
         if (matchArguments.isMatchResponse(httpResponse)) {
-            testCaseListener.reportResultError(logger, playbookData, "Response matches arguments", "Response matches" + matchArguments.getMatchString());
+            testCaseListener.reportResultError(logger, playbookData, ResultFactory.Reason.RESPONSE_MATCHES_ARGUMENTS.value(), "Response matches" + matchArguments.getMatchString());
         } else {
             testCaseListener.skipTest(logger, "Skipping test as response does not match given matchers!");
         }

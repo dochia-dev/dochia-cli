@@ -7,6 +7,7 @@ import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.playbook.api.*;
 import dev.dochia.cli.core.playbook.special.mutators.api.CustomMutatorConfig;
 import dev.dochia.cli.core.playbook.special.mutators.api.Mutator;
+import dev.dochia.cli.core.util.AnnotationUtils;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.JsonUtils;
 import dev.dochia.cli.core.util.OpenApiUtils;
@@ -20,7 +21,6 @@ import io.swagger.v3.oas.models.PathItem;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import org.fusesource.jansi.Ansi;
-import org.springframework.core.annotation.AnnotationUtils;
 import picocli.CommandLine;
 
 import java.io.IOException;

@@ -3,8 +3,8 @@ package dev.dochia.cli.core.dsl;
 import dev.dochia.cli.core.dsl.api.Parser;
 import dev.dochia.cli.core.dsl.impl.AuthScriptProviderParser;
 import dev.dochia.cli.core.dsl.impl.EnvVariableParser;
+import dev.dochia.cli.core.dsl.impl.MiniDslParser;
 import dev.dochia.cli.core.dsl.impl.NoOpParser;
-import dev.dochia.cli.core.dsl.impl.SpringELParser;
 
 import java.util.Map;
 import java.util.Objects;
@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  */
 public class DSLParser {
     private static final Parser DEFAULT_PARSER = new NoOpParser();
-    private static final Parser SPRING_EL_PARSER = new SpringELParser();
+  private static final Parser SPRING_EL_PARSER = new MiniDslParser();
     private static final Map<String, Parser> PARSERS = Map.of(
             "$$", new EnvVariableParser(),
             "$request", SPRING_EL_PARSER,

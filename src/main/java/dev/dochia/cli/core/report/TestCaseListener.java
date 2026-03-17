@@ -21,6 +21,7 @@ import dev.dochia.cli.core.model.TestCaseExecutionSummary;
 import dev.dochia.cli.core.model.TestCaseSummary;
 import dev.dochia.cli.core.playbook.api.DryRun;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.WordUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
@@ -31,7 +32,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.fusesource.jansi.Ansi;
 import org.slf4j.MDC;
 import org.slf4j.event.Level;
-import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -949,7 +949,7 @@ public class TestCaseListener {
         Map<String, List<String>> responsesMap = Optional.ofNullable(data.getResponses()).orElse(Collections.emptyMap());
         List<String> responses = responsesMap.get(response.responseCodeAsString());
 
-        if (CollectionUtils.isEmpty(responses)) {
+        if (CommonUtils.isEmpty(responses)) {
             return responsesMap.getOrDefault(response.responseCodeAsResponseRange(),
                     responsesMap.get(response.responseCodeAsResponseRange().toLowerCase(Locale.ROOT)));
         }
