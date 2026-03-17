@@ -339,6 +339,7 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
         // this is a hack to set terminal width here in order to avoid importing a full-blown library
         // like jline
         // just for getting the terminal width
+        CommonUtils.initRandom(processingArguments.getSeed());
         ConsoleUtils.initTerminalWidth(spec);
         reportingArguments.processLogData();
         apiArguments.validateRequired(spec);

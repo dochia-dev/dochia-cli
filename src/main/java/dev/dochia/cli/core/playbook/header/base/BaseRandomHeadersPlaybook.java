@@ -10,9 +10,9 @@ import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.util.ConsoleUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +51,7 @@ public abstract class BaseRandomHeadersPlaybook implements TestCasePlaybook {
 
         for (int i = 0; i < processingArguments.getRandomHeadersNumber(); i++) {
             headers.add(DochiaHeader.builder()
-                    .name(RandomStringUtils.secure().nextAlphanumeric(10))
+                    .name(DochiaRandom.alphanumeric(10))
                     .required(false)
                     .value(this.randomHeadersValueFunction().apply(10)).build());
         }

@@ -1,5 +1,7 @@
 package dev.dochia.cli.core.factory;
 
+import static dev.dochia.cli.core.openapi.OpenAPIModelGenerator.SYNTH_SCHEMA_NAME;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import dev.dochia.cli.core.args.FilesArguments;
 import dev.dochia.cli.core.args.FilterArguments;
@@ -12,6 +14,7 @@ import dev.dochia.cli.core.model.NoMediaType;
 import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.openapi.OpenAPIModelGenerator;
 import dev.dochia.cli.core.util.DochiaModelUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import dev.dochia.cli.core.util.JsonUtils;
 import dev.dochia.cli.core.util.KeyValuePair;
 import dev.dochia.cli.core.util.OpenApiUtils;
@@ -29,9 +32,6 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,8 +44,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-
-import static dev.dochia.cli.core.openapi.OpenAPIModelGenerator.SYNTH_SCHEMA_NAME;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class is responsible for creating {@link PlaybookData} objects based on the supplied OpenApi paths
@@ -473,7 +472,7 @@ public class PlaybookDataFactory {
                     composedSchema.getOneOf().forEach(innerSchema -> reqSchemas.add(calculateSchemaRef(innerSchema)));
                 }
             } else {
-                String refForSchema = SYNTH_SCHEMA_NAME + RandomStringUtils.secure().nextAlphabetic(5);
+                String refForSchema = SYNTH_SCHEMA_NAME + DochiaRandom.alphabetic(5);
                 reqSchemas.add(refForSchema);
                 globalContext.putSchemaReference(refForSchema, mediaType.getSchema());
             }
@@ -483,7 +482,7 @@ public class PlaybookDataFactory {
 
     private String calculateSchemaRef(Schema innerSchema) {
         if (innerSchema.get$ref() == null) {
-            String refForSchema = SYNTH_SCHEMA_NAME + RandomStringUtils.secure().nextAlphabetic(5);
+            String refForSchema = SYNTH_SCHEMA_NAME +  DochiaRandom.alphabetic(5);
             globalContext.putSchemaReference(refForSchema, innerSchema);
             return refForSchema;
         }
@@ -700,7 +699,7 @@ public class PlaybookDataFactory {
     }
 
     private String extractSchemaRef(Schema<?> respSchema, Operation operation, String responseCode) {
-        String refKey = Optional.ofNullable(operation.getOperationId()).orElse(RandomStringUtils.secure().nextAlphabetic(5)) + responseCode;
+        String refKey = Optional.ofNullable(operation.getOperationId()).orElse( DochiaRandom.alphabetic(5)) + responseCode;
         String finalRef = refKey;
 
         if (DochiaModelUtils.isArraySchema(respSchema)) {

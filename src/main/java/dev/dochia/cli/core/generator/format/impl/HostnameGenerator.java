@@ -3,9 +3,9 @@ package dev.dochia.cli.core.generator.format.impl;
 import dev.dochia.cli.core.generator.format.api.InvalidDataFormatGenerator;
 import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
 import dev.dochia.cli.core.generator.format.api.ValidDataFormatGenerator;
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.swagger.v3.oas.models.media.Schema;
 import jakarta.inject.Singleton;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import java.util.List;
 public class HostnameGenerator implements ValidDataFormatGenerator, InvalidDataFormatGenerator, OpenAPIFormat {
     @Override
     public Object generate(Schema<?> schema) {
-        String generated = RandomStringUtils.secure().nextAlphabetic(5);
+        String generated = DochiaRandom.alphabetic(5);
         return "www.dochia%s.dev".formatted(generated);
     }
 

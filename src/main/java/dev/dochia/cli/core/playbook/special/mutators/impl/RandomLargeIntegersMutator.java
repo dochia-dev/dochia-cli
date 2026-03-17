@@ -2,8 +2,8 @@ package dev.dochia.cli.core.playbook.special.mutators.impl;
 
 import dev.dochia.cli.core.playbook.special.mutators.api.BodyMutator;
 import dev.dochia.cli.core.util.CommonUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import jakarta.inject.Singleton;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import java.math.BigInteger;
 
@@ -20,7 +20,7 @@ public class RandomLargeIntegersMutator implements BodyMutator {
         int i = 0;
         StringBuilder largeNumberBuilder = new StringBuilder();
         while (i < ITERATIONS) {
-            largeNumberBuilder.append(RandomStringUtils.secure().nextNumeric(LENGTH));
+            largeNumberBuilder.append(DochiaRandom.numeric(LENGTH));
             i++;
         }
 

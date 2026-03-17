@@ -83,6 +83,10 @@ public class RandomCommand implements Runnable, CommandLine.IExitCodeGenerator {
             description = "An API path for continuous fuzzing")
     String path;
 
+    @CommandLine.Option(names = {"--seed"},
+            description = "The seed to be used for random number generation. Default: @|bold,underline ${DEFAULT-VALUE}|@")
+    private long seed;
+
     @Inject
     TestCommand testCommand;
 
@@ -99,6 +103,7 @@ public class RandomCommand implements Runnable, CommandLine.IExitCodeGenerator {
         testCommand.filterArguments.customFilter("RandomPlaybook");
         testCommand.filesArguments = filesArguments;
         testCommand.processingArguments.setContentType(this.contentType);
+        testCommand.processingArguments.setSeed(seed);
         testCommand.processingArguments.setXxxOfSelections(this.xxxOfSelections);
         testCommand.filterArguments.setPaths(List.of(path));
         testCommand.filterArguments.setHttpMethods(List.of(httpMethod));

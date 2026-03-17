@@ -5,8 +5,8 @@ import dev.dochia.cli.core.playbook.api.HeaderPlaybook;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
 import dev.dochia.cli.core.playbook.header.base.BaseRandomHeadersPlaybook;
 import dev.dochia.cli.core.report.TestCaseListener;
+import dev.dochia.cli.core.util.DochiaRandom;
 import jakarta.inject.Singleton;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.function.Function;
 
@@ -35,6 +35,6 @@ public class LargeNumberOfRandomAlphanumericHeadersPlaybook extends BaseRandomHe
 
     @Override
     protected Function<Integer, String> randomHeadersValueFunction() {
-        return RandomStringUtils.secure()::nextAlphanumeric;
+        return DochiaRandom::alphanumeric;
     }
 }

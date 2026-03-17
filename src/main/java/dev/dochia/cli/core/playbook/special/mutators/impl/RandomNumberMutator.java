@@ -2,8 +2,8 @@ package dev.dochia.cli.core.playbook.special.mutators.impl;
 
 import dev.dochia.cli.core.playbook.special.mutators.api.BodyMutator;
 import dev.dochia.cli.core.util.CommonUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import jakarta.inject.Singleton;
-import org.apache.commons.lang3.RandomStringUtils;
 
 
 /**
@@ -16,7 +16,7 @@ public class RandomNumberMutator implements BodyMutator {
     @Override
     public String mutate(String inputJson, String selectedField) {
         int size = CommonUtils.random().nextInt(BOUND);
-        return CommonUtils.justReplaceField(inputJson, selectedField, RandomStringUtils.secure().nextNumeric(size)).json();
+        return CommonUtils.justReplaceField(inputJson, selectedField, DochiaRandom.numeric(size)).json();
     }
 
     @Override

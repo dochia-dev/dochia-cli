@@ -1,5 +1,7 @@
 package dev.dochia.cli.core.generator.simple;
 
+import dev.dochia.cli.core.util.CommonUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +52,7 @@ public class RegexGenerator {
         }
         List<Character> candidates = new ArrayList<>();
         generateCandidates(candidates, pattern, prefix);
-        Collections.shuffle(candidates);
+        Collections.shuffle(candidates, CommonUtils.random());
         return verifyAndReturn(pattern, prefix, min, max, candidates);
     }
 

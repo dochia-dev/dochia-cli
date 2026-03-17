@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.quarkus.test.junit.QuarkusTest;
 import io.swagger.v3.oas.models.media.Schema;
 import org.assertj.core.api.Assertions;
@@ -12,6 +13,7 @@ class ISBN13GeneratorTest {
 
     @Test
     void shouldGenerate() {
+        DochiaRandom.initRandom(0);
         ISBN13Generator isbn13Generator = new ISBN13Generator();
         Assertions.assertThat(isbn13Generator.generate(new Schema<>()).toString()).matches("[0-9]{13}");
     }

@@ -1,6 +1,7 @@
 package dev.dochia.cli.core.report;
 
 import dev.dochia.cli.core.args.IgnoreArguments;
+import dev.dochia.cli.core.args.ProcessingArguments;
 import dev.dochia.cli.core.args.ReportingArguments;
 import dev.dochia.cli.core.context.GlobalContext;
 import dev.dochia.cli.core.exception.DochiaException;
@@ -53,6 +54,8 @@ class TestCaseListenerTest {
     ReportingArguments reportingArguments;
     @Inject
     GlobalContext globalContext;
+    @Inject
+    ProcessingArguments processingArguments;
 
     private PrettyLogger logger;
     private TestCasePlaybook testCasePlaybook;

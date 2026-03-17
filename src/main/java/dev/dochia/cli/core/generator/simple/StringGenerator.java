@@ -3,16 +3,14 @@ package dev.dochia.cli.core.generator.simple;
 import com.github.curiousoddman.rgxgen.RgxGen;
 import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.DochiaModelUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.cornutum.regexpgen.RandomGen;
 import org.cornutum.regexpgen.RegExpGen;
 import org.cornutum.regexpgen.RegExpGenBuilder;
 import org.cornutum.regexpgen.js.Provider;
-import org.cornutum.regexpgen.random.RandomBoundsGen;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Arrays;
@@ -104,7 +102,6 @@ public class StringGenerator {
             "text/plain",
             "text/xml");
 
-    private static final RandomGen REGEXP_RANDOM_GEN = new RandomBoundsGen();
     private static final org.cornutum.regexpgen.Provider REGEXPGEN_PROVIDER = Provider.forEcmaScript();
 
     private static final PrettyLogger LOGGER = PrettyLoggerFactory.getLogger(StringGenerator.class);
@@ -121,7 +118,7 @@ public class StringGenerator {
      * @return a random alphanumeric string
      */
     public static String generateRandomString() {
-        return FUZZ + RandomStringUtils.secure().nextAlphabetic(4);
+        return FUZZ + DochiaRandom.alphabetic(4);
     }
 
     /**
@@ -310,7 +307,7 @@ public class StringGenerator {
             if (min == max) {
                 min = 0;
             }
-            String generated = generator.generate(REGEXP_RANDOM_GEN, min, max);
+            String generated = generator.generate(DochiaRandom.regexpRandomGen(), min, max);
 
             if (generated.matches(originalPattern)) {
                 LOGGER.debug("Generated using REGEXP {} matches {}", generated, pattern);
@@ -322,7 +319,7 @@ public class StringGenerator {
         return RegExpGenBuilder.generateRegExp(REGEXPGEN_PROVIDER)
                 .exactly()
                 .matching(ALPHANUMERIC_PLUS)
-                .generate(REGEXP_RANDOM_GEN, min, max);
+                .generate(DochiaRandom.regexpRandomGen(), min, max);
     }
 
     private static String generateUsingDochiaRegexGenerator(GeneratorParams generatorParams) {
@@ -386,7 +383,7 @@ public class StringGenerator {
         try {
             RgxGen rgxGen = RgxGen.parse(pattern);
             do {
-                generatedValue = rgxGen.generate();
+                generatedValue = rgxGen.generate(CommonUtils.random());
                 if (matchesLength(pattern, min, max, generatedValue) && generatedValue.matches(originalPattern)) {
                     return generatedValue;
                 }
@@ -512,7 +509,7 @@ public class StringGenerator {
     public static String generateLeftBoundString(Schema<?> schema) {
         if (schema.getEnum() != null) {
             String value = String.valueOf(schema.getEnum().getFirst());
-            return RandomStringUtils.secure().nextAlphanumeric(Math.max(DEFAULT_MIN_WHEN_NOT_PRESENT, value.length()));
+            return DochiaRandom.alphanumeric(Math.max(DEFAULT_MIN_WHEN_NOT_PRESENT, value.length()));
         }
 
         int minLength = schema.getMinLength() != null ? schema.getMinLength() - 1 : 0;
@@ -674,7 +671,7 @@ public class StringGenerator {
             return generateFixedLengthEmail(length);
         }
         if (isPassword(pattern, lowerCaseFieldName)) {
-            return "dochiaISC00l#" + RandomStringUtils.secure().nextPrint(length - 11);
+            return "dochiaISC00l#" + DochiaRandom.ascii(length - 11);
         }
 
         return null;

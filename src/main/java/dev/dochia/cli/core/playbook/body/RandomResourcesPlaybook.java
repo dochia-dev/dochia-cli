@@ -1,31 +1,30 @@
 package dev.dochia.cli.core.playbook.body;
 
-import dev.dochia.cli.core.playbook.api.BodyPlaybook;
 import dev.dochia.cli.core.args.FilesArguments;
-import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
-import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
-import dev.dochia.cli.core.playbook.executor.SimpleExecutorContext;
 import dev.dochia.cli.core.generator.simple.NumberGenerator;
 import dev.dochia.cli.core.generator.simple.StringGenerator;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.model.PlaybookData;
-import dev.dochia.cli.core.util.CommonUtils;
-import dev.dochia.cli.core.util.OpenApiUtils;
+import dev.dochia.cli.core.playbook.api.BodyPlaybook;
+import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutorContext;
 import dev.dochia.cli.core.report.TestCaseListener;
+import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.ConsoleUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import dev.dochia.cli.core.util.JsonUtils;
+import dev.dochia.cli.core.util.OpenApiUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
 import jakarta.inject.Singleton;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 
 /** Iterates through path variables and sens random resource identifiers. */
 @BodyPlaybook
@@ -146,12 +145,12 @@ public class RandomResourcesPlaybook implements TestCasePlaybook {
   }
 
   private static Object generateNewValue() {
-    int randomChoice = CommonUtils.random().nextInt(3);
-    int randomLength = CommonUtils.random().nextInt(32);
+    int randomChoice = DochiaRandom.instance().nextInt(3);
+    int randomLength =DochiaRandom.instance().nextInt(32);
     return switch (randomChoice) {
       case 0 -> UUID.randomUUID().toString();
       case 1 -> NumberGenerator.generateRandomLong(0, Long.MAX_VALUE);
-      default -> RandomStringUtils.secure().nextAlphanumeric(randomLength);
+      default -> DochiaRandom.alphanumeric(randomLength);
     };
   }
 

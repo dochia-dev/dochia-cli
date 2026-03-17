@@ -14,7 +14,6 @@ import io.swagger.v3.oas.models.PathItem;
 import java.io.File;
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -31,6 +30,7 @@ public abstract class CommonUtils {
    * dpchia specific file with limited number of fake values.
    */
   private static final Faker FAKER = new Faker(Locale.of("ro"), random());
+
   public static final int MAX_ARRAY_LENGTH = Integer.MAX_VALUE / 1000;
 
   private CommonUtils() {
@@ -276,7 +276,16 @@ public abstract class CommonUtils {
    * @return a Random
    */
   public static Random random() {
-    return ThreadLocalRandom.current();
+    return DochiaRandom.instance();
+  }
+
+  /**
+   * Initializes the random generator with a given seed. If the seed is 0, it uses a random seed.
+   *
+   * @param seed the seed to initialize the random generator
+   */
+  public static void initRandom(long seed) {
+    DochiaRandom.initRandom(seed);
   }
 
   /**
