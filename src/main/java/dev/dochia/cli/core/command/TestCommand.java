@@ -21,6 +21,7 @@ import dev.dochia.cli.core.report.ExecutionStatisticsListener;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.ConsoleUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import dev.dochia.cli.core.util.OpenApiUtils;
 import dev.dochia.cli.core.util.VersionChecker;
 import dev.dochia.cli.core.util.VersionProvider;
@@ -358,25 +359,21 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
                 ansi().fg(Ansi.Color.BLUE).a(reportingArguments.getOutputReportFolder()).reset());
         logger.config(
                 ansi().bold().a("{} configured playbooks out of {} total playbooks").bold().reset().toString(),
-                ansi()
-                        .fg(Ansi.Color.BLUE)
+                ansi().fg(Ansi.Color.BLUE)
                         .a(filterArguments.getFirstPhasePlaybooksForPath().size())
                         .reset()
                         .bold(),
-                ansi()
-                        .fg(Ansi.Color.BLUE)
+                ansi().fg(Ansi.Color.BLUE)
                         .a(filterArguments.getAllRegisteredPlaybooks().size())
                         .reset()
                         .bold());
         logger.config(
-                ansi()
-                        .bold()
+                ansi().bold()
                         .a("{} configured paths out of {} total OpenAPI paths")
                         .bold()
                         .reset()
                         .toString(),
-                ansi()
-                        .fg(Ansi.Color.BLUE)
+                ansi().fg(Ansi.Color.BLUE)
                         .a(filterArguments.getPathsToRun(openAPI).size())
                         .bold()
                         .reset()
@@ -386,43 +383,35 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
                 ansi().bold().a("HTTP methods in scope: {}").reset().toString(),
                 ansi().fg(Ansi.Color.BLUE).a(filterArguments.getHttpMethods()).reset());
         logger.config(
-                ansi()
+                ansi().bold()
                         .bold()
-                        .bold()
-                        .a(
-                                "Example flags: use-request-body-examples {}, use-schema-examples {}, use-property-examples {}, use-response-body-examples {}, use-defaults {}")
+                        .a("Example flags: use-request-body-examples {}, use-schema-examples {}, use-property-examples {}, use-response-body-examples {}, use-defaults {}")
                         .reset()
                         .toString(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.isUseRequestBodyExamples()).reset().bold(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.isUseSchemaExamples()).reset().bold(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.isUsePropertyExamples()).reset().bold(),
-                ansi()
-                        .fg(Ansi.Color.BLUE)
+                ansi().fg(Ansi.Color.BLUE)
                         .a(processingArguments.isUseResponseBodyExamples())
                         .reset()
                         .bold(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.isUseDefaults()).reset().bold());
         logger.config(
-                ansi()
-                        .bold()
-                        .a(
-                                "self-reference-depth {}, large-strings-size {}, random-headers-number {}, limit-fuzzed-fields {}, limit-xxx-of-combinations {}")
+                ansi().bold()
+                        .a("self-reference-depth {}, large-strings-size {}, random-headers-number {}, limit-fuzzed-fields {}, limit-xxx-of-combinations {}")
                         .reset()
                         .toString(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.getSelfReferenceDepth()).reset().bold(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.getLargeStringsSize()).reset().bold(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.getRandomHeadersNumber()).reset().bold(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.getLimitNumberOfFields()).reset().bold(),
-                ansi()
-                        .fg(Ansi.Color.BLUE)
+                ansi().fg(Ansi.Color.BLUE)
                         .a(processingArguments.getLimitXxxOfCombinations())
                         .reset()
                         .bold());
         logger.config(
-                ansi()
-                        .bold()
-                        .a(
-                                "How the service handles whitespaces and random unicodes: edge-spaces-strategy {}, sanitization-strategy {}")
+                ansi().bold()
+                        .a("How the service handles whitespaces and random unicodes: edge-spaces-strategy {}, sanitization-strategy {}")
                         .reset()
                         .toString(),
                 ansi().fg(Ansi.Color.BLUE).a(processingArguments.getEdgeSpacesStrategy()).reset().bold(),
@@ -432,6 +421,9 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
         logger.config(
                 ansi().bold().a("Total number of OpenAPI operations: {}").reset().toString(),
                 ansi().fg(Ansi.Color.BLUE).a(nofOfOperations));
+        logger.config(ansi().bold().a("Seed value: {}").reset().toString(),
+                ansi().fg(Ansi.Color.BLUE).a(DochiaRandom.getStoredSeed()).reset().bold());
+
     }
 
     private void fuzzPath(Map.Entry<String, PathItem> pathItemEntry, OpenAPI openAPI) {
