@@ -120,6 +120,10 @@ public class ProcessingArguments {
             description = "The seed to be used for random number generation. Default: @|bold,underline ${DEFAULT-VALUE}|@")
     private long seed;
 
+    @CommandLine.Option(names = {"--check-allow-header"},
+            description = "When set to @|bold true|@, the XXXHttpMethodsPlaybook will check that the Allow header is provided in response and contains the allowed methods. Default: @|bold,underline ${DEFAULT-VALUE}|@")
+    private boolean checkAllowHeader;
+
 
     /**
      * Checks if the payload matches any of the supplied --oneOfSelection or --anyOfSelection argument

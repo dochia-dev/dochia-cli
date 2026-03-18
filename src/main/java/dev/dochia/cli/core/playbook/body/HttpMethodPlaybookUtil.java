@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.playbook.body;
 
+import dev.dochia.cli.core.args.ProcessingArguments;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamily;
 import dev.dochia.cli.core.model.HttpResponse;
@@ -21,18 +22,20 @@ import jakarta.inject.Singleton;
 public class HttpMethodPlaybookUtil {
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(HttpMethodPlaybookUtil.class);
     private final TestCaseListener testCaseListener;
-
+    private final ProcessingArguments processingArguments;
     private final SimpleExecutor simpleExecutor;
 
     /**
      * Creates a new HttpMethodPlaybookUtil instance.
      *
-     * @param tcl the test case listener
-     * @param se  the executor
+     * @param tcl                 the test case listener
+     * @param se                  the executor
+     * @param processingArguments the processing arguments
      */
     @Inject
-    public HttpMethodPlaybookUtil(TestCaseListener tcl, SimpleExecutor se) {
+    public HttpMethodPlaybookUtil(TestCaseListener tcl, ProcessingArguments processingArguments, SimpleExecutor se) {
         this.testCaseListener = tcl;
+        this.processingArguments = processingArguments;
         this.simpleExecutor = se;
     }
 
@@ -75,6 +78,11 @@ public class HttpMethodPlaybookUtil {
     }
 
     private void handle405(HttpResponse response, PlaybookData data) {
+        if (!processingArguments.isCheckAllowHeader()) {
+            testCaseListener.reportResultInfo(logger, data, "Request failed as expected for http method [{}] with response code [{}]",
+                    response.getHttpMethod(), response.getResponseCode());
+            return;
+        }
         KeyValuePair<String, String> allowHeader = response.getHeader("Allow");
         if (allowHeader == null) {
             testCaseListener.reportResultWarn(logger, data, "Request failed as expected for http method [{}] with response code [{}], but missing Allow header", response.getHttpMethod(), response.getResponseCode());
