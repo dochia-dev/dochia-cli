@@ -745,4 +745,17 @@ public class FilterArguments {
                 .count();
     }
 
+    /**
+     * Validates if the supplied paths are valid.
+     *
+     * @param openAPI the OpenAPI spec to validate against
+     */
+    public void validateValidPaths(OpenAPI openAPI) {
+        if (this.getPaths().isEmpty()) {
+            return;
+        }
+        if (this.getPaths().stream().noneMatch(path -> openAPI.getPaths().containsKey(path))) {
+            throw new IllegalArgumentException("No paths available to run. Use 'dochia list -p -c api.yml' to list available paths");
+        }
+    }
 }
