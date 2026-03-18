@@ -49,7 +49,7 @@ public abstract class SimpleJsonFormatter {
             formatted.append(currentChar);
             indentLevel++;
             if (nextChar != '}' && nextChar != ']') {
-              formatted.append('\n').append(indent.repeat(indentLevel));
+              formatted.append('\n').append(indent.repeat(Math.max(0, indentLevel)));
             }
             break;
 

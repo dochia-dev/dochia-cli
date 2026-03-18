@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.args;
 
+import dev.dochia.cli.core.args.util.ProfileLoader;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.playbook.api.BodyPlaybook;
 import dev.dochia.cli.core.playbook.api.EmojiPlaybook;
@@ -25,6 +26,8 @@ import lombok.Setter;
 import picocli.CommandLine;
 
 import java.lang.annotation.Annotation;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -63,6 +66,8 @@ public class FilterArguments {
     @Inject
     @Getter
     ProcessingArguments processingArguments;
+    @Inject
+    ProfileLoader profileLoader;
 
     enum FieldType {
         STRING, NUMBER, INTEGER, BOOLEAN
@@ -158,6 +163,16 @@ public class FilterArguments {
                     "Example: @|bold --skip-playbooks-for-extension \"x-public-endpoint=true:BypassAuthentication\"|@ " +
                     "will skip BypassAuthentication playbook for all endpoints that have x-public-endpoint extension set to true.", split = ",")
     private List<String> skipPlaybooksForExtension;
+
+    @CommandLine.Option(
+            names = {"--profile"},
+            description = "Use a predefined playbook profile: security, quick, compliance, ci, full (default: full)")
+    private String profile = "full";
+
+    @CommandLine.Option(
+            names = {"--profile-file"},
+            description = "Path to custom profile configuration file (YAML)")
+    private Path customProfileFile;
 
 
     private Map<String, List<String>> skipPathPlaybooks = new HashMap<>();
@@ -559,6 +574,47 @@ public class FilterArguments {
                 .filter(playbook ->
                         playbooksToExclude.stream().noneMatch(playbook::contains))
                 .toList();
+    }
+
+    /**
+     * Applies the selected playbook profile to filter which playbooks will run.
+     * If a custom profile file is provided, it will be loaded first.
+     * If the profile specifies an empty playbook list, all playbooks will run (full profile).
+     * If user also specified --playbooks, the intersection of profile and user playbooks will be used.
+     *
+     * @param spec the PicoCli command spec for error reporting
+     */
+    public void applyProfile(CommandLine.Model.CommandSpec spec) {
+        if (customProfileFile != null && Files.exists(customProfileFile)) {
+            profileLoader.loadCustomProfiles(customProfileFile);
+        }
+
+        Optional<ProfileLoader.Profile> selectedProfile = profileLoader.getProfile(profile);
+
+        if (selectedProfile.isEmpty()) {
+            throw new CommandLine.ParameterException(spec.commandLine(),
+                    "Profile '" + profile + "' not found. Available profiles: " + profileLoader.getAvailableProfiles());
+        }
+
+        ProfileLoader.Profile profileConfig = selectedProfile.get();
+
+        if (profileConfig.playbooks().isEmpty()) {
+            logger.info("Using profile '{}' - ALL playbooks enabled", profile);
+            return;
+        }
+
+        Set<String> profilePlaybooks = new HashSet<>(profileConfig.playbooks());
+
+        if (suppliedPlaybooks != null && !suppliedPlaybooks.isEmpty()) {
+            Set<String> userPlaybooks = new HashSet<>(suppliedPlaybooks);
+            profilePlaybooks.retainAll(userPlaybooks);
+            logger.info("Using profile '{}' with user-specified playbooks: {} playbooks",
+                    profile, profilePlaybooks.size());
+        } else {
+            logger.info("Using profile '{}': {} playbooks", profile, profilePlaybooks.size());
+        }
+
+        this.suppliedPlaybooks = List.copyOf(profilePlaybooks);
     }
 
     /**

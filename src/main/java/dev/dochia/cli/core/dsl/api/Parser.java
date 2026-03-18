@@ -19,6 +19,8 @@ public interface Parser {
   /** Holds the name for the auth script refresh interval variable. */
   String AUTH_REFRESH = "auth_refresh";
 
+  String PATH = "path";
+
   /**
    * Parses the given expression within the given context and returns the result.
    *

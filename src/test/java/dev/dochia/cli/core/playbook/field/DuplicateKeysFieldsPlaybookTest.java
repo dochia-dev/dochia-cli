@@ -11,6 +11,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -18,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @QuarkusTest
 class DuplicateKeysFieldsPlaybookTest
@@ -87,6 +90,35 @@ class DuplicateKeysFieldsPlaybookTest
 
         Mockito.verify(testCaseListener, Mockito.times(0)).reportResult(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
+
+     @ParameterizedTest
+     @CsvSource(value = {"{\"parent\":{\"child\":\"value\"}}|parent#child",
+             "{\"items\":[{\"field\":\"value1\"},{\"field\":\"value2\"}]}|items",
+             "{\"numbers\":[1,2,3]}|numbers",
+             "{\"level1\":{\"level2\":{\"level3\":\"value\"}}}|level1#level2#level3",
+             "{\"items\":[]}|items",
+             "{\"data\":{\"items\":[{\"id\":1},{\"id\":2}]}}|data#items",
+             "{\"field-with-dash\":\"value\"}|field-with-dash"}, delimiter = '|')
+     void shouldHandleNestedObjectDuplication(String payload, String field) {
+         setup(HttpMethod.POST);
+         Mockito.when(data.getPayload()).thenReturn(payload);
+         Mockito.when(data.getAllFieldsByHttpMethod()).thenReturn(Collections.singleton(field));
+
+         duplicateKeysFieldsPlaybook.run(data);
+
+         Mockito.verify(testCaseListener, Mockito.times(1)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
+     }
+
+     @Test
+     void shouldHandleMultipleFieldsWithLimit() {
+         setup(HttpMethod.POST);
+         Mockito.when(data.getPayload()).thenReturn("{\"field1\":\"value1\",\"field2\":\"value2\",\"field3\":\"value3\"}");
+         Mockito.when(data.getAllFieldsByHttpMethod()).thenReturn(Set.of("field1", "field2", "field3"));
+
+         duplicateKeysFieldsPlaybook.run(data);
+
+         Mockito.verify(testCaseListener, Mockito.times(3)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
+     }
 
     private void setup(HttpMethod method) {
         httpResponse = HttpResponse.builder().body("{}").responseCode(200).build();

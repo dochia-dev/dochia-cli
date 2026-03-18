@@ -1,6 +1,5 @@
 package dev.dochia.cli.core.util;
 
-import dev.dochia.cli.core.util.CommonUtils;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;

@@ -1,0 +1,282 @@
+# DOCHIA Playbook Profiles
+# Built-in profiles for common testing scenarios
+
+profiles:
+  # ============================================
+  # TYPE COERCION PROFILE
+  # Focus: Type coercion issues (e.g. sending strings as numbers)
+  # ============================================
+  type-coercion:
+    description: "Type coercion-focused playbooks targeting issues where types are coerced automatically by frameworks/libraries"
+    playbooks:
+      - CoercionBooleanStringInBooleanFields
+      - CoercionBooleanValuesInStringFields
+      - CoercionEnumNumericOrdinalFields
+      - CoercionEpochNumberInDateTimeFields
+      - CoercionLeadingZerosInNumericFields
+      - CoercionNumericBooleansInBooleanFields
+      - CoercionNumericStringsInNumericFields
+      - CoercionNumericValuesInStringFields
+      - CoercionScientificNotationStringsInDecimalFields
+      - CoercionSingleElementArrayToScalarFields
+      - CoercionWhitespacePaddedNumericFields
+
+  # ============================================
+  # SECURITY PROFILE
+  # Focus: Security vulnerabilities and attack vectors
+  # ============================================
+  security:
+    description: "Security-focused playbooks targeting OWASP vulnerabilities and attack vectors"
+    playbooks:
+      # Injection Attacks
+      - SqlInjectionInStringFields
+      - NoSqlInjectionInStringFields
+      - LdapInjectionInStringFields
+      - XxeInjectionInStringFields
+      - SstiInjectionInStringFields
+      - CommandInjectionInStringFields
+      - XssInjectionInStringFields
+      - SSRFInUrlFields
+
+      # Authentication & Authorization
+      - BypassAuthentication
+      - InsecureDirectObjectReferences
+
+      # Mass Assignment
+      - MassAssignment
+      - AdditionalPropertiesMassAssignmentFields
+
+      # Security Headers
+      - CheckSecurityHeaders
+      - ResponseHeadersMatchContractHeaders
+
+      # Malicious Input
+      - VeryLargeStringsInFields
+      - VeryLargeUnicodeStringsInFields
+      - VeryLargeIntegersInNumericFields
+      - VeryLargeDecimalsInNumericFields
+      - VeryLargeStringsInHeaders
+      - VeryLargeUnicodeStringsInHeaders
+
+      # Unicode Attacks
+      - ZalgoTextInFields
+      - ZeroWidthCharsInValuesFields
+      - BidirectionalOverrideFields
+
+      # HTTP Method Manipulation
+      - CustomHttpMethods
+      - NonRestHttpMethods
+      - HttpMethods
+
+      # Header Manipulation
+      - CRLFHeaders
+      - DuplicateHeaders
+      - LargeNumberOfRandomHeaders
+
+      # Resource Manipulation
+      - CheckDeletedResourcesNotAvailable
+      - RandomResources
+      - InvalidReferencesFields
+
+  # ============================================
+  # HEALTH-CHECK PROFILE
+  # Focus: Verify API is reachable before fuzzing
+  # ============================================
+  health-check:
+    description: "Minimal health check to verify API endpoints are reachable and responding"
+    playbooks:
+      # Happy Path - verify basic connectivity and response
+      - HappyPath
+
+  # ============================================
+  # QUICK PROFILE
+  # Focus: Fast smoke test for CI/CD
+  # ============================================
+  quick:
+    description: "Fast smoke test covering critical test scenarios"
+    playbooks:
+      # Happy Path
+      - HappyPath
+
+      # Required Fields
+      - RemoveFields
+      - NullValuesInFields
+      - EmptyStringsInFields
+
+      # Type Validation
+      - StringsInNumericFields
+      - RandomStringsInBooleanFields
+      - DecimalNumbersInIntegerFields
+
+      # Boundary Testing (Key ones only)
+      - IntegerFieldsLeftBoundary
+      - IntegerFieldsRightBoundary
+      - StringFieldsLeftBoundary
+      - StringFieldsRightBoundary
+
+      # Format Validation
+      - StringFormatTotallyWrongValues
+      - InvalidValuesInEnumsFields
+
+      # Security Essentials
+      - BypassAuthentication
+      - MassAssignment
+      - SqlInjectionInStringFields
+
+      # HTTP Basics
+      - HttpMethods
+      - DummyContentTypeHeaders
+      - UnsupportedContentTypesHeaders
+
+      # Malformed Requests
+      - MalformedJson
+      - EmptyJsonBody
+
+  # ============================================
+  # COMPLIANCE PROFILE
+  # Focus: OWASP API Security Top 10 (2023)
+  # ============================================
+  compliance:
+    description: "OWASP API Security Top 10 compliance testing"
+    playbooks:
+      # API1:2023 - Broken Object Level Authorization
+      - InsecureDirectObjectReferences
+      - RandomResources
+      - InvalidReferencesFields
+      - CheckDeletedResourcesNotAvailable
+
+      # API2:2023 - Broken Authentication
+      - BypassAuthentication
+      - RemoveHeaders
+
+      # API3:2023 - Broken Object Property Level Authorization
+      - MassAssignment
+      - AdditionalPropertiesMassAssignmentFields
+      - NewFields
+
+      # API4:2023 - Unrestricted Resource Consumption
+      - VeryLargeStringsInFields
+      - VeryLargeIntegersInNumericFields
+      - VeryLargeDecimalsInNumericFields
+      - VeryLargeUnicodeStringsInFields
+      - OverflowArraySizeFields
+      - OverflowMapSizeFields
+      - VeryLargeStringsInHeaders
+      - LargeNumberOfRandomHeaders
+      - LargeNumberOfRandomAlphanumericHeaders
+
+      # API5:2023 - Broken Function Level Authorization
+      - HttpMethods
+      - CustomHttpMethods
+      - NonRestHttpMethods
+
+      # API6:2023 - Unrestricted Access to Sensitive Business Flows
+      # (Covered by rate limiting - out of scope for schema-based testing)
+
+      # API7:2023 - Server Side Request Forgery
+      - SSRFInUrlFields
+
+      # API8:2023 - Security Misconfiguration
+      - CheckSecurityHeaders
+      - ResponseHeadersMatchContractHeaders
+      - DummyAcceptHeaders
+      - UnsupportedAcceptHeaders
+      - UnsupportedContentTypesHeaders
+
+      # API9:2023 - Improper Inventory Management
+      # (Documentation quality - covered by linters)
+
+      # API10:2023 - Unsafe Consumption of APIs
+      - SqlInjectionInStringFields
+      - NoSqlInjectionInStringFields
+      - LdapInjectionInStringFields
+      - XxeInjectionInStringFields
+      - SstiInjectionInStringFields
+      - CommandInjectionInStringFields
+      - XssInjectionInStringFields
+
+      # Additional Security Best Practices
+      - StringFormatTotallyWrongValues
+      - InvalidValuesInEnumsFields
+      - RemoveFields
+      - NullValuesInFields
+
+  # ============================================
+  # CI PROFILE
+  # Focus: Optimized for CI/CD pipelines
+  # Balance: Coverage vs Speed
+  # ============================================
+  ci:
+    description: "Balanced test suite optimized for CI/CD pipelines"
+    playbooks:
+      # Functional Correctness
+      - HappyPath
+      - DefaultValuesInFields
+      - ExamplesFields
+
+      # Required Field Validation
+      - RemoveFields
+      - NullValuesInFields
+      - EmptyStringsInFields
+
+      # Type Validation
+      - StringsInNumericFields
+      - RandomStringsInBooleanFields
+      - DecimalNumbersInIntegerFields
+      - ReplaceObjectsWithPrimitivesFields
+      - ReplacePrimitivesWithObjectsFields
+      - ReplaceArraysWithPrimitivesFields
+
+      # Boundary Testing
+      - IntegerFieldsLeftBoundary
+      - IntegerFieldsRightBoundary
+      - DecimalFieldsLeftBoundary
+      - DecimalFieldsRightBoundary
+      - StringFieldsLeftBoundary
+      - StringFieldsRightBoundary
+      - MinimumExactNumbersInNumericFields
+      - MaximumExactNumbersInNumericFields
+      - MinLengthExactValuesInStringFields
+      - MaxLengthExactValuesInStringFields
+
+      # Format & Enum Validation
+      - StringFormatTotallyWrongValues
+      - StringFormatAlmostValidValues
+      - InvalidValuesInEnumsFields
+      - EnumCaseVariantFields
+
+      # Business Logic
+      - MinGreaterThanMaxFields
+      - DateRangeInversion
+      - TemporalLogicFields
+
+      # Security Essentials
+      - BypassAuthentication
+      - MassAssignment
+      - SqlInjectionInStringFields
+      - XssInjectionInStringFields
+      - SSRFInUrlFields
+      - InsecureDirectObjectReferences
+
+      # HTTP Protocol
+      - HttpMethods
+      - DummyContentTypeHeaders
+      - UnsupportedContentTypesHeaders
+      - CheckSecurityHeaders
+
+      # Malformed Input
+      - MalformedJson
+      - EmptyJsonBody
+      - DummyRequest
+
+      # Array/Object Validation
+      - OverflowArraySizeFields
+      - DuplicateKeysFields
+
+  # ============================================
+  # FULL PROFILE (Default)
+  # Focus: Comprehensive testing
+  # ============================================
+  full:
+    description: "Complete test suite - all playbooks enabled (default behavior)"
+    playbooks: [ ]  # Empty means ALL playbooks

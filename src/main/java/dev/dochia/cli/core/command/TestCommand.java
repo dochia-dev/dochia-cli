@@ -47,6 +47,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.fusesource.jansi.Ansi.ansi;
@@ -86,7 +87,7 @@ import static org.fusesource.jansi.Ansi.ansi;
                 "    dochia test -c openapi.yml -s http://localhost:8080 -H API-Token=$$TOKEN"
         })
 @Unremovable
-public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
+public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator, AutoCloseable {
 
     private final PrettyLogger logger;
     private static final String SEPARATOR = "-".repeat(ConsoleUtils.getConsoleColumns(22));
@@ -220,6 +221,7 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
     }
 
     private void doLogic() throws IOException {
+        filterArguments.applyProfile(spec);
         this.prepareRun();
         OpenAPI openAPI = this.createOpenAPI();
         this.checkOpenAPI(openAPI);
@@ -517,5 +519,18 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator {
     @Override
     public int getExitCode() {
         return exitCodeDueToErrors + executionStatisticsListener.getErrors();
+    }
+
+    @Override
+    public void close() throws Exception {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

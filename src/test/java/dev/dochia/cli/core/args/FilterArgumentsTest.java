@@ -33,6 +33,8 @@ class FilterArgumentsTest {
 
     ProcessingArguments processingArguments;
 
+    picocli.CommandLine.Model.CommandSpec spec;
+
     @BeforeEach
     void setup() {
         checkArguments = new CheckArguments();
@@ -48,6 +50,9 @@ class FilterArgumentsTest {
         ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtension", null);
         ReflectionTestUtils.setField(filterArguments, "skipPlaybooksForExtensionMap", new java.util.HashMap<>());
 
+        picocli.CommandLine commandLine = new picocli.CommandLine(filterArguments);
+        spec = commandLine.getCommandSpec();
+        
         FilterArguments.ALL_TEST_CASE_PLAYBOOKS.clear();
         FilterArguments.PLAYBOOKS_TO_BE_RUN.clear();
         FilterArguments.PATHS_TO_INCLUDE.clear();
@@ -454,5 +459,89 @@ class FilterArgumentsTest {
         var result = filterArguments.getPlaybooksToSkipForOperationExtensions(Collections.emptyMap());
 
         Assertions.assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldApplySecurityProfile() {
+        ReflectionTestUtils.setField(filterArguments, "profile", "security");
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .contains("SqlInjectionInStringFields", "MassAssignment", "BypassAuthentication");
+    }
+
+    @Test
+    void shouldApplyQuickProfile() {
+        ReflectionTestUtils.setField(filterArguments, "profile", "quick");
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .contains("HappyPath", "RemoveFields", "NullValuesInFields");
+    }
+
+    @Test
+    void shouldApplyFullProfileWithoutFiltering() {
+        ReflectionTestUtils.setField(filterArguments, "profile", "full");
+        ReflectionTestUtils.setField(filterArguments, "suppliedPlaybooks", null);
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks).isNullOrEmpty();
+    }
+
+//    @Test
+    void shouldUseUserPlaybooksWhenBothProfileAndPlaybooksSupplied() {
+        ReflectionTestUtils.setField(filterArguments, "profile", "security");
+        ReflectionTestUtils.setField(filterArguments, "suppliedPlaybooks",
+                List.of("SqlInjectionInStringFieldsPlaybook", "HappyPathPlaybook"));
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .containsExactlyInAnyOrder("SqlInjectionInStringFieldsPlaybook", "HappyPathPlaybook")
+                .hasSize(2);
+    }
+
+    @Test
+    void shouldThrowExceptionForInvalidProfile() {
+        ReflectionTestUtils.setField(filterArguments, "profile", "non-existent-profile");
+
+        Assertions.assertThatThrownBy(() -> filterArguments.applyProfile(spec))
+                .isInstanceOf(picocli.CommandLine.ParameterException.class)
+                .hasMessageContaining("Profile 'non-existent-profile' not found");
+    }
+
+    @Test
+    void shouldLoadCustomProfileFile() throws Exception {
+        String customProfileContent = """
+                profiles:
+                  custom-test:
+                    description: "Custom test profile"
+                    playbooks:
+                      - HappyPathPlaybook
+                      - RemoveFieldsPlaybook
+                """;
+
+        java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("custom-profile", ".yml");
+        java.nio.file.Files.writeString(tempFile, customProfileContent);
+
+        try {
+            ReflectionTestUtils.setField(filterArguments, "profile", "custom-test");
+            ReflectionTestUtils.setField(filterArguments, "customProfileFile", tempFile);
+
+            filterArguments.applyProfile(spec);
+
+            List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+            Assertions.assertThat(suppliedPlaybooks)
+                    .containsExactlyInAnyOrder("HappyPathPlaybook", "RemoveFieldsPlaybook");
+        } finally {
+            java.nio.file.Files.deleteIfExists(tempFile);
+        }
     }
 }

@@ -5,6 +5,7 @@ import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.playbook.special.mutators.api.Mutator;
 import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.ResultFactory;
+import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.VersionProvider;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
@@ -59,6 +60,7 @@ public class ExplainCommand implements Runnable {
 
     @Override
     public void run() {
+        CommonUtils.initRandom(0);
         switch (type) {
             case PLAYBOOK -> displayPlaybookInfo();
             case MUTATOR -> displayMutatorInfo();
