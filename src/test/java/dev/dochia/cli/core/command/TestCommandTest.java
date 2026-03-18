@@ -185,7 +185,7 @@ class TestCommandTest {
     void shouldReturnErrorsExitCode() {
         Mockito.when(executionStatisticsListener.getErrors()).thenReturn(190);
 
-        Assertions.assertThat(testCommand.getExitCode()).isEqualTo(190);
+        Assertions.assertThat(testCommand.getExitCode()).isEqualTo(1);
     }
 
     @Test

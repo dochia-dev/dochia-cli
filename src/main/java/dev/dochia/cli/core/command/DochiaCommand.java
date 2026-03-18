@@ -33,8 +33,6 @@ import java.nio.charset.StandardCharsets;
         versionProvider = VersionProvider.class,
         commandListHeading = "%n@|bold,underline Commands:|@%n",
         defaultValueProvider = CommandLine.PropertiesDefaultProvider.class,
-        exitCodeOnInvalidInput = 191,
-        exitCodeOnExecutionException = 192,
         resourceBundle = "version",
         abbreviateSynopsis = true,
         synopsisHeading = "@|bold,underline Usage:|@%n",
@@ -45,9 +43,8 @@ import java.nio.charset.StandardCharsets;
         exitCodeListHeading = "%n@|bold,underline Exit Codes:|@%n",
         exitCodeList = {
                 "@|bold  0|@:Successful program execution",
-                "@|bold 191|@:Usage error: user input for the command was incorrect",
-                "@|bold 192|@:Internal execution error: an exception occurred when executing command",
-                "@|bold ERR|@:Where ERR is the number of errors reported by dochia"
+                "@|bold 2|@:Usage error: user input for the command was incorrect",
+                "@|bold 1|@:Internal execution error: an exception occurred when executing command"
         },
         footerHeading = "%n@|bold,underline Examples:|@%n",
         footer = {

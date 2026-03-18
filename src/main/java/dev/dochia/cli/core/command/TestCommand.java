@@ -61,8 +61,6 @@ import java.util.stream.Collectors;
         commandListHeading = "%n@|bold,underline Commands:|@%n",
         defaultValueProvider = CommandLine.PropertiesDefaultProvider.class,
         description = "Automatically generate and run negative and boundary tests from your OpenAPI spec using 100+ fuzzing playbooks.",
-        exitCodeOnInvalidInput = 191,
-        exitCodeOnExecutionException = 192,
         abbreviateSynopsis = true,
         synopsisHeading = "@|bold,underline Usage:|@%n",
         customSynopsis = {
@@ -72,10 +70,8 @@ import java.util.stream.Collectors;
         exitCodeListHeading = "%n@|bold,underline Exit Codes:|@%n",
         exitCodeList = {
                 "@|bold  0|@:Successful program execution",
-                "@|bold 191|@:Usage error: user input for the command was incorrect",
-                "@|bold 192|@:Internal execution error: an exception occurred when executing command",
-                "@|bold ERR|@:Where ERR is the number of errors reported by dochia"
-        },
+                "@|bold 2|@:Usage error: user input for the command was incorrect",
+                "@|bold 1|@:Internal execution error: an exception occurred when executing command"},
         footerHeading = "%n@|bold,underline Examples:|@%n",
         footer = {
                 "  Run in blackbox mode and only report 500 http error codes:",
@@ -171,7 +167,7 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator, Au
         } catch (DochiaException | IOException | IllegalArgumentException e) {
             logger.fatal("Something went wrong while running dochia: {}", e.toString());
             logger.debug("Stacktrace: {}", e);
-            exitCodeDueToErrors = 192;
+            exitCodeDueToErrors = CommandLine.ExitCode.SOFTWARE;
         } finally {
             testCaseListener.endSession();
             this.printSuggestions();
@@ -448,7 +444,10 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator, Au
 
     @Override
     public int getExitCode() {
-        return exitCodeDueToErrors + executionStatisticsListener.getErrors();
+        if (exitCodeDueToErrors > 0) {
+            return exitCodeDueToErrors;
+        }
+        return executionStatisticsListener.getErrors() > 0 ? CommandLine.ExitCode.SOFTWARE : CommandLine.ExitCode.OK;
     }
 
     @Override
