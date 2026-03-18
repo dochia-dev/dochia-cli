@@ -7,6 +7,7 @@ import dev.dochia.cli.core.args.FilesArguments;
 import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.args.IgnoreArguments;
 import dev.dochia.cli.core.args.ProcessingArguments;
+import dev.dochia.cli.core.args.QualityGateArguments;
 import dev.dochia.cli.core.args.ReportingArguments;
 import dev.dochia.cli.core.command.model.ConfigOptions;
 import dev.dochia.cli.core.command.model.HelpFullOption;
@@ -132,6 +133,11 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator, Au
     @CommandLine.ArgGroup(heading = "%n@|bold,underline Reporting and Output Options:|@%n", exclusive = false)
     ReportingArguments reportingArguments;
 
+    @Inject
+    @CommandLine.ArgGroup(heading = "%n@|bold,underline Quality Gate Options:|@%n", exclusive = false)
+    QualityGateArguments qualityGateArguments;
+
+
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
 
@@ -148,7 +154,7 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator, Au
     @ConfigProperty(name = "quarkus.application.version", defaultValue = "1.0.0")
     String appVersion;
 
-    private int exitCodeDueToErrors;
+    private int exitCodeDueToErrors = CommandLine.ExitCode.OK;
 
     /**
      * Creates a new instance of TestCommand.
@@ -348,10 +354,12 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator, Au
         logger.config(AnsiUtils.bold("How the service handles whitespaces and random unicodes: edge-spaces-strategy {}, sanitization-strategy {}"),
                 AnsiUtils.blue(processingArguments.getEdgeSpacesStrategy()),
                 AnsiUtils.blue(processingArguments.getSanitizationStrategy()));
+        logger.config(AnsiUtils.bold("Seed value: {}"), AnsiUtils.blue(DochiaRandom.getStoredSeed()));
+        logger.config(AnsiUtils.bold("Quality gate: {}"),
+                AnsiUtils.boldBlue(qualityGateArguments.getQualityGateDescription()));
 
         int nofOfOperations = OpenApiUtils.getNumberOfOperations(openAPI);
         logger.config(AnsiUtils.bold("Total number of OpenAPI operations: {}"), AnsiUtils.blue(nofOfOperations));
-        logger.config(AnsiUtils.bold("Seed value: {}"), AnsiUtils.blue(DochiaRandom.getStoredSeed()));
     }
 
     private void fuzzPath(Map.Entry<String, PathItem> pathItemEntry, OpenAPI openAPI) {
@@ -447,7 +455,16 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator, Au
         if (exitCodeDueToErrors > 0) {
             return exitCodeDueToErrors;
         }
-        return executionStatisticsListener.getErrors() > 0 ? CommandLine.ExitCode.SOFTWARE : CommandLine.ExitCode.OK;
+
+        int errors = executionStatisticsListener.getErrors();
+        int warnings = executionStatisticsListener.getWarns();
+
+        if (qualityGateArguments.shouldFailBuild(errors, warnings)) {
+            logger.debug("Build failed due to quality gate: {}", qualityGateArguments.getQualityGateDescription());
+            return CommandLine.ExitCode.SOFTWARE;
+        }
+
+        return CommandLine.ExitCode.OK;
     }
 
     @Override

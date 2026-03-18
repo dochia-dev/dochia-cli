@@ -62,11 +62,10 @@ public class TestReportsGenerator {
     /**
      * Writes a summary of the test case execution details.
      *
-     * @param testCaseSummaryDetails      the list of test case summaries to be written
-     * @param executionStatisticsListener the listener for execution statistics
+     * @param testCaseSummaryDetails the list of test case summaries to be written
      */
-    public void writeSummary(List<TestCaseSummary> testCaseSummaryDetails, ExecutionStatisticsListener executionStatisticsListener) {
-        testCaseExporters.forEach(testCaseExporter -> testCaseExporter.writeSummary(testCaseSummaryDetails, executionStatisticsListener));
+    public void writeSummary(List<TestCaseSummary> testCaseSummaryDetails) {
+        testCaseExporters.forEach(testCaseExporter -> testCaseExporter.writeSummary(testCaseSummaryDetails));
     }
 
     /**
@@ -91,9 +90,8 @@ public class TestReportsGenerator {
     /**
      * Prints the execution details using the first available test case exporter.
      *
-     * @param executionStatisticsListener the listener for execution statistics
      */
-    public void printExecutionDetails(ExecutionStatisticsListener executionStatisticsListener) {
-        testCaseExporters.getFirst().printExecutionDetails(executionStatisticsListener);
+    public void printExecutionDetails() {
+        testCaseExporters.getFirst().printExecutionDetails();
     }
 }

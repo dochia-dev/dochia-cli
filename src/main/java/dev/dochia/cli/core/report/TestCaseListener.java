@@ -435,12 +435,12 @@ public class TestCaseListener {
         try {
             markPreviousPathAsDone();
             reportingArguments.enableAdditionalLoggingIfSummary();
-            testReportsGenerator.writeSummary(testCaseSummaryDetails, executionStatisticsListener);
+            testReportsGenerator.writeSummary(testCaseSummaryDetails);
             testReportsGenerator.writeHelperFiles();
             ConsoleUtils.emptyLine();
             testReportsGenerator.writeErrorsByReason(testCaseSummaryDetails);
             testReportsGenerator.writePerformanceReport(testCaseExecutionDetails);
-            testReportsGenerator.printExecutionDetails(executionStatisticsListener);
+            testReportsGenerator.printExecutionDetails();
             writeRecordedErrorsIfPresent();
         } catch (Exception e) {
             logger.error("Error while ending sessions {}", e.getMessage());

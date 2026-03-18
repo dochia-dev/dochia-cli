@@ -1,8 +1,10 @@
 package dev.dochia.cli.core.report;
 
 import com.github.mustachejava.Mustache;
+import dev.dochia.cli.core.args.QualityGateArguments;
 import dev.dochia.cli.core.args.ReportingArguments;
 import dev.dochia.cli.core.context.GlobalContext;
+import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
@@ -19,11 +21,16 @@ public class TestCaseExporterHtmlOnly extends TestCaseExporter {
     /**
      * Constructs a new instance of TestCaseExporterHtmlOnly with the specified reporting arguments.
      *
-     * @param reportingArguments the reporting arguments for configuring the TestCaseExporterHtmlOnly
-     * @param globalContext      the global context
+     * @param reportingArguments          the reporting arguments
+     * @param globalContext               the global context
+     * @param qualityGateArguments        the quality gate arguments
+     * @param executionStatisticsListener the execution statistics listener
      */
-    public TestCaseExporterHtmlOnly(ReportingArguments reportingArguments, GlobalContext globalContext) {
-        super(reportingArguments, globalContext);
+    @Inject
+    public TestCaseExporterHtmlOnly(ReportingArguments reportingArguments, GlobalContext globalContext,
+                                    QualityGateArguments qualityGateArguments,
+                                    ExecutionStatisticsListener executionStatisticsListener) {
+        super(reportingArguments, globalContext, qualityGateArguments, executionStatisticsListener);
     }
 
     @Override

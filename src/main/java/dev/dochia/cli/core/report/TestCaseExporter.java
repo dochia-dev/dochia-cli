@@ -6,6 +6,7 @@ import com.github.mustachejava.MustacheFactory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
+import dev.dochia.cli.core.args.QualityGateArguments;
 import dev.dochia.cli.core.args.ReportingArguments;
 import dev.dochia.cli.core.context.GlobalContext;
 import dev.dochia.cli.core.model.DochiaConfiguration;
@@ -78,6 +79,8 @@ public abstract class TestCaseExporter {
 
     final ReportingArguments reportingArguments;
     final GlobalContext globalContext;
+    final QualityGateArguments qualityGateArguments;
+    final ExecutionStatisticsListener executionStatisticsListener;
 
     private Path reportingPath;
     private long t0;
@@ -105,7 +108,7 @@ public abstract class TestCaseExporter {
      * @param reportingArguments the reporting arguments for configuring the TestCaseExporter
      */
     @Inject
-    protected TestCaseExporter(ReportingArguments reportingArguments, GlobalContext globalContext) {
+    protected TestCaseExporter(ReportingArguments reportingArguments, GlobalContext globalContext, QualityGateArguments qualityGateArguments, ExecutionStatisticsListener executionStatisticsListener) {
         this.reportingArguments = reportingArguments;
         this.globalContext = globalContext;
         maskingSerializer = new GsonBuilder()
@@ -117,6 +120,8 @@ public abstract class TestCaseExporter {
                 .registerTypeAdapter(KeyValuePair.class, new KeyValueSerializer(reportingArguments.getMaskedHeaders()))
                 .serializeNulls()
                 .create();
+        this.qualityGateArguments = qualityGateArguments;
+        this.executionStatisticsListener = executionStatisticsListener;
         this.osDetails = System.getProperty("os.name") + "-" + System.getProperty("os.version") + "-" + System.getProperty("os.arch");
     }
 
@@ -253,9 +258,8 @@ public abstract class TestCaseExporter {
      * Prints the execution details including the overall dochia execution time, the total number of requests, and statistics on passed, warnings, and errors.
      * It also provides a message with a link to the generated report if available.
      *
-     * @param executionStatisticsListener the listener providing statistics on dochia execution
      */
-    public void printExecutionDetails(ExecutionStatisticsListener executionStatisticsListener) {
+    public void printExecutionDetails() {
         String dochiaFinished = ansi().fgBlue().a("{} tests completed in {}\n").toString();
         String passed = ansi().fgGreen().bold().a("  ✔ {} passed, ").toString();
         String warnings = ansi().fgYellow().bold().a("⚠ {} warnings, ").toString();
@@ -266,6 +270,15 @@ public abstract class TestCaseExporter {
 
         ConsoleUtils.emptyLine();
         logger.complete(finalMessage, executionStatisticsListener.getAll(), duration, executionStatisticsListener.getSuccess(), executionStatisticsListener.getWarns(), executionStatisticsListener.getErrors(), executionStatisticsListener.getSkipped());
+
+        // Print quality gate result
+        boolean qualityGatePassed = !qualityGateArguments.shouldFailBuild(executionStatisticsListener.getErrors(), executionStatisticsListener.getWarns());
+        String qualityGateStatus = qualityGatePassed
+                ? ansi().fgGreen().bold().a("✔ Quality gate PASSED").reset().toString()
+                : ansi().fgRed().bold().a("✖ Quality gate FAILED").reset().toString();
+        String qualityGateDescription = ansi().fgBlue().a(" [{}]").reset().toString();
+        logger.complete(qualityGateStatus + qualityGateDescription, qualityGateArguments.getQualityGateDescription());
+
         ConsoleUtils.emptyLine();
         logger.complete(check);
     }
@@ -276,10 +289,9 @@ public abstract class TestCaseExporter {
      * It creates a TestReport and extracts information such as warnings, success, errors, and total tests.
      * The gathered information is stored in a context map.
      *
-     * @param summaries                   the pre-created summary for each test case
-     * @param executionStatisticsListener the listener providing statistics on dochia execution
+     * @param summaries the pre-created summary for each test case
      */
-    public void writeSummary(List<TestCaseSummary> summaries, ExecutionStatisticsListener executionStatisticsListener) {
+    public void writeSummary(List<TestCaseSummary> summaries) {
         TestReport report = this.createTestReport(summaries, executionStatisticsListener);
         double averageResponseTime = summaries.stream().mapToDouble(TestCaseSummary::getTimeToExecuteInMs).sum() / summaries.size();
 
