@@ -1,7 +1,9 @@
 package dev.dochia.cli.core.playbook.body;
 
-import dev.dochia.cli.core.playbook.api.BodyPlaybook;
+import dev.dochia.cli.core.http.ResponseCodeFamily;
+import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.api.BodyPlaybook;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -21,6 +23,14 @@ public class EmptyBodyPlaybook extends BaseHttpWithPayloadSimplePlaybook {
     @Inject
     public EmptyBodyPlaybook(SimpleExecutor executor) {
         super(executor);
+    }
+
+    @Override
+    protected ResponseCodeFamily getExpectedResponseCode(PlaybookData data) {
+        if (data.getAllRequiredFields().isEmpty()) {
+            return ResponseCodeFamilyPredefined.TWOXX;
+        }
+        return super.getExpectedResponseCode(data);
     }
 
     @Override

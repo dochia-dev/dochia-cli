@@ -1,6 +1,7 @@
 package dev.dochia.cli.core.playbook.body;
 
 import dev.dochia.cli.core.http.HttpMethod;
+import dev.dochia.cli.core.http.ResponseCodeFamily;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
@@ -10,6 +11,7 @@ import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.JsonUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,7 +36,7 @@ public abstract class BaseHttpWithPayloadSimplePlaybook implements TestCasePlayb
 
         simpleExecutor.execute(
                 SimpleExecutorContext.builder()
-                        .expectedResponseCode(ResponseCodeFamilyPredefined.FOURXX)
+                        .expectedResponseCode(this.getExpectedResponseCode(data))
                         .playbookData(data)
                         .logger(logger)
                         .replaceRefData(false)
@@ -44,6 +46,16 @@ public abstract class BaseHttpWithPayloadSimplePlaybook implements TestCasePlayb
                         .payload(this.getPayload(data))
                         .build()
         );
+    }
+
+    /**
+     * By default, expect a 4XX response. This can be overridden by subclasses to expect other response codes.
+     *
+     * @param data the data to fuzz
+     * @return the expected response code family for the fuzzing operation
+     */
+    protected ResponseCodeFamily getExpectedResponseCode(PlaybookData data) {
+        return ResponseCodeFamilyPredefined.FOURXX;
     }
 
     @Override

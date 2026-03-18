@@ -14,6 +14,8 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -42,17 +44,22 @@ class EmptyBodyPlaybookTest {
         Mockito.verifyNoInteractions(testCaseListener);
     }
 
-    @Test
-    void givenAHttpMethodWithPayload_whenApplyingTheMalformedJsonPlaybook_thenTheResultsAreCorrectlyReported() {
-        PlaybookData data = PlaybookData.builder().method(HttpMethod.POST).reqSchema(new StringSchema()).requestContentTypes(List.of("application/json")).responseCodes(Set.of("400")).build();
+    @ParameterizedTest
+    @CsvSource({"FOURXX,true", "TWOXX,false"})
+    void givenAHttpMethodWithPayload_whenApplyingTheMalformedJsonPlaybook_thenTheResultsAreCorrectlyReported(ResponseCodeFamilyPredefined responseCodeFamily, boolean required) {
+        PlaybookData data = PlaybookData.builder().method(HttpMethod.POST).reqSchema(new StringSchema())
+                .requestContentTypes(List.of("application/json"))
+                .allRequiredFields(required ? List.of("required") : List.of())
+                .responseCodes(Set.of("400")).build();
         ReflectionTestUtils.setField(data, "processedPayload", "{\"id\": 1}");
+
 
         HttpResponse httpResponse = HttpResponse.builder().body("{}").responseCode(400).build();
         Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
         Mockito.doNothing().when(testCaseListener).reportResult(Mockito.any(), Mockito.eq(data), Mockito.any(), Mockito.any(), Mockito.anyBoolean());
 
         emptyBodyPlaybook.run(data);
-        Mockito.verify(testCaseListener, Mockito.times(1)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX), Mockito.anyBoolean(), Mockito.eq(true));
+        Mockito.verify(testCaseListener, Mockito.times(1)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(responseCodeFamily), Mockito.anyBoolean(), Mockito.eq(true));
     }
 
     @Test
