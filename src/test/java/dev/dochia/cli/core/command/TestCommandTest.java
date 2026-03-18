@@ -183,16 +183,16 @@ class TestCommandTest {
 
     @Test
     void shouldReturnErrorsExitCode() {
-        Mockito.when(executionStatisticsListener.getErrors()).thenReturn(190);
-        Mockito.when(executionStatisticsListener.getWarns()).thenReturn(0);
+        Mockito.when(executionStatisticsListener.getErrors()).thenReturn(190L);
+        Mockito.when(executionStatisticsListener.getWarns()).thenReturn(0L);
 
         Assertions.assertThat(testCommand.getExitCode()).isEqualTo(1);
     }
 
     @Test
     void shouldReturnOkWhenNoErrors() {
-        Mockito.when(executionStatisticsListener.getErrors()).thenReturn(0);
-        Mockito.when(executionStatisticsListener.getWarns()).thenReturn(10);
+        Mockito.when(executionStatisticsListener.getErrors()).thenReturn(0L);
+        Mockito.when(executionStatisticsListener.getWarns()).thenReturn(10L);
 
         Assertions.assertThat(testCommand.getExitCode()).isEqualTo(0);
     }
@@ -203,8 +203,8 @@ class TestCommandTest {
         ReflectionTestUtils.setField(qualityGate, "failOn", "warn");
         ReflectionTestUtils.setField(testCommand, "qualityGateArguments", qualityGate);
 
-        Mockito.when(executionStatisticsListener.getErrors()).thenReturn(0);
-        Mockito.when(executionStatisticsListener.getWarns()).thenReturn(5);
+        Mockito.when(executionStatisticsListener.getErrors()).thenReturn(0L);
+        Mockito.when(executionStatisticsListener.getWarns()).thenReturn(5L);
 
         Assertions.assertThat(testCommand.getExitCode()).isEqualTo(1);
     }
@@ -216,13 +216,13 @@ class TestCommandTest {
         ReflectionTestUtils.setField(testCommand, "qualityGateArguments", qualityGate);
 
         // Below thresholds - should pass
-        Mockito.when(executionStatisticsListener.getErrors()).thenReturn(5);
-        Mockito.when(executionStatisticsListener.getWarns()).thenReturn(15);
+        Mockito.when(executionStatisticsListener.getErrors()).thenReturn(5L);
+        Mockito.when(executionStatisticsListener.getWarns()).thenReturn(15L);
         Assertions.assertThat(testCommand.getExitCode()).isEqualTo(0);
 
         // At threshold - should fail
-        Mockito.when(executionStatisticsListener.getErrors()).thenReturn(10);
-        Mockito.when(executionStatisticsListener.getWarns()).thenReturn(15);
+        Mockito.when(executionStatisticsListener.getErrors()).thenReturn(10L);
+        Mockito.when(executionStatisticsListener.getWarns()).thenReturn(15L);
         Assertions.assertThat(testCommand.getExitCode()).isEqualTo(1);
     }
 

@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.command;
 
+import dev.dochia.cli.core.args.util.ProfileLoader;
 import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.playbook.special.mutators.api.Mutator;
@@ -27,11 +28,14 @@ class ListCommandTest {
     @Inject
     Instance<Mutator> mutators;
 
+    @Inject
+    ProfileLoader profileLoader;
+
     private ListCommand listCommand;
 
     @BeforeEach
     void setup() {
-        listCommand = new ListCommand(playbooks, formats, mutators);
+        listCommand = new ListCommand(playbooks, formats, mutators, profileLoader);
     }
 
     @Test
@@ -153,5 +157,15 @@ class ListCommandTest {
         CommandLine commandLine = new CommandLine(spyListCommand);
         commandLine.execute();
         Mockito.verifyNoInteractions(spyListCommand);
+    }
+
+    @Test
+    void shouldListProfiles() {
+        ListCommand spyListCommand = Mockito.spy(listCommand);
+        CommandLine commandLine = new CommandLine(spyListCommand);
+        commandLine.execute("--profiles");
+        Mockito.verify(spyListCommand, Mockito.times(1)).listProfiles();
+        commandLine.execute("--profiles", "-j");
+        Mockito.verify(spyListCommand, Mockito.times(2)).listProfiles();
     }
 }

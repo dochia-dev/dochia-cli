@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.command;
 
+import dev.dochia.cli.core.args.util.ProfileLoader;
 import dev.dochia.cli.core.command.model.HelpFullOption;
 import dev.dochia.cli.core.command.model.MutatorEntry;
 import dev.dochia.cli.core.command.model.PathDetailsEntry;
@@ -39,6 +40,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -72,6 +74,8 @@ public class ListCommand implements Runnable {
 
     private final List<String> formats;
     private final List<MutatorEntry> mutators;
+    private final ProfileLoader profileLoader;
+
 
     @CommandLine.ArgGroup(multiplicity = "1")
     ListCommandGroups listCommandGroups;
@@ -87,8 +91,11 @@ public class ListCommand implements Runnable {
      *
      * @param playbooksList an instance containing a list of playbooks, excluding those annotated with {@code ValidateAndTrim} or {@code ValidateAndSanitize}
      * @param formats       an instance containing a list of OpenAPI formats, including their matching formats
+     * @param mutators      an instance containing the list of mutators
+     * @param profileLoader the profile loader used to load playbook profiles
      */
-    public ListCommand(@Any Instance<TestCasePlaybook> playbooksList, @Any Instance<OpenAPIFormat> formats, @Any Instance<Mutator> mutators) {
+    public ListCommand(@Any Instance<TestCasePlaybook> playbooksList, @Any Instance<OpenAPIFormat> formats,
+                       @Any Instance<Mutator> mutators, ProfileLoader profileLoader) {
         this.playbooksList = playbooksList.stream()
                 .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), ValidateAndTrim.class) == null)
                 .filter(playbook -> AnnotationUtils.findAnnotation(playbook.getClass(), ValidateAndSanitize.class) == null)
@@ -96,6 +103,7 @@ public class ListCommand implements Runnable {
                 .toList();
         this.formats = formats.stream().flatMap(format -> format.matchingFormats().stream()).sorted().toList();
         this.mutators = mutators.stream().map(m -> new MutatorEntry(m.getClass().getSimpleName(), m.description())).sorted().toList();
+        this.profileLoader = profileLoader;
     }
 
     @Override
@@ -120,6 +128,21 @@ public class ListCommand implements Runnable {
 
         if (listCommandGroups.listMutatorsGroup != null && listCommandGroups.listMutatorsGroup.customMutatorTypes) {
             listMutatorsTypes();
+        }
+        if (listCommandGroups.listProfilesGroup != null && listCommandGroups.listProfilesGroup.profiles) {
+            listProfiles();
+        }
+    }
+
+    void listProfiles() {
+        Collection<ProfileLoader.Profile> profiles = profileLoader.getAvailableProfilesDetails();
+        if (json) {
+            PrettyLoggerFactory.getConsoleLogger().noFormat(JsonUtils.GSON.toJson(profiles));
+        } else {
+            logger.noFormat(AnsiUtils.boldGreen("Registered profiles:"));
+            profiles.stream()
+                    .map(profile -> " ◼ " + AnsiUtils.boldGreen(profile.name()) + " (" + profile.description() + "): " + profile.playbooks() + System.lineSeparator())
+                    .forEach(logger::noFormat);
         }
     }
 
@@ -315,6 +338,9 @@ public class ListCommand implements Runnable {
 
         @CommandLine.ArgGroup(exclusive = false, heading = "List Supported OpenAPI Formats%n")
         ListFormats listFormats;
+
+        @CommandLine.ArgGroup(exclusive = false, heading = "List Profiles%n")
+        ListProfilesGroup listProfilesGroup;
     }
 
     static class ListFormats {
@@ -350,6 +376,13 @@ public class ListCommand implements Runnable {
                 names = {"--cmt", "--custom-mutator-yypes"},
                 description = "Display types supported by the Custom Mutator")
         boolean customMutatorTypes;
+    }
+
+    static class ListProfilesGroup {
+        @CommandLine.Option(
+                names = {"--profiles", "profiles"},
+                description = "Display all current registered Profiles")
+        boolean profiles;
     }
 
     static class ListContractOptions {
