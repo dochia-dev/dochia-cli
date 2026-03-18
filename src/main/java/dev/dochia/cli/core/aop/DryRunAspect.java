@@ -2,9 +2,10 @@ package dev.dochia.cli.core.aop;
 
 import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.args.ReportingArguments;
-import dev.dochia.cli.core.playbook.api.DryRun;
-import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.model.HttpResponse;
+import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.api.DryRun;
+import dev.dochia.cli.core.util.AnsiUtils;
 import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.JsonUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
@@ -17,8 +18,6 @@ import jakarta.interceptor.InvocationContext;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import static org.fusesource.jansi.Ansi.ansi;
 
 /**
  * Aspect used to suspend dochia logic when running in dryRun mode.
@@ -99,7 +98,7 @@ public class DryRunAspect {
             logger.noFormat("\n");
             CommonUtils.setDochiaLogLevel("INFO");
             logger.noFormat("Number of tests that will be run with this configuration: {}", paths.values().stream().reduce(0, Integer::sum));
-            paths.forEach((s, integer) -> logger.noFormat(ansi().fgBrightYellow().bold().a(" -> path {}: {} tests").toString(), s, integer));
+            paths.forEach((s, integer) -> logger.noFormat(AnsiUtils.boldYellow(" -> path {}: {} tests"), s, integer));
         }
         return null;
     }

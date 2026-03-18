@@ -292,10 +292,15 @@ public class PlaybookDataFactory {
                             .responseHeaders(responseHeaders)
                             .pathParamsPayload(pathParamsExample)
                             .queryParams(queryParams)
+                            .isRequestBodyRequired(this.isRequestBodyRequired(operation))
                             .build()).toList());
         }
 
         return List.copyOf(playbookDataList);
+    }
+
+    private boolean isRequestBodyRequired(Operation operation) {
+        return operation.getRequestBody() != null && Boolean.TRUE.equals(operation.getRequestBody().getRequired());
     }
 
     private boolean isDeprecated(Operation operation) {

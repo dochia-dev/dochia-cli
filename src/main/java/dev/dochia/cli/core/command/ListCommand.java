@@ -1,13 +1,24 @@
 package dev.dochia.cli.core.command;
 
-import dev.dochia.cli.core.command.model.*;
+import dev.dochia.cli.core.command.model.HelpFullOption;
+import dev.dochia.cli.core.command.model.MutatorEntry;
+import dev.dochia.cli.core.command.model.PathDetailsEntry;
+import dev.dochia.cli.core.command.model.PathListEntry;
+import dev.dochia.cli.core.command.model.PlaybookListEntry;
 import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.model.PlaybookData;
-import dev.dochia.cli.core.playbook.api.*;
+import dev.dochia.cli.core.playbook.api.BodyPlaybook;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
+import dev.dochia.cli.core.playbook.api.HeaderPlaybook;
+import dev.dochia.cli.core.playbook.api.SpecialPlaybook;
+import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import dev.dochia.cli.core.playbook.api.ValidateAndSanitize;
+import dev.dochia.cli.core.playbook.api.ValidateAndTrim;
 import dev.dochia.cli.core.playbook.special.mutators.api.CustomMutatorConfig;
 import dev.dochia.cli.core.playbook.special.mutators.api.Mutator;
 import dev.dochia.cli.core.util.AnnotationUtils;
+import dev.dochia.cli.core.util.AnsiUtils;
 import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.JsonUtils;
@@ -26,10 +37,15 @@ import picocli.CommandLine;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static org.fusesource.jansi.Ansi.ansi;
 
 /**
  * List various information such as: OpenAPI paths, playbooks list, format supported, etc.
@@ -119,7 +135,7 @@ public class ListCommand implements Runnable {
         if (json) {
             PrettyLoggerFactory.getConsoleLogger().noFormat(JsonUtils.GSON.toJson(CustomMutatorConfig.Type.values()));
         } else {
-            String message = ansi().bold().fg(Ansi.Color.GREEN).a("dochia has {} registered custom mutator types: {}").reset().toString();
+            String message = AnsiUtils.boldGreen("dochia has {} registered custom mutator types: {}");
             logger.noFormat(message, CustomMutatorConfig.Type.values().length, Arrays.toString(CustomMutatorConfig.Type.values()));
         }
     }
@@ -128,10 +144,10 @@ public class ListCommand implements Runnable {
         if (json) {
             PrettyLoggerFactory.getConsoleLogger().noFormat(JsonUtils.GSON.toJson(mutators));
         } else {
-            String message = ansi().bold().fg(Ansi.Color.GREEN).a("dochia has {} registered Mutators:").reset().toString();
+            String message = AnsiUtils.boldGreen("dochia has {} registered Mutators:");
             logger.noFormat(message, mutators.size());
             mutators.stream()
-                    .map(m -> " ◼ " + ansi().bold().fg(Ansi.Color.GREEN).a(m.name()).reset() + " - " + m.description())
+                    .map(m -> " ◼ " + AnsiUtils.boldGreen(m.name()) + " - " + m.description())
                     .forEach(logger::noFormat);
         }
     }
@@ -182,7 +198,7 @@ public class ListCommand implements Runnable {
         if (json) {
             logger.noFormat(JsonUtils.GSON.toJson(pathDetailsEntry));
         } else {
-            logger.noFormat(ansi().bold().a(path + ":").reset().toString());
+            logger.noFormat(AnsiUtils.bold(path + ":"));
             for (PathDetailsEntry.OperationDetails operation : pathDetailsEntry.getOperations()) {
                 logger.noFormat(ConsoleUtils.SEPARATOR);
                 logger.noFormat(" ◼ Operation: " + operation.getOperationId());
@@ -261,7 +277,7 @@ public class ListCommand implements Runnable {
                     new PlaybookListEntry().category("Body").playbooks(httpTestCasePlaybooks));
             PrettyLoggerFactory.getConsoleLogger().noFormat(JsonUtils.GSON.toJson(playbookEntries));
         } else {
-            String message = ansi().bold().fg(Ansi.Color.GREEN).a("dochia has {} registered playbooks:").reset().toString();
+            String message = AnsiUtils.boldGreen("dochia has {} registered playbooks:");
             logger.noFormat(message, playbooksList.size());
             displayPlaybooks(fieldTestCasePlaybooks, FieldPlaybook.class);
             displayPlaybooks(headerTestCasePlaybooks, HeaderPlaybook.class);
@@ -277,11 +293,11 @@ public class ListCommand implements Runnable {
     }
 
     void displayPlaybooks(List<TestCasePlaybook> testCasePlaybooks, Class<? extends Annotation> annotation) {
-        String message = ansi().bold().fg(Ansi.Color.CYAN).a("{} {}:").reset().toString();
+        String message = AnsiUtils.boldColor("{} {}:", Ansi.Color.CYAN);
         String typeOfPlaybooks = annotation.getSimpleName().replace("Playbook", "");
         logger.noFormat(" ");
         logger.noFormat(message, testCasePlaybooks.size(), typeOfPlaybooks);
-        testCasePlaybooks.stream().map(playbook -> " ◼ " + ansi().bold().fg(Ansi.Color.GREEN).a(ConsoleUtils.removeTrimSanitize(playbook.toString())).reset().a(" - " + playbook.description()).reset()).forEach(logger::noFormat);
+        testCasePlaybooks.stream().map(playbook -> " ◼ " + AnsiUtils.boldGreen(ConsoleUtils.removeTrimSanitize(playbook.toString()) + " - " + playbook.description())).forEach(logger::noFormat);
     }
 
     static class ListCommandGroups {

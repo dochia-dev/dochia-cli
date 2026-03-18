@@ -27,7 +27,7 @@ public class EmptyBodyPlaybook extends BaseHttpWithPayloadSimplePlaybook {
 
     @Override
     protected ResponseCodeFamily getExpectedResponseCode(PlaybookData data) {
-        if (data.getAllRequiredFields().isEmpty()) {
+        if (data.getAllRequiredFields().isEmpty() && !data.isRequestBodyRequired()) {
             return ResponseCodeFamilyPredefined.TWOXX;
         }
         return super.getExpectedResponseCode(data);

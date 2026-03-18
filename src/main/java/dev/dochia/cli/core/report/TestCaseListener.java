@@ -21,6 +21,7 @@ import dev.dochia.cli.core.model.TestCaseExecutionSummary;
 import dev.dochia.cli.core.model.TestCaseSummary;
 import dev.dochia.cli.core.playbook.api.DryRun;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import dev.dochia.cli.core.util.AnsiUtils;
 import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.WordUtils;
@@ -54,7 +55,6 @@ import java.util.regex.Pattern;
 import static dev.dochia.cli.core.context.GlobalContext.CONTRACT_PATH;
 import static dev.dochia.cli.core.context.GlobalContext.HTTP_METHOD;
 import static dev.dochia.cli.core.model.TestCase.SKIP_REPORTING;
-import static org.fusesource.jansi.Ansi.ansi;
 
 /**
  * This class exposes methods to record the progress of a test case
@@ -345,7 +345,7 @@ public class TestCaseListener {
             return;
         }
         String playbook = MDC.get(PLAYBOOK);
-        String prefix = ansi().fgBlue().a("(" + runPerPathListener.size() + "/" + globalContext.getDochiaConfiguration().pathsToRun() + ") ").fgDefault().toString();
+        String prefix = AnsiUtils.blue("(" + runPerPathListener.size() + "/" + globalContext.getDochiaConfiguration().pathsToRun() + ") ");
         String printPath = prefix + path + " " + playbook + ConsoleUtils.SEPARATOR + executionStatisticsListener.resultAsStringPerPath(path);
 
         if (runPerPathListener.contains(path)) {
@@ -385,10 +385,8 @@ public class TestCaseListener {
         MDC.put(PLAYBOOK_KEY, this.getKeyDefault());
 
         ConsoleUtils.emptyLine();
-        logger.start(ansi().bold().a("Starting {}-{}, build time {} UTC").reset().toString(),
-                ansi().fg(Ansi.Color.GREEN).a(appName),
-                ansi().fg(Ansi.Color.GREEN).a(appVersion),
-                ansi().fg(Ansi.Color.GREEN).a(appBuildTime));
+        logger.start(AnsiUtils.bold("Starting {}-{}, build time {} UTC"), AnsiUtils.green(appName),
+                AnsiUtils.green(appVersion), AnsiUtils.green(appBuildTime));
     }
 
     /**
