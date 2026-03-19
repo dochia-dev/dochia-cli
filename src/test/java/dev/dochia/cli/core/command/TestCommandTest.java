@@ -194,7 +194,7 @@ class TestCommandTest {
         Mockito.when(executionStatisticsListener.getErrors()).thenReturn(0L);
         Mockito.when(executionStatisticsListener.getWarns()).thenReturn(10L);
 
-        Assertions.assertThat(testCommand.getExitCode()).isEqualTo(0);
+        Assertions.assertThat(testCommand.getExitCode()).isZero();
     }
 
     @Test
@@ -218,7 +218,7 @@ class TestCommandTest {
         // Below thresholds - should pass
         Mockito.when(executionStatisticsListener.getErrors()).thenReturn(5L);
         Mockito.when(executionStatisticsListener.getWarns()).thenReturn(15L);
-        Assertions.assertThat(testCommand.getExitCode()).isEqualTo(0);
+        Assertions.assertThat(testCommand.getExitCode()).isZero();
 
         // At threshold - should fail
         Mockito.when(executionStatisticsListener.getErrors()).thenReturn(10L);

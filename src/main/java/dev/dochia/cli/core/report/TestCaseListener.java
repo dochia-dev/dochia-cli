@@ -385,7 +385,7 @@ public class TestCaseListener {
         MDC.put(PLAYBOOK_KEY, this.getKeyDefault());
 
         ConsoleUtils.emptyLine();
-        logger.start(AnsiUtils.bold("Starting {}-{}, build time {} UTC"), AnsiUtils.green(appName),
+        logger.start("Starting {}-{}, build time {} UTC", AnsiUtils.green(appName),
                 AnsiUtils.green(appVersion), AnsiUtils.green(appBuildTime));
     }
 
@@ -437,6 +437,7 @@ public class TestCaseListener {
             testReportsGenerator.writeHelperFiles();
             ConsoleUtils.emptyLine();
             testReportsGenerator.writeErrorsByReason(testCaseSummaryDetails);
+            testReportsGenerator.writeTopPlaybooks(testCaseSummaryDetails);
             testReportsGenerator.writePerformanceReport(testCaseExecutionDetails);
             testReportsGenerator.printExecutionDetails();
             writeRecordedErrorsIfPresent();

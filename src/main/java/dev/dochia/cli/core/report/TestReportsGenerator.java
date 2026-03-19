@@ -94,4 +94,12 @@ public class TestReportsGenerator {
     public void printExecutionDetails() {
         testCaseExporters.getFirst().printExecutionDetails();
     }
+
+    /**
+     * Writes top failing playbooks.
+     * @param testCaseSummaries the test execution summaries
+     */
+    public void writeTopPlaybooks(List<TestCaseSummary> testCaseSummaries) {
+        testCaseExporters.getFirst().writeTopPlaybooks(testCaseSummaries);
+    }
 }

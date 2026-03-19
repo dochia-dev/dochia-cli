@@ -412,6 +412,27 @@ public abstract class TestCaseExporter {
         writeJsonTestCase(testCase);
     }
 
+    public void writeTopPlaybooks(List<TestCaseSummary> summaries) {
+        List<Map.Entry<String, Long>> topPlaybooks = summaries.stream()
+                .filter(TestCaseSummary::getError)          // only issues
+                .collect(Collectors.groupingBy(
+                        TestCaseSummary::getPlaybook,
+                        Collectors.counting()
+                ))
+                .entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(5)
+                .toList();
+        if (topPlaybooks.isEmpty()) {
+            return;
+        }
+        ConsoleUtils.emptyLine();
+        logger.info("Top 5 playbooks with most errors:");
+        for (Map.Entry<String, Long> playbook : topPlaybooks) {
+            logger.noFormat(" ◼ {} - {} errors", playbook.getKey(), playbook.getValue());
+        }
+    }
+
     private void writeJsonTestCase(TestCase testCase) {
         String testFileName = testCase.getTestId().replace(" ", "").concat(JSON);
         try {
