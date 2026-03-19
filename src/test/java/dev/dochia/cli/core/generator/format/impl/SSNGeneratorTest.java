@@ -13,14 +13,14 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @QuarkusTest
-class TaxIdGeneratorTest {
+class SSNGeneratorTest {
 
-    private TaxIdGenerator generator;
+    private SSNGenerator generator;
 
     @BeforeEach
     void setUp() {
         DochiaRandom.initRandom(0);
-        generator = new TaxIdGenerator();
+        generator = new SSNGenerator();
     }
 
     @Nested
@@ -28,22 +28,20 @@ class TaxIdGeneratorTest {
     class FormatMatchingTests {
 
         @ParameterizedTest
-        @ValueSource(strings = {"taxid", "ein", "tin", "utr", "siren", "siret", "nif"})
+        @ValueSource(strings = {"ssn", "SSN", "nin", "NIN", "bsn", "BSN", "personnummer", "PERSONNUMMER"})
         void shouldApplyToFormat(String format) {
             Assertions.assertThat(generator.appliesTo(format, "")).isTrue();
         }
 
         @ParameterizedTest
         @CsvSource({
-                "companyTaxId",
-                "employerEIN",
-                "businessTIN",
-                "ukUTR",
-                "frenchSIREN",
-                "frenchSIRET",
-                "spanishNIF",
-                "italianCodiceFiscale",
-                "employerIdentificationNumber"
+                "customerSSN",
+                "userSocialSecurityNumber",
+                "employeeNIN",
+                "nationalInsuranceNumber",
+                "citizenBSN",
+                "personPersonnummer",
+                "socialInsuranceNumber"
         })
         void shouldApplyToPropertyName(String propertyName) {
             Assertions.assertThat(generator.appliesTo("", propertyName)).isTrue();
@@ -60,91 +58,88 @@ class TaxIdGeneratorTest {
     class GenerationTests {
 
         @Test
-        void shouldGenerateValidTaxId() {
+        void shouldGenerateValidSSN() {
             Schema<String> schema = new Schema<>();
             Object result = generator.generate(schema);
 
             Assertions.assertThat(result).isNotNull().isInstanceOf(String.class);
-            String taxId = (String) result;
-            Assertions.assertThat(taxId).isNotEmpty();
+            String ssn = (String) result;
+            Assertions.assertThat(ssn).isNotEmpty();
         }
 
         @Test
-        void shouldGenerateUSEINMatchingPattern() {
+        void shouldGenerateSSNMatchingPattern() {
             Schema<String> schema = new Schema<>();
-            schema.setPattern("^\\d{2}-\\d{7}$");
+            schema.setPattern("^\\d{3}-\\d{2}-\\d{4}$");
 
             Object result = generator.generate(schema);
 
             Assertions.assertThat(result).isNotNull();
-            String ein = (String) result;
-            Assertions.assertThat(ein).matches("\\d{2}-\\d{7}");
+            String ssn = (String) result;
+            Assertions.assertThat(ssn).matches("\\d{3}-\\d{2}-\\d{4}");
         }
 
         @Test
-        void shouldGenerateUKUTRMatchingPattern() {
+        void shouldGenerateUKNIMatchingPattern() {
             Schema<String> schema = new Schema<>();
-            schema.setPattern("^\\d{10}$");
+            schema.setPattern("^[A-Z]{2}\\d{6}[A-Z]$");
 
             Object result = generator.generate(schema);
 
             Assertions.assertThat(result).isNotNull();
-            String utr = (String) result;
-            Assertions.assertThat(utr).matches("\\d{10}");
+            String ni = (String) result;
+            Assertions.assertThat(ni).matches("[A-Z]{2}\\d{6}[A-Z]");
         }
 
         @Test
-        void shouldGenerateFrenchSIRENMatchingPattern() {
+        void shouldGenerateDutchBSNWithValidChecksum() {
             Schema<String> schema = new Schema<>();
             schema.setPattern("^\\d{9}$");
 
             Object result = generator.generate(schema);
 
             Assertions.assertThat(result).isNotNull();
-            String siren = (String) result;
-            Assertions.assertThat(siren).matches("\\d{9}");
+            String bsn = (String) result;
+            Assertions.assertThat(bsn).matches("\\d{9}");
+
+            // Verify BSN checksum (11-proof)
+            int sum = 0;
+            for (int i = 0; i < 8; i++) {
+                sum += Character.getNumericValue(bsn.charAt(i)) * (9 - i);
+            }
+            int checkDigit = sum % 11;
+            if (checkDigit == 10) {
+                checkDigit = 0;
+            }
+            Assertions.assertThat(Character.getNumericValue(bsn.charAt(8))).isEqualTo(checkDigit);
         }
 
         @Test
-        void shouldGenerateFrenchSIRETMatchingPattern() {
+        void shouldGenerateSwedishPersonnummerMatchingPattern() {
             Schema<String> schema = new Schema<>();
-            schema.setPattern("^\\d{14}$");
+            schema.setPattern("^\\d{6}-\\d{4}$");
 
             Object result = generator.generate(schema);
 
             Assertions.assertThat(result).isNotNull();
-            String siret = (String) result;
-            Assertions.assertThat(siret).matches("\\d{14}");
-        }
-
-        @Test
-        void shouldGenerateSpanishNIFMatchingPattern() {
-            Schema<String> schema = new Schema<>();
-            schema.setPattern("^\\d{8}[A-Z]$");
-
-            Object result = generator.generate(schema);
-
-            Assertions.assertThat(result).isNotNull();
-            String nif = (String) result;
-            Assertions.assertThat(nif).matches("\\d{8}[A-Z]");
-        }
-
-        @Test
-        void shouldGenerateItalianCodiceFiscaleMatchingPattern() {
-            Schema<String> schema = new Schema<>();
-            schema.setPattern("^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$");
-
-            Object result = generator.generate(schema);
-
-            Assertions.assertThat(result).isNotNull();
-            String cf = (String) result;
-            Assertions.assertThat(cf).matches("[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]");
+            String personnummer = (String) result;
+            Assertions.assertThat(personnummer).matches("\\d{6}-\\d{4}");
         }
 
         @Test
         void shouldReturnNullWhenNoPatternMatches() {
             Schema<String> schema = new Schema<>();
             schema.setPattern("^IMPOSSIBLE_PATTERN$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNull();
+        }
+
+        @Test
+        void shouldRespectMaxLength() {
+            Schema<String> schema = new Schema<>();
+            schema.setMaxLength(5);
 
             Object result = generator.generate(schema);
 
@@ -169,6 +164,14 @@ class TaxIdGeneratorTest {
 
             Assertions.assertThat(totallyWrong).isNotNull().isNotEmpty();
         }
+
+        @Test
+        void shouldProvideAlmostValidValueThatIsInvalid() {
+            String almostValid = generator.getAlmostValidValue();
+
+            // Should not match valid US SSN pattern
+            Assertions.assertThat(almostValid).doesNotMatch("^[1-9]\\d{2}-[1-9]\\d-\\d{4}$");
+        }
     }
 
     @Nested
@@ -179,7 +182,7 @@ class TaxIdGeneratorTest {
         void shouldReturnMatchingFormats() {
             Assertions.assertThat(generator.matchingFormats())
                     .isNotEmpty()
-                    .contains("taxId", "ein", "tin", "utr", "siren", "siret", "nif");
+                    .contains("ssn", "nin", "bsn", "personnummer");
         }
     }
 }

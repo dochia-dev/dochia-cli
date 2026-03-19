@@ -3,7 +3,6 @@ package dev.dochia.cli.core.util;
 import static dev.dochia.cli.core.util.DSLWords.*;
 import static dev.dochia.cli.core.util.JsonUtils.GSON_CONFIGURATION;
 
-import com.github.javafaker.Faker;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import dev.dochia.cli.core.dsl.DSLParser;
@@ -25,11 +24,8 @@ import org.jboss.logmanager.LogContext;
 
 /** Some utility methods that don't fit in other classes. */
 public abstract class CommonUtils {
-  /**
-   * Custom Faker instance for generating fake data. Uses romanian locale as a tweak to load a
-   * dpchia specific file with limited number of fake values.
-   */
-  private static final Faker FAKER = new Faker(Locale.of("ro"), random());
+
+  private static DochiaFaker faker;
 
   public static final int MAX_ARRAY_LENGTH = Integer.MAX_VALUE / 1000;
 
@@ -293,9 +289,18 @@ public abstract class CommonUtils {
    *
    * @return a common shared Faker instance
    */
-  public static Faker faker() {
-    return FAKER;
-  }
+    /**
+     * Returns a shared DochiaFaker instance for valid fake data.
+     * This is a custom implementation that reads from data.yml file.
+     *
+     * @return a common shared DochiaFaker instance
+     */
+    public static DochiaFaker faker() {
+        if (faker == null) {
+            faker = new DochiaFaker();
+        }
+        return faker;
+    }
 
   /**
    * Checks if a given string represents a valid URL address.

@@ -1,49 +1,120 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.quarkus.test.junit.QuarkusTest;
+import io.swagger.v3.oas.models.media.Schema;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @QuarkusTest
 class SemVerGeneratorTest {
 
-    private SemVerGenerator semVerGenerator;
+    private SemVerGenerator generator;
 
     @BeforeEach
-    void setup() {
-        semVerGenerator = new SemVerGenerator();
+    void setUp() {
+        DochiaRandom.initRandom(0);
+        generator = new SemVerGenerator();
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "semver,randomField,true",
-            "not,semVer,true",
-            "not,semanticVersion,true",
-            "not,appVersion,true",
-            "not,apiVersion,false",
-            "not,randomField,false"
-    })
-    void shouldRecognizeSemVer(String format, String property, boolean expected) {
-        boolean isSemVer = semVerGenerator.appliesTo(format, property);
-        Assertions.assertThat(isSemVer).isEqualTo(expected);
+    @Nested
+    @DisplayName("Format Matching Tests")
+    class FormatMatchingTests {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"semver", "SEMVER", "version", "VERSION"})
+        void shouldApplyToFormat(String format) {
+            Assertions.assertThat(generator.appliesTo(format, "")).isTrue();
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "appVersion",
+                "apiVersion",
+                "softwareVersion",
+                "packageSemver"
+        })
+        void shouldApplyToPropertyName(String propertyName) {
+            Assertions.assertThat(generator.appliesTo("", propertyName)).isTrue();
+        }
+
+        @Test
+        void shouldNotApplyToUnrelatedFormat() {
+            Assertions.assertThat(generator.appliesTo("email", "username")).isFalse();
+        }
     }
 
-    @Test
-    void givenASemVerFormatGeneratorStrategy_whenGettingTheAlmostValidValue_thenTheValueIsReturnedAsExpected() {
-        Assertions.assertThat(semVerGenerator.getAlmostValidValue()).isEqualTo("1.2");
+    @Nested
+    @DisplayName("Generation Tests")
+    class GenerationTests {
+
+        @Test
+        void shouldGenerateValidSemVer() {
+            Schema<String> schema = new Schema<>();
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNotNull().isInstanceOf(String.class);
+            String semver = (String) result;
+            Assertions.assertThat(semver).matches("\\d+\\.\\d+\\.\\d+[-+]?\\w*\\.?\\d*");
+        }
+
+        @Test
+        void shouldGenerateSemVerMatchingPattern() {
+            Schema<String> schema = new Schema<>();
+            schema.setPattern("^\\d+\\.\\d+\\.\\d+$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNotNull();
+            String semver = (String) result;
+            Assertions.assertThat(semver).matches("\\d+\\.\\d+\\.\\d+");
+        }
+
+        @Test
+        void shouldReturnNullWhenPatternDoesNotMatch() {
+            Schema<String> schema = new Schema<>();
+            schema.setPattern("^[A-Z]{10}$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNull();
+        }
     }
 
-    @Test
-    void givenASemVerFormatGeneratorStrategy_whenGettingTheTotallyWrongValue_thenTheValueIsReturnedAsExpected() {
-        Assertions.assertThat(semVerGenerator.getTotallyWrongValue()).isEqualTo("v1.x.y");
+    @Nested
+    @DisplayName("Invalid Data Tests")
+    class InvalidDataTests {
+
+        @Test
+        void shouldProvideAlmostValidValue() {
+            String almostValid = generator.getAlmostValidValue();
+
+            Assertions.assertThat(almostValid).isNotNull().isEqualTo("1.2");
+        }
+
+        @Test
+        void shouldProvideTotallyWrongValue() {
+            String totallyWrong = generator.getTotallyWrongValue();
+
+            Assertions.assertThat(totallyWrong).isNotNull().isEqualTo("v1.2.3.4.5");
+        }
     }
 
-    @Test
-    void givenASemVerFormatGeneratorStrategy_whenGenerating_thenValidSemVerIsReturned() {
-        String generated = (String) semVerGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull().containsPattern("\\d+\\.\\d+\\.\\d+");
+    @Nested
+    @DisplayName("Matching Formats Tests")
+    class MatchingFormatsTests {
+
+        @Test
+        void shouldReturnMatchingFormats() {
+            Assertions.assertThat(generator.matchingFormats())
+                    .isNotEmpty()
+                    .contains("semver", "version");
+        }
     }
 }

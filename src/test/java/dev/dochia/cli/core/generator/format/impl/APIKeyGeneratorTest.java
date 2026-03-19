@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.util.CommonUtils;
 import io.quarkus.test.junit.QuarkusTest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,7 @@ class APIKeyGeneratorTest {
 
     @BeforeEach
     void setup() {
+        CommonUtils.initRandom(0);
         apiKeyGenerator = new APIKeyGenerator();
     }
 

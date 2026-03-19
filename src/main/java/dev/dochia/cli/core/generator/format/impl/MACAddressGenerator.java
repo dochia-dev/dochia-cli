@@ -1,16 +1,15 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.generator.format.api.DataFormat;
 import dev.dochia.cli.core.generator.format.api.InvalidDataFormatGenerator;
 import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
 import dev.dochia.cli.core.generator.format.api.PropertySanitizer;
 import dev.dochia.cli.core.generator.format.api.ValidDataFormatGenerator;
-import dev.dochia.cli.core.util.CommonUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.swagger.v3.oas.models.media.Schema;
 import jakarta.inject.Singleton;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * A generator class implementing interfaces for generating valid and invalid MAC address data formats.
@@ -19,36 +18,48 @@ import java.util.stream.IntStream;
 @Singleton
 public class MACAddressGenerator implements ValidDataFormatGenerator, InvalidDataFormatGenerator, OpenAPIFormat {
 
-    @Override
-    public Object generate(Schema<?> schema) {
-        // Generate MAC address in format XX:XX:XX:XX:XX:XX
-        return IntStream.range(0, 6)
-                .mapToObj(i -> String.format("%02X", CommonUtils.random().nextInt(256)))
-                .collect(Collectors.joining(":"));
-    }
+    private static final String HEX_CHARS = "0123456789ABCDEF";
 
     @Override
     public boolean appliesTo(String format, String propertyName) {
-        String sanitized = PropertySanitizer.sanitize(propertyName);
-        return "mac".equalsIgnoreCase(format) ||
-                "macaddress".equalsIgnoreCase(format) ||
-                sanitized.contains("macaddress") ||
-                (sanitized.endsWith("mac") && !sanitized.contains("stomach"));
-    }
-
-    @Override
-    public String getAlmostValidValue() {
-        // Invalid hex character 'G'
-        return "00:1G:22:33:44:55";
-    }
-
-    @Override
-    public String getTotallyWrongValue() {
-        return "not-a-mac";
+        return "mac".equalsIgnoreCase(PropertySanitizer.sanitize(format)) ||
+                "macaddress".equalsIgnoreCase(PropertySanitizer.sanitize(format)) ||
+                (PropertySanitizer.sanitize(propertyName).endsWith("mac") &&
+                        !PropertySanitizer.sanitize(propertyName).endsWith("stomach")) ||
+                PropertySanitizer.sanitize(propertyName).endsWith("macaddress") ||
+                PropertySanitizer.sanitize(propertyName).endsWith("physicaladdress") ||
+                PropertySanitizer.sanitize(propertyName).endsWith("hardwareaddress");
     }
 
     @Override
     public List<String> matchingFormats() {
-        return List.of("mac", "mac-address", "macaddress");
+        return List.of("mac", "macAddress", "mac-address", "mac_address");
+    }
+
+    @Override
+    public Object generate(Schema<?> schema) {
+        StringBuilder mac = new StringBuilder();
+
+        for (int i = 0; i < 6; i++) {
+            if (i > 0) {
+                mac.append(':');
+            }
+            mac.append(HEX_CHARS.charAt(DochiaRandom.instance().nextInt(16)));
+            mac.append(HEX_CHARS.charAt(DochiaRandom.instance().nextInt(16)));
+        }
+
+        String generated = mac.toString();
+
+        return DataFormat.matchesPatternOrNullWithCombinations(schema, generated);
+    }
+
+    @Override
+    public String getAlmostValidValue() {
+        return "00:1A:2B:3C:4D";
+    }
+
+    @Override
+    public String getTotallyWrongValue() {
+        return "ZZ:ZZ:ZZ:ZZ:ZZ:ZZ";
     }
 }

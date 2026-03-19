@@ -1,13 +1,17 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.generator.format.api.DataFormat;
 import dev.dochia.cli.core.generator.format.api.InvalidDataFormatGenerator;
 import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
 import dev.dochia.cli.core.generator.format.api.PropertySanitizer;
 import dev.dochia.cli.core.generator.format.api.ValidDataFormatGenerator;
 import dev.dochia.cli.core.util.CommonUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.swagger.v3.oas.models.media.Schema;
 import jakarta.inject.Singleton;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,16 +26,16 @@ public class SemVerGenerator implements ValidDataFormatGenerator, InvalidDataFor
         int major = CommonUtils.random().nextInt(10);
         int minor = CommonUtils.random().nextInt(20);
         int patch = CommonUtils.random().nextInt(50);
-        
-        // Sometimes add pre-release or build metadata
-        int variant = CommonUtils.random().nextInt(4);
-        
-        return switch (variant) {
-            case 0 -> String.format("%d.%d.%d-alpha.%d", major, minor, patch, CommonUtils.random().nextInt(10));
-            case 1 -> String.format("%d.%d.%d-beta.%d", major, minor, patch, CommonUtils.random().nextInt(10));
-            case 2 -> String.format("%d.%d.%d+build.%d", major, minor, patch, CommonUtils.random().nextInt(1000));
-            default -> String.format("%d.%d.%d", major, minor, patch);
-        };
+
+        List<String> generated = new ArrayList<>();
+        generated.add(String.format("%d.%d.%d-alpha.%d", major, minor, patch, CommonUtils.random().nextInt(10)));
+        generated.add(String.format("%d.%d.%d-beta.%d", major, minor, patch, CommonUtils.random().nextInt(10)));
+        generated.add(String.format("%d.%d.%d+build.%d", major, minor, patch, CommonUtils.random().nextInt(1000)));
+        generated.add(String.format("%d.%d.%d", major, minor, patch));
+
+        Collections.shuffle(generated, DochiaRandom.instance());
+
+        return DataFormat.matchesPatternOrNullFromList(schema, generated);
     }
 
     @Override
@@ -39,9 +43,12 @@ public class SemVerGenerator implements ValidDataFormatGenerator, InvalidDataFor
         String sanitized = PropertySanitizer.sanitize(propertyName);
         return "semver".equalsIgnoreCase(format) ||
                 "semanticversion".equalsIgnoreCase(format) ||
+                "version".equalsIgnoreCase(format) ||
                 sanitized.contains("semver") ||
                 sanitized.contains("semanticversion") ||
-                (sanitized.endsWith("version") && !sanitized.contains("api"));
+                sanitized.endsWith("apiversion") ||
+                sanitized.endsWith("appversion") ||
+                sanitized.endsWith("softwareversion");
     }
 
     @Override
@@ -52,7 +59,7 @@ public class SemVerGenerator implements ValidDataFormatGenerator, InvalidDataFor
 
     @Override
     public String getTotallyWrongValue() {
-        return "v1.x.y";
+        return "v1.2.3.4.5";
     }
 
     @Override

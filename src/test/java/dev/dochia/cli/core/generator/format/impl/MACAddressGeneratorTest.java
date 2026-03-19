@@ -1,49 +1,120 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.quarkus.test.junit.QuarkusTest;
+import io.swagger.v3.oas.models.media.Schema;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @QuarkusTest
 class MACAddressGeneratorTest {
 
-    private MACAddressGenerator macAddressGenerator;
+    private MACAddressGenerator generator;
 
     @BeforeEach
-    void setup() {
-        macAddressGenerator = new MACAddressGenerator();
+    void setUp() {
+        DochiaRandom.initRandom(0);
+        generator = new MACAddressGenerator();
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "mac,randomField,true",
-            "macaddress,randomField,true",
-            "not,macAddress,true",
-            "not,deviceMac,true",
-            "not,stomach,false",
-            "not,randomField,false"
-    })
-    void shouldRecognizeMACAddress(String format, String property, boolean expected) {
-        boolean isMACAddress = macAddressGenerator.appliesTo(format, property);
-        Assertions.assertThat(isMACAddress).isEqualTo(expected);
+    @Nested
+    @DisplayName("Format Matching Tests")
+    class FormatMatchingTests {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"mac", "MAC", "macAddress", "mac-address"})
+        void shouldApplyToFormat(String format) {
+            Assertions.assertThat(generator.appliesTo(format, "")).isTrue();
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "deviceMAC",
+                "networkMACAddress",
+                "physicalAddress",
+                "hardwareAddress"
+        })
+        void shouldApplyToPropertyName(String propertyName) {
+            Assertions.assertThat(generator.appliesTo("", propertyName)).isTrue();
+        }
+
+        @Test
+        void shouldNotApplyToUnrelatedFormat() {
+            Assertions.assertThat(generator.appliesTo("email", "username")).isFalse();
+        }
     }
 
-    @Test
-    void givenAMACAddressFormatGeneratorStrategy_whenGettingTheAlmostValidValue_thenTheValueIsReturnedAsExpected() {
-        Assertions.assertThat(macAddressGenerator.getAlmostValidValue()).isEqualTo("00:1G:22:33:44:55");
+    @Nested
+    @DisplayName("Generation Tests")
+    class GenerationTests {
+
+        @Test
+        void shouldGenerateValidMACAddress() {
+            Schema<String> schema = new Schema<>();
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNotNull().isInstanceOf(String.class);
+            String mac = (String) result;
+            Assertions.assertThat(mac).matches("([0-9A-F]{2}:){5}[0-9A-F]{2}");
+        }
+
+        @Test
+        void shouldGenerateMACMatchingPattern() {
+            Schema<String> schema = new Schema<>();
+            schema.setPattern("^([0-9A-F]{2}:){5}[0-9A-F]{2}$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNotNull();
+            String mac = (String) result;
+            Assertions.assertThat(mac).matches("([0-9A-F]{2}:){5}[0-9A-F]{2}");
+        }
+
+        @Test
+        void shouldReturnNullWhenPatternDoesNotMatch() {
+            Schema<String> schema = new Schema<>();
+            schema.setPattern("^\\d{10}$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNull();
+        }
     }
 
-    @Test
-    void givenAMACAddressFormatGeneratorStrategy_whenGettingTheTotallyWrongValue_thenTheValueIsReturnedAsExpected() {
-        Assertions.assertThat(macAddressGenerator.getTotallyWrongValue()).isEqualTo("not-a-mac");
+    @Nested
+    @DisplayName("Invalid Data Tests")
+    class InvalidDataTests {
+
+        @Test
+        void shouldProvideAlmostValidValue() {
+            String almostValid = generator.getAlmostValidValue();
+
+            Assertions.assertThat(almostValid).isNotNull().isEqualTo("00:1A:2B:3C:4D");
+        }
+
+        @Test
+        void shouldProvideTotallyWrongValue() {
+            String totallyWrong = generator.getTotallyWrongValue();
+
+            Assertions.assertThat(totallyWrong).isNotNull().isEqualTo("ZZ:ZZ:ZZ:ZZ:ZZ:ZZ");
+        }
     }
 
-    @Test
-    void givenAMACAddressFormatGeneratorStrategy_whenGenerating_thenValidMACAddressIsReturned() {
-        String generated = (String) macAddressGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull().matches("^([0-9A-F]{2}:){5}[0-9A-F]{2}$");
+    @Nested
+    @DisplayName("Matching Formats Tests")
+    class MatchingFormatsTests {
+
+        @Test
+        void shouldReturnMatchingFormats() {
+            Assertions.assertThat(generator.matchingFormats())
+                    .isNotEmpty()
+                    .contains("mac", "macAddress");
+        }
     }
 }

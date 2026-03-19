@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+
 import dev.dochia.cli.core.util.DochiaRandom;
 import io.quarkus.test.junit.QuarkusTest;
 import io.swagger.v3.oas.models.media.Schema;
@@ -13,14 +14,14 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 @QuarkusTest
-class LicensePlateGeneratorTest {
+class IPAddressRangeGeneratorTest {
 
-    private LicensePlateGenerator generator;
+    private IPAddressRangeGenerator generator;
 
     @BeforeEach
     void setUp() {
         DochiaRandom.initRandom(0);
-        generator = new LicensePlateGenerator();
+        generator = new IPAddressRangeGenerator();
     }
 
     @Nested
@@ -28,16 +29,17 @@ class LicensePlateGeneratorTest {
     class FormatMatchingTests {
 
         @ParameterizedTest
-        @ValueSource(strings = {"licenseplate", "licensePlate", "numberPlate"})
+        @ValueSource(strings = {"cidr", "CIDR", "ipRange"})
         void shouldApplyToFormat(String format) {
             Assertions.assertThat(generator.appliesTo(format, "")).isTrue();
         }
 
         @ParameterizedTest
         @CsvSource({
-                "vehicleLicensePlate",
-                "carNumberPlate",
-                "registrationPlateNumber"
+                "networkCIDR",
+                "subnetIPRange",
+                "addressSubnet",
+                "networkRange"
         })
         void shouldApplyToPropertyName(String propertyName) {
             Assertions.assertThat(generator.appliesTo("", propertyName)).isTrue();
@@ -54,32 +56,31 @@ class LicensePlateGeneratorTest {
     class GenerationTests {
 
         @Test
-        void shouldGenerateValidLicensePlate() {
+        void shouldGenerateValidCIDR() {
             Schema<String> schema = new Schema<>();
             Object result = generator.generate(schema);
 
             Assertions.assertThat(result).isNotNull().isInstanceOf(String.class);
-            String plate = (String) result;
-            Assertions.assertThat(plate).isNotEmpty();
+            String cidr = (String) result;
+            Assertions.assertThat(cidr).matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}/\\d{1,2}");
         }
 
-        @ParameterizedTest
-        @CsvSource({"^\\d{3}-[A-Z]{3}$,\\d{3}-[A-Z]{3}", "^[A-Z]{2}\\d{2} [A-Z]{3}$,[A-Z]{2}\\d{2} [A-Z]{3}", "^[A-Z]{2}-\\d{3}-[A-Z]{2}$,[A-Z]{2}-\\d{3}-[A-Z]{2}"})
-        void shouldGeneratePlateMatchingPattern(String source, String match) {
+        @Test
+        void shouldGenerateCIDRMatchingPattern() {
             Schema<String> schema = new Schema<>();
-            schema.setPattern(source);
+            schema.setPattern("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}/\\d{1,2}$");
 
             Object result = generator.generate(schema);
 
             Assertions.assertThat(result).isNotNull();
-            String plate = (String) result;
-            Assertions.assertThat(plate).matches(match);
+            String cidr = (String) result;
+            Assertions.assertThat(cidr).matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}/\\d{1,2}");
         }
 
         @Test
-        void shouldReturnNullWhenNoPatternMatches() {
+        void shouldReturnNullWhenPatternDoesNotMatch() {
             Schema<String> schema = new Schema<>();
-            schema.setPattern("^IMPOSSIBLE_PATTERN$");
+            schema.setPattern("^[A-Z]{10}$");
 
             Object result = generator.generate(schema);
 
@@ -95,7 +96,8 @@ class LicensePlateGeneratorTest {
         void shouldReturnMatchingFormats() {
             Assertions.assertThat(generator.matchingFormats())
                     .isNotEmpty()
-                    .contains("licensePlate", "numberPlate");
+                    .contains("cidr", "ipRange", "subnet");
         }
     }
 }
+

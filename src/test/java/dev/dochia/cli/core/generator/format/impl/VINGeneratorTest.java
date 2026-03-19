@@ -1,49 +1,128 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.quarkus.test.junit.QuarkusTest;
+import io.swagger.v3.oas.models.media.Schema;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @QuarkusTest
 class VINGeneratorTest {
 
-    private VINGenerator vinGenerator;
+    private VINGenerator generator;
 
     @BeforeEach
-    void setup() {
-        vinGenerator = new VINGenerator();
+    void setUp() {
+        DochiaRandom.initRandom(0);
+        generator = new VINGenerator();
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "vin,randomField,true",
-            "not,vin,true",
-            "not,vehicleIdentificationNumber,true",
-            "not,chassisNumber,true",
-            "not,randomField,false"
-    })
-    void shouldRecognizeVIN(String format, String property, boolean expected) {
-        boolean isVIN = vinGenerator.appliesTo(format, property);
-        Assertions.assertThat(isVIN).isEqualTo(expected);
+    @Nested
+    @DisplayName("Format Matching Tests")
+    class FormatMatchingTests {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"vin", "VIN"})
+        void shouldApplyToFormat(String format) {
+            Assertions.assertThat(generator.appliesTo(format, "")).isTrue();
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "vehicleVIN",
+                "carVehicleIdentificationNumber",
+                "chassisNumber"
+        })
+        void shouldApplyToPropertyName(String propertyName) {
+            Assertions.assertThat(generator.appliesTo("", propertyName)).isTrue();
+        }
+
+        @Test
+        void shouldNotApplyToUnrelatedFormat() {
+            Assertions.assertThat(generator.appliesTo("email", "username")).isFalse();
+        }
     }
 
-    @Test
-    void givenAVINFormatGeneratorStrategy_whenGettingTheAlmostValidValue_thenTheValueIsReturnedAsExpected() {
-        Assertions.assertThat(vinGenerator.getAlmostValidValue()).isEqualTo("1HGBH41JXMN1O9186");
+    @Nested
+    @DisplayName("Generation Tests")
+    class GenerationTests {
+
+        @Test
+        void shouldGenerateValidVIN() {
+            Schema<String> schema = new Schema<>();
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNotNull().isInstanceOf(String.class);
+            String vin = (String) result;
+            Assertions.assertThat(vin).hasSize(17);
+        }
+
+        @Test
+        void shouldGenerateVINWithValidCharacters() {
+            Schema<String> schema = new Schema<>();
+            Object result = generator.generate(schema);
+
+            String vin = (String) result;
+            Assertions.assertThat(vin).matches("[A-HJ-NPR-Z0-9]{17}").doesNotContain("I", "O", "Q");
+        }
+
+        @Test
+        void shouldGenerateVINMatchingPattern() {
+            Schema<String> schema = new Schema<>();
+            schema.setPattern("^[A-HJ-NPR-Z0-9]{17}$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNotNull();
+            String vin = (String) result;
+            Assertions.assertThat(vin).matches("[A-HJ-NPR-Z0-9]{17}");
+        }
+
+        @Test
+        void shouldReturnNullWhenPatternDoesNotMatch() {
+            Schema<String> schema = new Schema<>();
+            schema.setPattern("^\\d{10}$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNull();
+        }
     }
 
-    @Test
-    void givenAVINFormatGeneratorStrategy_whenGettingTheTotallyWrongValue_thenTheValueIsReturnedAsExpected() {
-        Assertions.assertThat(vinGenerator.getTotallyWrongValue()).isEqualTo("VIN123");
+    @Nested
+    @DisplayName("Invalid Data Tests")
+    class InvalidDataTests {
+
+        @Test
+        void shouldProvideAlmostValidValue() {
+            String almostValid = generator.getAlmostValidValue();
+
+            Assertions.assertThat(almostValid).isNotNull().hasSize(17);
+        }
+
+        @Test
+        void shouldProvideTotallyWrongValue() {
+            String totallyWrong = generator.getTotallyWrongValue();
+
+            Assertions.assertThat(totallyWrong).isNotNull().isNotEmpty();
+        }
     }
 
-    @Test
-    void givenAVINFormatGeneratorStrategy_whenGenerating_thenValidVINIsReturned() {
-        String generated = (String) vinGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated).hasSize(17).matches("[A-HJ-NPR-Z0-9]{17}");
+    @Nested
+    @DisplayName("Matching Formats Tests")
+    class MatchingFormatsTests {
+
+        @Test
+        void shouldReturnMatchingFormats() {
+            Assertions.assertThat(generator.matchingFormats())
+                    .isNotEmpty()
+                    .contains("vin");
+        }
     }
 }

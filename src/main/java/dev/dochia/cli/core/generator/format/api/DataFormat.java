@@ -38,6 +38,15 @@ public abstract class DataFormat<T extends DataFormatGenerator> {
                 .toList();
     }
 
+
+    /**
+     * Tries to match the generated value against the schema's pattern and length constraints. If the generated value
+     * matches the pattern and is within the length limit, it is returned. Otherwise, null is returned.
+     *
+     * @param schema    The schema to validate against
+     * @param generated The generated value to match against the schema
+     * @return The matched value, or null if it does not match the pattern or length constraints
+     */
     public static Object matchesPatternOrNull(Schema<?> schema, Object generated) {
         if ((schema.getPattern() == null || (schema.getPattern() != null && String.valueOf(generated).matches(schema.getPattern())))
                 && (schema.getMaxLength() == null || (String.valueOf(generated).length() <= schema.getMaxLength()))) {
@@ -47,6 +56,13 @@ public abstract class DataFormat<T extends DataFormatGenerator> {
         return null;
     }
 
+    /**
+     * Tries to match a generated value with a pattern, considering multiple variants of the value.
+     *
+     * @param schema    The schema to validate against
+     * @param generated The generated value to match with the schema's pattern
+     * @return The generated value if it matches the schema's pattern, otherwise null
+     */
     public static Object matchesPatternOrNullWithCombinations(Schema<?> schema, String generated) {
         Object attempt = null;
 
@@ -58,5 +74,23 @@ public abstract class DataFormat<T extends DataFormatGenerator> {
         }
 
         return attempt;
+    }
+
+    /**
+     * Tries multiple generated values and returns the first one that matches the schema pattern.
+     * Useful for generators that support multiple regional formats.
+     *
+     * @param schema     The schema to validate against
+     * @param candidates List of candidate values to try
+     * @return The first matching value, or null if none match
+     */
+    public static Object matchesPatternOrNullFromList(Schema<?> schema, List<String> candidates) {
+        for (String candidate : candidates) {
+            Object attempt = DataFormat.matchesPatternOrNullWithCombinations(schema, candidate);
+            if (attempt != null) {
+                return attempt;
+            }
+        }
+        return null;
     }
 }

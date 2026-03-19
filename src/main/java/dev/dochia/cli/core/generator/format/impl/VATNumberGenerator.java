@@ -1,10 +1,11 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.generator.format.api.DataFormat;
 import dev.dochia.cli.core.generator.format.api.InvalidDataFormatGenerator;
 import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
 import dev.dochia.cli.core.generator.format.api.PropertySanitizer;
 import dev.dochia.cli.core.generator.format.api.ValidDataFormatGenerator;
-import dev.dochia.cli.core.util.CommonUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.swagger.v3.oas.models.media.Schema;
 import jakarta.inject.Singleton;
 
@@ -17,44 +18,52 @@ import java.util.List;
 @Singleton
 public class VATNumberGenerator implements ValidDataFormatGenerator, InvalidDataFormatGenerator, OpenAPIFormat {
 
-    private static final List<String> COUNTRY_CODES = List.of("GB", "DE", "FR", "IT", "ES", "NL", "BE", "AT", "IE", "PT");
-
-    @Override
-    public Object generate(Schema<?> schema) {
-        // Generate EU VAT format: CC123456789
-        String countryCode = CommonUtils.selectRandom(COUNTRY_CODES);
-        int length = 8 + CommonUtils.random().nextInt(3); // 8-10 digits
-        StringBuilder number = new StringBuilder();
-        
-        for (int i = 0; i < length; i++) {
-            number.append(CommonUtils.random().nextInt(10));
-        }
-        
-        return countryCode + number.toString();
-    }
+    private static final List<String> COUNTRY_CODES = List.of(
+            "AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI",
+            "FR", "GB", "GR", "HR", "HU", "IE", "IT", "LT", "LU", "LV",
+            "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK"
+    );
 
     @Override
     public boolean appliesTo(String format, String propertyName) {
-        String sanitized = PropertySanitizer.sanitize(propertyName);
-        return "vat".equalsIgnoreCase(format) ||
-                "vatnumber".equalsIgnoreCase(format) ||
-                sanitized.contains("vat") ||
-                (sanitized.contains("taxnumber") && !sanitized.contains("taxid"));
-    }
-
-    @Override
-    public String getAlmostValidValue() {
-        // Invalid country code
-        return "XX123456789";
-    }
-
-    @Override
-    public String getTotallyWrongValue() {
-        return "VAT123";
+        return "vat".equalsIgnoreCase(PropertySanitizer.sanitize(format)) ||
+                "vatnumber".equalsIgnoreCase(PropertySanitizer.sanitize(format)) ||
+                "gst".equalsIgnoreCase(PropertySanitizer.sanitize(format)) ||
+                PropertySanitizer.sanitize(propertyName).endsWith("vat") ||
+                PropertySanitizer.sanitize(propertyName).endsWith("vatnumber") ||
+                PropertySanitizer.sanitize(propertyName).endsWith("gst") ||
+                PropertySanitizer.sanitize(propertyName).endsWith("gstnumber") ||
+                PropertySanitizer.sanitize(propertyName).endsWith("taxnumber");
     }
 
     @Override
     public List<String> matchingFormats() {
-        return List.of("vat", "vat-number", "vatnumber");
+        return List.of("vat", "vatNumber", "vat-number", "vat_number", "gst", "gstNumber", "gst-number", "gst_number");
+    }
+
+    @Override
+    public Object generate(Schema<?> schema) {
+        String countryCode = COUNTRY_CODES.get(DochiaRandom.instance().nextInt(COUNTRY_CODES.size()));
+
+        StringBuilder vatNumber = new StringBuilder(countryCode);
+
+        int digits = DochiaRandom.instance().nextInt(3) + 8;
+        for (int i = 0; i < digits; i++) {
+            vatNumber.append(DochiaRandom.instance().nextInt(10));
+        }
+
+        String generated = vatNumber.toString();
+
+        return DataFormat.matchesPatternOrNullWithCombinations(schema, generated);
+    }
+
+    @Override
+    public String getAlmostValidValue() {
+        return "GB12345678";
+    }
+
+    @Override
+    public String getTotallyWrongValue() {
+        return "XX000000000";
     }
 }

@@ -1,13 +1,15 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.generator.format.api.DataFormat;
+import dev.dochia.cli.core.generator.format.api.FormatGeneratorUtil;
 import dev.dochia.cli.core.generator.format.api.InvalidDataFormatGenerator;
 import dev.dochia.cli.core.generator.format.api.OpenAPIFormat;
 import dev.dochia.cli.core.generator.format.api.PropertySanitizer;
 import dev.dochia.cli.core.generator.format.api.ValidDataFormatGenerator;
-import dev.dochia.cli.core.util.CommonUtils;
 import io.swagger.v3.oas.models.media.Schema;
 import jakarta.inject.Singleton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,49 +19,53 @@ import java.util.List;
 @Singleton
 public class LicensePlateGenerator implements ValidDataFormatGenerator, InvalidDataFormatGenerator, OpenAPIFormat {
 
-    @Override
-    public Object generate(Schema<?> schema) {
-        // Generate license plate in various formats
-        int format = CommonUtils.random().nextInt(4);
-
-        return switch (format) {
-            case 0 -> // US format: ABC-1234
-                    generateLetters(3) + "-" + generateNumbers(4);
-            case 1 -> // US format: 1ABC234
-                    generateNumbers(1) + generateLetters(3) + generateNumbers(3);
-            case 2 -> // EU format: AB-123-CD
-                    generateLetters(2) + "-" + generateNumbers(3) + "-" + generateLetters(2);
-            default -> // Simple format: ABC1234
-                    generateLetters(3) + generateNumbers(4);
-        };
-    }
-
-    private String generateLetters(int count) {
-        String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < count; i++) {
-            result.append(letters.charAt(CommonUtils.random().nextInt(letters.length())));
-        }
-        return result.toString();
-    }
-
-    private String generateNumbers(int count) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < count; i++) {
-            result.append(CommonUtils.random().nextInt(10));
-        }
-        return result.toString();
-    }
 
     @Override
     public boolean appliesTo(String format, String propertyName) {
-        String sanitized = PropertySanitizer.sanitize(propertyName);
-        return "licenseplate".equalsIgnoreCase(format) ||
-                "plate".equalsIgnoreCase(format) ||
-                sanitized.contains("licenseplate") ||
-                sanitized.contains("licensenumber") ||
-                sanitized.contains("platenumber") ||
-                sanitized.contains("vehicleplate");
+        return "licenseplate".equalsIgnoreCase(PropertySanitizer.sanitize(format)) ||
+                "numberplate".equalsIgnoreCase(PropertySanitizer.sanitize(format)) ||
+                PropertySanitizer.sanitize(propertyName).endsWith("licenseplate") ||
+                PropertySanitizer.sanitize(propertyName).endsWith("numberplate") ||
+                PropertySanitizer.sanitize(propertyName).endsWith("plateNumber") ||
+                PropertySanitizer.sanitize(propertyName).endsWith("platenumber");
+    }
+
+    @Override
+    public List<String> matchingFormats() {
+        return List.of("licensePlate", "license-plate", "license_plate", "numberPlate", "number-plate", "number_plate");
+    }
+
+    @Override
+    public Object generate(Schema<?> schema) {
+        List<String> candidates = new ArrayList<>();
+
+        // US formats
+        candidates.add(FormatGeneratorUtil.generateFromPattern("###-AAA"));
+        candidates.add(FormatGeneratorUtil.generateFromPattern("AAA-###"));
+        candidates.add(FormatGeneratorUtil.generateFromPattern("AA##-AAA"));
+
+        // UK format: AA## AAA
+        candidates.add(FormatGeneratorUtil.generateFromPattern("AA## AAA"));
+
+        // German format: AB-CD 1234
+        candidates.add(FormatGeneratorUtil.generateFromPattern("AA-AA ####"));
+
+        // French format: AB-123-CD
+        candidates.add(FormatGeneratorUtil.generateFromPattern("AA-###-AA"));
+
+        // Italian format: AB 123 CD
+        candidates.add(FormatGeneratorUtil.generateFromPattern("AA ### AA"));
+
+        // Spanish format: 1234 ABC
+        candidates.add(FormatGeneratorUtil.generateFromPattern("#### AAA"));
+
+        // Dutch format: AB-123-C
+        candidates.add(FormatGeneratorUtil.generateFromPattern("AA-###-A"));
+
+        // Romanian format: CJ 99 BUG
+        candidates.add(FormatGeneratorUtil.generateFromPattern("AA ## AAA"));
+
+        return DataFormat.matchesPatternOrNullFromList(schema, candidates);
     }
 
     @Override
@@ -71,10 +77,5 @@ public class LicensePlateGenerator implements ValidDataFormatGenerator, InvalidD
     @Override
     public String getTotallyWrongValue() {
         return "plate";
-    }
-
-    @Override
-    public List<String> matchingFormats() {
-        return List.of("licenseplate", "license-plate", "plate", "vehicle-plate");
     }
 }

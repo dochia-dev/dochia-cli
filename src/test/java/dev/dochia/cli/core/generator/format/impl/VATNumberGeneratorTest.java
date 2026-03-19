@@ -1,48 +1,130 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.quarkus.test.junit.QuarkusTest;
+import io.swagger.v3.oas.models.media.Schema;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @QuarkusTest
 class VATNumberGeneratorTest {
 
-    private VATNumberGenerator vatNumberGenerator;
+    private VATNumberGenerator generator;
 
     @BeforeEach
-    void setup() {
-        vatNumberGenerator = new VATNumberGenerator();
+    void setUp() {
+        DochiaRandom.initRandom(0);
+        generator = new VATNumberGenerator();
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "vat,randomField,true",
-            "vatnumber,randomField,true",
-            "not,vatNumber,true",
-            "not,taxNumber,true",
-            "not,randomField,false"
-    })
-    void shouldRecognizeVATNumber(String format, String property, boolean expected) {
-        boolean isVATNumber = vatNumberGenerator.appliesTo(format, property);
-        Assertions.assertThat(isVATNumber).isEqualTo(expected);
+    @Nested
+    @DisplayName("Format Matching Tests")
+    class FormatMatchingTests {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"vat", "VAT", "vatNumber", "gst", "GST"})
+        void shouldApplyToFormat(String format) {
+            Assertions.assertThat(generator.appliesTo(format, "")).isTrue();
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "companyVAT",
+                "businessVATNumber",
+                "taxGST",
+                "gstNumber",
+                "taxNumber"
+        })
+        void shouldApplyToPropertyName(String propertyName) {
+            Assertions.assertThat(generator.appliesTo("", propertyName)).isTrue();
+        }
+
+        @Test
+        void shouldNotApplyToUnrelatedFormat() {
+            Assertions.assertThat(generator.appliesTo("email", "username")).isFalse();
+        }
     }
 
-    @Test
-    void givenAVATNumberFormatGeneratorStrategy_whenGettingTheAlmostValidValue_thenTheValueIsReturnedAsExpected() {
-        Assertions.assertThat(vatNumberGenerator.getAlmostValidValue()).isEqualTo("XX123456789");
+    @Nested
+    @DisplayName("Generation Tests")
+    class GenerationTests {
+
+        @Test
+        void shouldGenerateValidVATNumber() {
+            Schema<String> schema = new Schema<>();
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNotNull().isInstanceOf(String.class);
+            String vat = (String) result;
+            Assertions.assertThat(vat).isNotEmpty().hasSizeGreaterThanOrEqualTo(10);
+        }
+
+        @Test
+        void shouldGenerateVATWithCountryCode() {
+            Schema<String> schema = new Schema<>();
+            Object result = generator.generate(schema);
+
+            String vat = (String) result;
+            Assertions.assertThat(vat.substring(0, 2)).matches("[A-Z]{2}");
+        }
+
+        @Test
+        void shouldGenerateVATMatchingPattern() {
+            Schema<String> schema = new Schema<>();
+            schema.setPattern("^[A-Z]{2}\\d{8,10}$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNotNull();
+            String vat = (String) result;
+            Assertions.assertThat(vat).matches("[A-Z]{2}\\d{8,10}");
+        }
+
+        @Test
+        void shouldReturnNullWhenNoPatternMatches() {
+            Schema<String> schema = new Schema<>();
+            schema.setPattern("^IMPOSSIBLE_PATTERN$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNull();
+        }
     }
 
-    @Test
-    void givenAVATNumberFormatGeneratorStrategy_whenGettingTheTotallyWrongValue_thenTheValueIsReturnedAsExpected() {
-        Assertions.assertThat(vatNumberGenerator.getTotallyWrongValue()).isEqualTo("VAT123");
+    @Nested
+    @DisplayName("Invalid Data Tests")
+    class InvalidDataTests {
+
+        @Test
+        void shouldProvideAlmostValidValue() {
+            String almostValid = generator.getAlmostValidValue();
+
+            Assertions.assertThat(almostValid).isNotNull().isEqualTo("GB12345678");
+        }
+
+        @Test
+        void shouldProvideTotallyWrongValue() {
+            String totallyWrong = generator.getTotallyWrongValue();
+
+            Assertions.assertThat(totallyWrong).isNotNull().isEqualTo("XX000000000");
+        }
     }
 
-    @Test
-    void givenAVATNumberFormatGeneratorStrategy_whenGenerating_thenValidVATNumberIsReturned() {
-        String generated = (String) vatNumberGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull().matches("[A-Z]{2}\\d{8,10}");
+    @Nested
+    @DisplayName("Matching Formats Tests")
+    class MatchingFormatsTests {
+
+        @Test
+        void shouldReturnMatchingFormats() {
+            Assertions.assertThat(generator.matchingFormats())
+                    .isNotEmpty()
+                    .contains("vat", "vatNumber", "gst", "gstNumber");
+        }
     }
 }

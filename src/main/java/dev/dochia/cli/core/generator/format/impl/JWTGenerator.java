@@ -11,6 +11,7 @@ import jakarta.inject.Singleton;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * A generator class implementing interfaces for generating valid and invalid JWT (JSON Web Token) data formats.
@@ -26,7 +27,7 @@ public class JWTGenerator implements ValidDataFormatGenerator, InvalidDataFormat
                 .encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
         
         String payload = Base64.getUrlEncoder().withoutPadding()
-                .encodeToString(("{\"sub\":\"" + CommonUtils.faker().internet().uuid() + 
+                .encodeToString(("{\"sub\":\"" + UUID.randomUUID() +
                         "\",\"name\":\"" + CommonUtils.faker().name().fullName() + 
                         "\",\"iat\":" + (System.currentTimeMillis() / 1000) + "}").getBytes(StandardCharsets.UTF_8));
         

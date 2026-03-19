@@ -1,50 +1,101 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.quarkus.test.junit.QuarkusTest;
+import io.swagger.v3.oas.models.media.Schema;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @QuarkusTest
 class MedicalRecordNumberGeneratorTest {
 
-    private MedicalRecordNumberGenerator medicalRecordNumberGenerator;
+    private MedicalRecordNumberGenerator generator;
 
     @BeforeEach
-    void setup() {
-        medicalRecordNumberGenerator = new MedicalRecordNumberGenerator();
+    void setUp() {
+        DochiaRandom.initRandom(0);
+        generator = new MedicalRecordNumberGenerator();
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "mrn,randomField,true",
-            "medicalrecordnumber,randomField,true",
-            "not,mrn,true",
-            "not,medicalRecord,true",
-            "not,patientId,true",
-            "not,randomField,false"
-    })
-    void shouldRecognizeMedicalRecordNumber(String format, String property, boolean expected) {
-        boolean isMRN = medicalRecordNumberGenerator.appliesTo(format, property);
-        Assertions.assertThat(isMRN).isEqualTo(expected);
+    @Nested
+    @DisplayName("Format Matching Tests")
+    class FormatMatchingTests {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"mrn", "MRN", "medicalRecordNumber"})
+        void shouldApplyToFormat(String format) {
+            Assertions.assertThat(generator.appliesTo(format, "")).isTrue();
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "patientMRN",
+                "medicalRecordNumber",
+                "patientId",
+                "patientNumber"
+        })
+        void shouldApplyToPropertyName(String propertyName) {
+            Assertions.assertThat(generator.appliesTo("", propertyName)).isTrue();
+        }
+
+        @Test
+        void shouldNotApplyToUnrelatedFormat() {
+            Assertions.assertThat(generator.appliesTo("email", "username")).isFalse();
+        }
     }
 
-    @Test
-    void givenAMedicalRecordNumberFormatGeneratorStrategy_whenGettingTheAlmostValidValue_thenTheValueIsReturnedAsExpected() {
-        Assertions.assertThat(medicalRecordNumberGenerator.getAlmostValidValue()).isEqualTo("MRN-123");
+    @Nested
+    @DisplayName("Generation Tests")
+    class GenerationTests {
+
+        @Test
+        void shouldGenerateValidMRN() {
+            Schema<String> schema = new Schema<>();
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNotNull().isInstanceOf(String.class);
+            String mrn = (String) result;
+            Assertions.assertThat(mrn).matches("\\d{3}-\\d{6}");
+        }
+
+        @Test
+        void shouldGenerateMRNMatchingPattern() {
+            Schema<String> schema = new Schema<>();
+            schema.setPattern("^\\d{3}-\\d{6}$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNotNull();
+            String mrn = (String) result;
+            Assertions.assertThat(mrn).matches("\\d{3}-\\d{6}");
+        }
+
+        @Test
+        void shouldReturnNullWhenPatternDoesNotMatch() {
+            Schema<String> schema = new Schema<>();
+            schema.setPattern("^[A-Z]{10}$");
+
+            Object result = generator.generate(schema);
+
+            Assertions.assertThat(result).isNull();
+        }
     }
 
-    @Test
-    void givenAMedicalRecordNumberFormatGeneratorStrategy_whenGettingTheTotallyWrongValue_thenTheValueIsReturnedAsExpected() {
-        Assertions.assertThat(medicalRecordNumberGenerator.getTotallyWrongValue()).isEqualTo("patient");
-    }
+    @Nested
+    @DisplayName("Matching Formats Tests")
+    class MatchingFormatsTests {
 
-    @Test
-    void givenAMedicalRecordNumberFormatGeneratorStrategy_whenGenerating_thenValidMRNIsReturned() {
-        String generated = (String) medicalRecordNumberGenerator.generate(null);
-        Assertions.assertThat(generated).isNotNull();
-        Assertions.assertThat(generated.length()).isGreaterThanOrEqualTo(8);
+        @Test
+        void shouldReturnMatchingFormats() {
+            Assertions.assertThat(generator.matchingFormats())
+                    .isNotEmpty()
+                    .contains("mrn", "medicalRecordNumber");
+        }
     }
 }

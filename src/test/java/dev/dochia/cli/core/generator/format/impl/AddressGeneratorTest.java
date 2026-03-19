@@ -1,14 +1,21 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.util.CommonUtils;
 import io.quarkus.test.junit.QuarkusTest;
 import io.swagger.v3.oas.models.media.Schema;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 @QuarkusTest
 class AddressGeneratorTest {
+
+    @BeforeEach
+    void setUp() {
+        CommonUtils.initRandom(0);
+    }
 
     @Test
     void shouldGenerate() {
