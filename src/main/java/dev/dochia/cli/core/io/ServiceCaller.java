@@ -150,7 +150,7 @@ public class ServiceCaller {
                     .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
                     .retryOnConnectionFailure(true)
                     .protocols(processingArguments.isHttp2PriorKnowledge() ? List.of(Protocol.H2_PRIOR_KNOWLEDGE) : List.of(Protocol.HTTP_2, Protocol.HTTP_1_1))
-                    .hostnameVerifier((hostname, session) -> true).build();
+                    .hostnameVerifier((_, _) -> true).build();
 
             logger.debug("Proxy configuration to be used: {}", authArguments.getProxy());
         } catch (GeneralSecurityException | IOException e) {
@@ -646,7 +646,7 @@ public class ServiceCaller {
         headers.removeIf(headersToFilter);
 
         LongStream.range(0, howManyHeadersToRemove)
-                .forEach(iteration -> headers.add(new KeyValuePair<>(headerName, headerValue)));
+                .forEach(_ -> headers.add(new KeyValuePair<>(headerName, headerValue)));
     }
 
     private boolean isSuppliedHeaderInFuzzData(ServiceData data, Map.Entry<String, String> suppliedHeader) {

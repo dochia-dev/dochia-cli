@@ -1,11 +1,5 @@
 package dev.dochia.cli.core.util;
 
-import static com.fasterxml.jackson.core.JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN;
-import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS;
-import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_ENUMS_USING_TO_STRING;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,6 +30,12 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import dev.dochia.cli.core.model.ann.ExcludeTestCaseStrategy;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONValue;
+import net.minidev.json.parser.JSONParser;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -50,11 +50,12 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONValue;
-import net.minidev.json.parser.JSONParser;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
+
+import static com.fasterxml.jackson.core.JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN;
+import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS;
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
+import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
+import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_ENUMS_USING_TO_STRING;
 
 /**
  * Utility class for JSON objects interaction.
@@ -249,12 +250,21 @@ public abstract class JsonUtils {
         if (!isValidJson(json1) || !isValidJson(json2)) {
             return json1.equalsIgnoreCase(json2);
         }
+
         try {
-            return JsonPath.parse(json1).jsonString().contentEquals(JsonPath.parse(json2).jsonString());
-        } catch (UnsupportedOperationException _) {
-            String json1Unescaped = StringEscapeUtils.unescapeJson(json1).replaceAll("(^[\"'])|([\"']$)", "");
-            String json2Unescaped = StringEscapeUtils.unescapeJson(json2).replaceAll("(^[\"'])|([\"']$)", "");
-            return JsonPath.parse(json1Unescaped).jsonString().contentEquals(JsonPath.parse(json2Unescaped).jsonString());
+            JsonNode n1 = SIMPLE_OBJECT_MAPPER.readTree(json1);
+            JsonNode n2 = SIMPLE_OBJECT_MAPPER.readTree(json2);
+            return n1.equals(n2); // object key order does NOT matter
+        } catch (Exception _) {
+            try {
+                String j1 = StringEscapeUtils.unescapeJson(json1).replaceAll("(^[\"'])|([\"']$)", "");
+                String j2 = StringEscapeUtils.unescapeJson(json2).replaceAll("(^[\"'])|([\"']$)", "");
+                JsonNode n1 = SIMPLE_OBJECT_MAPPER.readTree(j1);
+                JsonNode n2 = SIMPLE_OBJECT_MAPPER.readTree(j2);
+                return n1.equals(n2);
+            } catch (Exception _) {
+                return json1.equalsIgnoreCase(json2);
+            }
         }
     }
 
