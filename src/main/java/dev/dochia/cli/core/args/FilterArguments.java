@@ -580,7 +580,8 @@ public class FilterArguments {
      * Applies the selected playbook profile to filter which playbooks will run.
      * If a custom profile file is provided, it will be loaded first.
      * If the profile specifies an empty playbook list, all playbooks will run (full profile).
-     * If user also specified --playbooks, the intersection of profile and user playbooks will be used.
+     * If user also specified --playbooks, the user's playbook selection takes precedence and profile is ignored.
+     * If --health-check flag is set, the health-check profile will be used regardless of other profile settings.
      *
      * @param spec the PicoCli command spec for error reporting
      */
@@ -589,7 +590,17 @@ public class FilterArguments {
             profileLoader.loadCustomProfiles(customProfileFile);
         }
 
-        Optional<ProfileLoader.Profile> selectedProfile = profileLoader.getProfile(profile);
+        if (suppliedPlaybooks != null && !suppliedPlaybooks.isEmpty()) {
+            logger.info("Using user-specified playbooks: {} playbooks (profile ignored)", suppliedPlaybooks.size());
+            return;
+        }
+
+        String effectiveProfile = processingArguments.isHealthCheck() ? "health-check" : profile;
+        if (processingArguments.isHealthCheck()) {
+            logger.info("Health check mode enabled - using 'health-check' profile");
+        }
+
+        Optional<ProfileLoader.Profile> selectedProfile = profileLoader.getProfile(effectiveProfile);
 
         if (selectedProfile.isEmpty()) {
             throw new CommandLine.ParameterException(spec.commandLine(),
@@ -599,22 +610,12 @@ public class FilterArguments {
         ProfileLoader.Profile profileConfig = selectedProfile.get();
 
         if (profileConfig.playbooks().isEmpty()) {
-            logger.info("Using profile '{}' - ALL playbooks enabled", profile);
+            logger.info("Using profile '{}' - ALL playbooks enabled", effectiveProfile);
             return;
         }
 
-        Set<String> profilePlaybooks = new HashSet<>(profileConfig.playbooks());
-
-        if (suppliedPlaybooks != null && !suppliedPlaybooks.isEmpty()) {
-            Set<String> userPlaybooks = new HashSet<>(suppliedPlaybooks);
-            profilePlaybooks.retainAll(userPlaybooks);
-            logger.info("Using profile '{}' with user-specified playbooks: {} playbooks",
-                    profile, profilePlaybooks.size());
-        } else {
-            logger.info("Using profile '{}': {} playbooks", profile, profilePlaybooks.size());
-        }
-
-        this.suppliedPlaybooks = List.copyOf(profilePlaybooks);
+        logger.info("Using profile '{}': {} playbooks", effectiveProfile, profileConfig.playbooks().size());
+        this.suppliedPlaybooks = List.copyOf(profileConfig.playbooks());
     }
 
     /**
