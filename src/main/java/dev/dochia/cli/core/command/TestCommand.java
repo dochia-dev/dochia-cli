@@ -328,39 +328,38 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator, Au
     }
 
     private void printConfiguration(OpenAPI openAPI) {
-        logger.config(AnsiUtils.bold("OpenAPI specs: {}"), AnsiUtils.blue(apiArguments.getContract()));
-        logger.config(AnsiUtils.bold("API base url: {}"), AnsiUtils.blue(apiArguments.getServer()));
-        logger.config(AnsiUtils.bold("Reporting path: {}"), AnsiUtils.blue(reportingArguments.getOutputReportFolder()));
-        logger.config(AnsiUtils.bold("Reporting path: {}"), AnsiUtils.blue(reportingArguments.getOutputReportFolder()));
-        logger.config(AnsiUtils.bold("{} configured playbooks out of {} total playbooks"),
+        logger.config("OpenAPI specs: {}", AnsiUtils.blue(apiArguments.getContract()));
+        logger.config("API base url: {}", AnsiUtils.blue(apiArguments.getServer()));
+        logger.config("Reporting path: {}", AnsiUtils.blue(reportingArguments.getOutputReportFolder()));
+        logger.config("Reporting path: {}", AnsiUtils.blue(reportingArguments.getOutputReportFolder()));
+        logger.config("{} configured playbooks out of {} total playbooks",
                 AnsiUtils.blue(filterArguments.getFirstPhasePlaybooksForPath().size()),
                 AnsiUtils.blue(filterArguments.getTotalPlaybooks()));
-        logger.config(AnsiUtils.bold("{} configured paths out of {} total OpenAPI paths"),
+        logger.config("{} configured paths out of {} total OpenAPI paths",
                 AnsiUtils.blue(filterArguments.getPathsToRun(openAPI).size()),
                 AnsiUtils.blue(openAPI.getPaths().size()));
-        logger.config(AnsiUtils.bold("HTTP methods in scope: {}"),
+        logger.config("HTTP methods in scope: {}",
                 AnsiUtils.blue(filterArguments.getHttpMethods()));
-        logger.config(AnsiUtils.bold("Example flags: use-request-body-examples {}, use-schema-examples {}, use-property-examples {}, use-response-body-examples {}, use-defaults {}"),
+        logger.config("Example flags: use-request-body-examples {}, use-schema-examples {}, use-property-examples {}, use-response-body-examples {}, use-defaults {}",
                 AnsiUtils.blue(processingArguments.isUseRequestBodyExamples()),
                 AnsiUtils.blue(processingArguments.isUseSchemaExamples()),
                 AnsiUtils.blue(processingArguments.isUsePropertyExamples()),
                 AnsiUtils.blue(processingArguments.isUseResponseBodyExamples()),
                 AnsiUtils.blue((processingArguments.isUseDefaults())));
-        logger.config(AnsiUtils.bold("self-reference-depth {}, large-strings-size {}, random-headers-number {}, limit-fuzzed-fields {}, limit-xxx-of-combinations {}"),
+        logger.config("self-reference-depth {}, large-strings-size {}, random-headers-number {}, limit-fuzzed-fields {}, limit-xxx-of-combinations {}",
                 AnsiUtils.blue(processingArguments.getSelfReferenceDepth()),
                 AnsiUtils.blue(processingArguments.getLargeStringsSize()),
                 AnsiUtils.blue(processingArguments.getRandomHeadersNumber()),
                 AnsiUtils.blue(processingArguments.getLimitNumberOfFields()),
                 AnsiUtils.blue((processingArguments.getLimitXxxOfCombinations())));
-        logger.config(AnsiUtils.bold("How the service handles whitespaces and random unicodes: edge-spaces-strategy {}, sanitization-strategy {}"),
+        logger.config("How the service handles whitespaces and random unicodes: edge-spaces-strategy {}, sanitization-strategy {}",
                 AnsiUtils.blue(processingArguments.getEdgeSpacesStrategy()),
                 AnsiUtils.blue(processingArguments.getSanitizationStrategy()));
-        logger.config(AnsiUtils.bold("Seed value: {}"), AnsiUtils.blue(DochiaRandom.getStoredSeed()));
-        logger.config(AnsiUtils.bold("Quality gate: {}"),
-                AnsiUtils.boldBlue(qualityGateArguments.getQualityGateDescription()));
+        logger.config("Seed value: {}", AnsiUtils.blue(DochiaRandom.getStoredSeed()));
+        logger.config("Quality gate: {}", AnsiUtils.blue(qualityGateArguments.getQualityGateDescription()));
 
         int nofOfOperations = OpenApiUtils.getNumberOfOperations(openAPI);
-        logger.config(AnsiUtils.bold("Total number of OpenAPI operations: {}"), AnsiUtils.blue(nofOfOperations));
+        logger.config("Total number of OpenAPI operations: {}", AnsiUtils.blue(nofOfOperations));
     }
 
     private void fuzzPath(Map.Entry<String, PathItem> pathItemEntry, OpenAPI openAPI) {
