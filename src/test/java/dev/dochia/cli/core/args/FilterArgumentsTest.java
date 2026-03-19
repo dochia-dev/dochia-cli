@@ -494,7 +494,7 @@ class FilterArgumentsTest {
         Assertions.assertThat(suppliedPlaybooks).isNullOrEmpty();
     }
 
-//    @Test
+    @Test
     void shouldUseUserPlaybooksWhenBothProfileAndPlaybooksSupplied() {
         ReflectionTestUtils.setField(filterArguments, "profile", "security");
         ReflectionTestUtils.setField(filterArguments, "suppliedPlaybooks",
@@ -570,5 +570,110 @@ class FilterArgumentsTest {
         Mockito.when(paths.containsKey("/non-existent-path")).thenReturn(true);
         Mockito.when(spec.getPaths()).thenReturn(paths);
         Assertions.assertThatNoException().isThrownBy(() -> filterArguments.validateValidPaths(spec));
+    }
+
+    @Test
+    void shouldApplyHealthCheckProfile() {
+        ReflectionTestUtils.setField(processingArguments, "healthCheck", true);
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .containsExactly("HappyPath")
+                .hasSize(1);
+    }
+
+    @Test
+    void shouldOverrideProfileWhenHealthCheckIsEnabled() {
+        ReflectionTestUtils.setField(filterArguments, "profile", "security");
+        ReflectionTestUtils.setField(processingArguments, "healthCheck", true);
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .containsExactly("HappyPath")
+                .hasSize(1);
+    }
+
+    @Test
+    void shouldUseNormalProfileWhenHealthCheckIsDisabled() {
+        ReflectionTestUtils.setField(filterArguments, "profile", "quick");
+        ReflectionTestUtils.setField(processingArguments, "healthCheck", false);
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .contains("HappyPath", "RemoveFields", "SqlInjectionInStringFields")
+                .hasSizeGreaterThan(10);
+    }
+
+    @Test
+    void shouldPrioritizePlaybookOverProfile() {
+        ReflectionTestUtils.setField(filterArguments, "profile", "security");
+        ReflectionTestUtils.setField(filterArguments, "suppliedPlaybooks", List.of("HappyPathPlaybook"));
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .containsExactly("HappyPathPlaybook")
+                .hasSize(1);
+    }
+
+    @Test
+    void shouldPrioritizePlaybookOverHealthCheck() {
+        ReflectionTestUtils.setField(processingArguments, "healthCheck", true);
+        ReflectionTestUtils.setField(filterArguments, "suppliedPlaybooks", List.of("SqlInjectionInStringFieldsPlaybook", "RemoveFieldsPlaybook"));
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .containsExactlyInAnyOrder("SqlInjectionInStringFieldsPlaybook", "RemoveFieldsPlaybook")
+                .hasSize(2);
+    }
+
+    @Test
+    void shouldPrioritizePlaybookOverBothProfileAndHealthCheck() {
+        ReflectionTestUtils.setField(filterArguments, "profile", "quick");
+        ReflectionTestUtils.setField(processingArguments, "healthCheck", true);
+        ReflectionTestUtils.setField(filterArguments, "suppliedPlaybooks", List.of("RemoveFields"));
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .containsExactly("RemoveFields")
+                .hasSize(1);
+    }
+
+    @Test
+    void shouldApplyProfileWhenNoPlaybookSupplied() {
+        ReflectionTestUtils.setField(filterArguments, "profile", "security");
+        ReflectionTestUtils.setField(filterArguments, "suppliedPlaybooks", null);
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .isNotEmpty()
+                .contains("SqlInjectionInStringFields", "MassAssignment")
+                .doesNotContain("HappyPath");
+    }
+
+    @Test
+    void shouldApplyHealthCheckWhenNoPlaybookSupplied() {
+        ReflectionTestUtils.setField(processingArguments, "healthCheck", true);
+        ReflectionTestUtils.setField(filterArguments, "suppliedPlaybooks", null);
+
+        filterArguments.applyProfile(spec);
+
+        List<String> suppliedPlaybooks = (List<String>) ReflectionTestUtils.getField(filterArguments, "suppliedPlaybooks");
+        Assertions.assertThat(suppliedPlaybooks)
+                .containsExactly("HappyPath")
+                .hasSize(1);
     }
 }
