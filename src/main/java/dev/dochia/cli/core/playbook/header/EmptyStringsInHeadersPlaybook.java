@@ -7,6 +7,7 @@ import dev.dochia.cli.core.playbook.header.base.BaseHeadersPlaybookContext;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.strategy.FuzzingStrategy;
 import jakarta.inject.Singleton;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
 
@@ -30,8 +31,10 @@ public class EmptyStringsInHeadersPlaybook extends BaseHeadersPlaybook {
     public BaseHeadersPlaybookContext createPlaybookContext() {
         return BaseHeadersPlaybookContext.builder()
                 .expectedHttpCodeForRequiredHeadersFuzzed(ResponseCodeFamilyPredefined.FOURXX)
-                .expectedHttpForOptionalHeadersFuzzed(ResponseCodeFamilyPredefined.TWOXX)
-                .typeOfDataSentToTheService("empty values")
+                .expectedHttpForOptionalHeadersProducer(header -> {
+                    boolean shouldBe4xx = !header.isRequired() && StringUtils.isNotBlank(header.getFormat());
+                    return shouldBe4xx ? ResponseCodeFamilyPredefined.FOURXX_TWOXX : ResponseCodeFamilyPredefined.TWOXX;
+                })                .typeOfDataSentToTheService("empty values")
                 .fuzzStrategy(Collections.singletonList(FuzzingStrategy.replace().withData("")))
                 .build();
     }

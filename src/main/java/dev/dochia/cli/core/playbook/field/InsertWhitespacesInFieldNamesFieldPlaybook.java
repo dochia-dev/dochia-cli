@@ -1,15 +1,13 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.playbook.api.FieldPlaybook;
-import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.generator.simple.UnicodeGenerator;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.io.ServiceCaller;
-import dev.dochia.cli.core.io.ServiceData;
-import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.PlaybookData;
-import dev.dochia.cli.core.report.TestCaseListener;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
+import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutorContext;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.JsonUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
@@ -23,18 +21,15 @@ import java.util.Set;
 @Singleton
 public class InsertWhitespacesInFieldNamesFieldPlaybook implements TestCasePlaybook {
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(InsertWhitespacesInFieldNamesFieldPlaybook.class);
-    private final ServiceCaller serviceCaller;
-    private final TestCaseListener testCaseListener;
+    private final SimpleExecutor simpleExecutor;
 
     /**
      * Creates a new InsertWhitespacesInFieldNamesFieldPlaybook instance.
      *
-     * @param sc the service caller
-     * @param lr the test case listener
+     * @param simpleExecutor the simple executor
      */
-    public InsertWhitespacesInFieldNamesFieldPlaybook(ServiceCaller sc, TestCaseListener lr) {
-        this.serviceCaller = sc;
-        this.testCaseListener = lr;
+    public InsertWhitespacesInFieldNamesFieldPlaybook(SimpleExecutor simpleExecutor) {
+        this.simpleExecutor = simpleExecutor;
     }
 
     @Override
@@ -50,27 +45,22 @@ public class InsertWhitespacesInFieldNamesFieldPlaybook implements TestCasePlayb
         for (String field : allFieldsByHttpMethod) {
             logger.debug("Fuzzing field {}, inserting {}", field, randomWhitespace);
             if (JsonUtils.isFieldInJson(data.getPayload(), field)) {
-                testCaseListener.createAndExecuteTest(logger, this, () -> process(data, field, randomWhitespace), data);
+                process(data, field, randomWhitespace);
             }
         }
     }
 
     private void process(PlaybookData data, String field, String randomWhitespace) {
-        testCaseListener.addScenario(logger, "Insert random whitespaces in the field name [{}]", field);
-        testCaseListener.addExpectedResult(logger, "Should get a [{}] response code", ResponseCodeFamilyPredefined.FOURXX);
-
-        if (!testCaseListener.shouldContinueExecution(logger, ResponseCodeFamilyPredefined.FOURXX)) {
-            testCaseListener.skipTest(logger, "Test skipped due to response code filtering");
-            return;
-        }
-
         String fuzzedJson = JsonUtils.insertCharactersInFieldKey(data.getPayload(), field, randomWhitespace);
 
-        HttpResponse response = serviceCaller.call(ServiceData.builder().relativePath(data.getPath()).headers(data.getHeaders())
-                .payload(fuzzedJson).queryParams(data.getQueryParams()).httpMethod(data.getMethod()).contractPath(data.getContractPath())
-                .contentType(data.getFirstRequestContentType()).pathParamsPayload(data.getPathParamsPayload())
+        simpleExecutor.execute(SimpleExecutorContext.builder()
+                .logger(logger)
+                .testCasePlaybook(this)
+                .playbookData(data)
+                .payload(fuzzedJson)
+                .expectedResponseCode(ResponseCodeFamilyPredefined.FOURXX)
+                .scenario("Insert random whitespaces in the field name [" + field + "]")
                 .build());
-        testCaseListener.reportResult(logger, data, response, ResponseCodeFamilyPredefined.FOURXX);
     }
 
     @Override

@@ -1,37 +1,27 @@
 package dev.dochia.cli.core.playbook.field;
 
 import dev.dochia.cli.core.http.HttpMethod;
-import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.io.ServiceCaller;
-import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.PlaybookData;
-import dev.dochia.cli.core.report.TestCaseListener;
-import dev.dochia.cli.core.report.TestReportsGenerator;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectSpy;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Set;
 
 @QuarkusTest
-class ZeroWidthCharsInNamesFieldsPlaybookTest
- {
+class ZeroWidthCharsInNamesFieldsPlaybookTest {
     private ZeroWidthCharsInNamesFieldsPlaybook zeroWidthCharsInNamesFieldsPlaybook;
-    private ServiceCaller serviceCaller;
-    @InjectSpy
-    TestCaseListener testCaseListener;
+    private SimpleExecutor simpleExecutor;
 
     @BeforeEach
     void setup() {
-        serviceCaller = Mockito.mock(ServiceCaller.class);
-        ReflectionTestUtils.setField(testCaseListener, "testReportsGenerator", Mockito.mock(TestReportsGenerator.class));
-        zeroWidthCharsInNamesFieldsPlaybook = new ZeroWidthCharsInNamesFieldsPlaybook(serviceCaller, testCaseListener);
+        simpleExecutor = Mockito.mock(SimpleExecutor.class);
+        zeroWidthCharsInNamesFieldsPlaybook = new ZeroWidthCharsInNamesFieldsPlaybook(simpleExecutor);
     }
 
     @Test
@@ -50,8 +40,7 @@ class ZeroWidthCharsInNamesFieldsPlaybookTest
         PlaybookData data = Mockito.mock(PlaybookData.class);
         Mockito.when(data.getPayload()).thenReturn(payload);
         zeroWidthCharsInNamesFieldsPlaybook.run(data);
-        Mockito.verifyNoInteractions(serviceCaller);
-        Mockito.verifyNoInteractions(testCaseListener);
+        Mockito.verifyNoInteractions(simpleExecutor);
     }
 
     @Test
@@ -59,8 +48,7 @@ class ZeroWidthCharsInNamesFieldsPlaybookTest
         PlaybookData data = Mockito.mock(PlaybookData.class);
         Mockito.when(data.getAllFieldsByHttpMethod()).thenReturn(Set.of());
         zeroWidthCharsInNamesFieldsPlaybook.run(data);
-        Mockito.verifyNoInteractions(serviceCaller);
-        Mockito.verifyNoInteractions(testCaseListener);
+        Mockito.verifyNoInteractions(simpleExecutor);
     }
 
     @Test
@@ -76,10 +64,8 @@ class ZeroWidthCharsInNamesFieldsPlaybookTest
                     }
                 }
                 """);
-        Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(HttpResponse.builder().responseCode(400).build());
         zeroWidthCharsInNamesFieldsPlaybook.run(data);
-        Mockito.verify(testCaseListener, Mockito.times(18)).reportResult(Mockito.any(), Mockito.any(),
-                Mockito.any(), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
+        Mockito.verify(simpleExecutor, Mockito.times(18)).execute(Mockito.any());
     }
 
     @Test

@@ -23,17 +23,21 @@ public class DochiaHeader {
     private final boolean required;
     private final String name;
     private String value;
+    private String format;
+
 
     private DochiaHeader(Parameter param) {
         this.name = param.getName();
         this.required = param.getRequired() != null && param.getRequired();
         this.value = this.generateValue(param.getSchema());
+        this.format = param.getSchema().getFormat();
     }
 
-    private DochiaHeader(String name, String value, Boolean required) {
+    private DochiaHeader(String name, String value, Boolean required, String format) {
         this.name = name;
         this.required = required != null && required;
         this.value = value;
+        this.format = format;
     }
 
     /**
@@ -52,10 +56,11 @@ public class DochiaHeader {
      * @param name     the name of the header
      * @param value    the value of the header
      * @param required whether the header is required or not
+     * @param format   the format of the header
      * @return a new DochiaHeader object
      */
-    public static DochiaHeader from(String name, String value, Boolean required) {
-        return new DochiaHeader(name, value, required);
+    public static DochiaHeader from(String name, String value, Boolean required, String format) {
+        return new DochiaHeader(name, value, required, format);
     }
 
     /**
@@ -87,7 +92,7 @@ public class DochiaHeader {
      * @return a copy of the current header
      */
     public DochiaHeader copy() {
-        return DochiaHeader.builder().name(this.name).required(this.required).value(this.value).build();
+        return DochiaHeader.builder().name(this.name).required(this.required).value(this.value).format(this.format).build();
     }
 
     private String generateValue(Schema schema) {

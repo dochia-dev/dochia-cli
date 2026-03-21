@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.playbook.executor;
 
+import dev.dochia.cli.core.model.DochiaHeader;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.http.ResponseCodeFamily;
 import dev.dochia.cli.core.model.PlaybookData;
@@ -9,6 +10,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -31,7 +33,7 @@ public class HeadersIteratorExecutorContext {
      * If you provide an expected response code, it will be used and matched against what the service returns and report info, warn or error accordingly.
      * If not supplied, FieldsIteratorExecutor will test for Marching Arguments. If any match is found it will be reported as error, otherwise the test will be marked as skipped.
      */
-    ResponseCodeFamily expectedResponseCodeForOptionalHeaders;
+    Function<DochiaHeader, ResponseCodeFamily> expectedResponseCodeForOptionalHeadersProducer;
     TestCasePlaybook testCasePlaybook;
 
     Supplier<List<FuzzingStrategy>> fuzzValueProducer;

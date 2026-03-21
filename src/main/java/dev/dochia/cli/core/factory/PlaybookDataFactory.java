@@ -734,7 +734,7 @@ public class PlaybookDataFactory {
                         headers.add(DochiaHeader.fromHeaderParameter(param));
                     } catch (IllegalArgumentException _) {
                         globalContext.recordError("A valid string could not be generated for the header '" + param.getName() + "' using the pattern '" + param.getSchema().getPattern() + "'. Please consider either changing the pattern or simplifying it.");
-                        headers.add(DochiaHeader.from(param.getName(), OpenAPIModelGenerator.DEFAULT_STRING_WHEN_GENERATION_FAILS, param.getRequired()));
+                        headers.add(DochiaHeader.from(param.getName(), OpenAPIModelGenerator.DEFAULT_STRING_WHEN_GENERATION_FAILS, param.getRequired(), Optional.ofNullable(param.getSchema()).map(Schema::getFormat).orElse(null)));
                     }
                 }
             }

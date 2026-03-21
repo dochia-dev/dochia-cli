@@ -12,6 +12,7 @@ import dev.dochia.cli.core.util.JsonUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public abstract class BaseHttpWithPayloadSimplePlaybook implements TestCasePlaybook {
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(getClass());
     private final SimpleExecutor simpleExecutor;
+    private final List<String> fuzzedPaths = new ArrayList<>();
 
     BaseHttpWithPayloadSimplePlaybook(SimpleExecutor ce) {
         this.simpleExecutor = ce;
@@ -33,6 +35,13 @@ public abstract class BaseHttpWithPayloadSimplePlaybook implements TestCasePlayb
             logger.debug("Skipping playbook as payload is empty");
             return;
         }
+
+        String runKey = data.getPath() + data.getMethod();
+        if (fuzzedPaths.contains(runKey)) {
+            logger.skip("Skipping playbook as it already tested. Most likely a oneOf/anyOf payload");
+            return;
+        }
+        fuzzedPaths.add(runKey);
 
         simpleExecutor.execute(
                 SimpleExecutorContext.builder()

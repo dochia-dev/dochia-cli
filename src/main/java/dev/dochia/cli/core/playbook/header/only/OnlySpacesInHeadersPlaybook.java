@@ -8,6 +8,7 @@ import dev.dochia.cli.core.generator.simple.UnicodeGenerator;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.strategy.FuzzingStrategy;
 import jakarta.inject.Singleton;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Playbook that sends only spaces in headers.
@@ -29,7 +30,10 @@ public class OnlySpacesInHeadersPlaybook extends BaseHeadersPlaybook {
     public BaseHeadersPlaybookContext createPlaybookContext() {
         return BaseHeadersPlaybookContext.builder()
                 .expectedHttpCodeForRequiredHeadersFuzzed(ResponseCodeFamilyPredefined.FOURXX)
-                .expectedHttpForOptionalHeadersFuzzed(ResponseCodeFamilyPredefined.TWOXX)
+                .expectedHttpForOptionalHeadersProducer(header -> {
+                    boolean shouldBe4xx = !header.isRequired() && StringUtils.isNotBlank(header.getFormat());
+                    return shouldBe4xx ? ResponseCodeFamilyPredefined.FOURXX_TWOXX : ResponseCodeFamilyPredefined.TWOXX;
+                })
                 .typeOfDataSentToTheService("values replaced by spaces")
                 .fuzzStrategy(UnicodeGenerator.getSpacesHeaders()
                         .stream().map(value -> FuzzingStrategy.replace().withData(value)).toList())

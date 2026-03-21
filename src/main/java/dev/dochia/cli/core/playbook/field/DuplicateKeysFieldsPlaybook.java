@@ -5,13 +5,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.io.ServiceData;
-import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.playbook.api.FieldPlaybook;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
-import dev.dochia.cli.core.report.TestCaseListener;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutorContext;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.JsonUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
@@ -39,13 +38,10 @@ public class DuplicateKeysFieldsPlaybook implements TestCasePlaybook {
     private static final String DUPLICATE_VALUE = "dochiaFuzzyDup";
     private static final int MAX_FIELD_DEPTH = 5;
     private static final int MAX_MUTATIONS_PER_REQUEST = 100;
+    private final SimpleExecutor simpleExecutor;
 
-    private final ServiceCaller serviceCaller;
-    private final TestCaseListener testCaseListener;
-
-    public DuplicateKeysFieldsPlaybook(ServiceCaller serviceCaller, TestCaseListener testCaseListener) {
-        this.serviceCaller = serviceCaller;
-        this.testCaseListener = testCaseListener;
+    public DuplicateKeysFieldsPlaybook(SimpleExecutor simpleExecutor) {
+        this.simpleExecutor = simpleExecutor;
     }
 
     @Override
@@ -92,12 +88,7 @@ public class DuplicateKeysFieldsPlaybook implements TestCasePlaybook {
             return;
         }
 
-        testCaseListener.createAndExecuteTest(
-                logger,
-                this,
-                () -> runDuplicationTestCase(data, field, duplicatedPayload.get()),
-                data
-        );
+        runDuplicationTestCase(data, field, duplicatedPayload.get());
     }
 
     private Optional<String> createDuplicatedPayload(String originalPayload, String fieldPath) {
@@ -116,18 +107,16 @@ public class DuplicateKeysFieldsPlaybook implements TestCasePlaybook {
     }
 
     private void runDuplicationTestCase(PlaybookData data, String field, String duplicatedPayload) {
-        testCaseListener.addScenario(logger,
-                "Duplicate key [{}] in parent object with second value [{}]", field, DUPLICATE_VALUE);
-        testCaseListener.addExpectedResult(logger,
-                "Service should return a [{}] response", ResponseCodeFamilyPredefined.FOURXX.asString());
-
-        if (!testCaseListener.shouldContinueExecution(logger, ResponseCodeFamilyPredefined.FOURXX)) {
-            testCaseListener.skipTest(logger, "Test skipped due to response code filtering");
-            return;
-        }
-
-        HttpResponse response = serviceCaller.call(buildServiceData(data, duplicatedPayload));
-        testCaseListener.reportResult(logger, data, response, ResponseCodeFamilyPredefined.FOURXX);
+        simpleExecutor.execute(SimpleExecutorContext.builder()
+                .logger(logger)
+                .testCasePlaybook(this)
+                .playbookData(data)
+                .payload(duplicatedPayload)
+                .expectedResponseCode(ResponseCodeFamilyPredefined.FOURXX)
+                .scenario("Duplicate key [" + field + "] in parent object with second value [" + DUPLICATE_VALUE + "]")
+                .replaceRefData(false)
+                .validJson(false)
+                .build());
     }
 
     private ServiceData buildServiceData(PlaybookData data, String payload) {

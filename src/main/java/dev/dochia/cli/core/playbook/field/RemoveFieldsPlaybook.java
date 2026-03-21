@@ -3,15 +3,12 @@ package dev.dochia.cli.core.playbook.field;
 import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.args.ProcessingArguments;
 import dev.dochia.cli.core.http.HttpMethod;
-import dev.dochia.cli.core.http.ResponseCodeFamily;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.io.ServiceCaller;
-import dev.dochia.cli.core.io.ServiceData;
-import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.playbook.api.FieldPlaybook;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
-import dev.dochia.cli.core.report.TestCaseListener;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutorContext;
 import dev.dochia.cli.core.util.ConsoleUtils;
 import dev.dochia.cli.core.util.JsonUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
@@ -31,8 +28,7 @@ import java.util.stream.Collectors;
 @FieldPlaybook
 public class RemoveFieldsPlaybook implements TestCasePlaybook {
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(RemoveFieldsPlaybook.class);
-    private final ServiceCaller serviceCaller;
-    private final TestCaseListener testCaseListener;
+    private final SimpleExecutor simpleExecutor;
     private final FilterArguments filterArguments;
     private final ProcessingArguments processingArguments;
 
@@ -40,14 +36,12 @@ public class RemoveFieldsPlaybook implements TestCasePlaybook {
     /**
      * Creates a new RemoveFieldsPlaybook instance.
      *
-     * @param sc the service caller
-     * @param lr the test case listener
-     * @param fa filter arguments
-     * @param pa to get the number of max fields to remove at once
+     * @param simpleExecutor the simple executor
+     * @param fa             filter arguments
+     * @param pa             to get the number of max fields to remove at once
      */
-    public RemoveFieldsPlaybook(ServiceCaller sc, TestCaseListener lr, FilterArguments fa, ProcessingArguments pa) {
-        this.serviceCaller = sc;
-        this.testCaseListener = lr;
+    public RemoveFieldsPlaybook(SimpleExecutor simpleExecutor, FilterArguments fa, ProcessingArguments pa) {
+        this.simpleExecutor = simpleExecutor;
         this.filterArguments = fa;
         this.processingArguments = pa;
     }
@@ -60,7 +54,7 @@ public class RemoveFieldsPlaybook implements TestCasePlaybook {
         for (Set<String> subset : sets) {
             Set<String> finalSubset = this.removeIfSkipped(subset);
             if (!finalSubset.isEmpty()) {
-                testCaseListener.createAndExecuteTest(logger, this, () -> process(data, data.getAllRequiredFields(), finalSubset), data);
+                process(data, data.getAllRequiredFields(), finalSubset);
             }
         }
     }
@@ -87,21 +81,20 @@ public class RemoveFieldsPlaybook implements TestCasePlaybook {
         String finalJsonPayload = this.getFuzzedJsonWithFieldsRemove(data.getPayload(), subset);
 
         if (!JsonUtils.equalAsJson(finalJsonPayload, data.getPayload())) {
-            testCaseListener.addScenario(logger, "Remove the following fields from request: {}", subset);
-
             boolean hasRequiredFieldsRemove = this.hasRequiredFieldsRemove(required, subset);
-            ResponseCodeFamily expectedResponseCode = ResponseCodeFamilyPredefined.getResultCodeBasedOnRequiredFieldsRemoved(hasRequiredFieldsRemove);
-            testCaseListener.addExpectedResult(logger, "Should return [{}] response code as required fields [{}] removed", ResponseCodeFamilyPredefined.getExpectedWordingBasedOnRequiredFields(hasRequiredFieldsRemove));
-            if (!testCaseListener.shouldContinueExecution(logger, expectedResponseCode)) {
-                testCaseListener.skipTest(logger, "Test skipped due to response code filtering");
-                return;
-            }
-            HttpResponse response = serviceCaller.call(ServiceData.builder().relativePath(data.getPath()).headers(data.getHeaders())
-                    .payload(finalJsonPayload).queryParams(data.getQueryParams()).httpMethod(data.getMethod()).contractPath(data.getContractPath())
-                    .contentType(data.getFirstRequestContentType()).pathParamsPayload(data.getPathParamsPayload()).build());
-            testCaseListener.reportResult(logger, data, response, ResponseCodeFamilyPredefined.getResultCodeBasedOnRequiredFieldsRemoved(hasRequiredFieldsRemove));
+            Object[] expectedWording = ResponseCodeFamilyPredefined.getExpectedWordingBasedOnRequiredFields(hasRequiredFieldsRemove);
+
+            simpleExecutor.execute(SimpleExecutorContext.builder()
+                    .logger(logger)
+                    .testCasePlaybook(this)
+                    .playbookData(data)
+                    .payload(finalJsonPayload)
+                    .expectedResponseCode(ResponseCodeFamilyPredefined.from(String.valueOf(expectedWording[0])))
+                    .scenario("Remove the following fields from request: " + subset.toString())
+                    .expectedResult(String.format(" as required fields %s removed", expectedWording[1]))
+                    .build());
         } else {
-            testCaseListener.skipTest(logger, "Field is from a different ANY_OF or ONE_OF payload");
+            logger.skip("Field is from a different ANY_OF or ONE_OF payload. Skipping test");
         }
     }
 

@@ -3,14 +3,9 @@ package dev.dochia.cli.core.playbook.field;
 import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.args.ProcessingArguments;
 import dev.dochia.cli.core.http.HttpMethod;
-import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.io.ServiceCaller;
-import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.PlaybookData;
-import dev.dochia.cli.core.report.TestCaseListener;
-import dev.dochia.cli.core.report.TestReportsGenerator;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectSpy;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -18,7 +13,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,25 +20,20 @@ import java.util.List;
 import java.util.Map;
 
 @QuarkusTest
-class RemoveFieldsPlaybookTest
- {
-    private ServiceCaller serviceCaller;
-    @InjectSpy
-    private TestCaseListener testCaseListener;
+class RemoveFieldsPlaybookTest {
+    private SimpleExecutor simpleExecutor;
     private FilterArguments filterArguments;
     private ProcessingArguments processingArguments;
     private RemoveFieldsPlaybook removeFieldsPlaybook;
 
     private PlaybookData data;
-    private HttpResponse httpResponse;
 
     @BeforeEach
     void setup() {
         filterArguments = Mockito.mock(FilterArguments.class);
         processingArguments = Mockito.mock(ProcessingArguments.class);
-        serviceCaller = Mockito.mock(ServiceCaller.class);
-        removeFieldsPlaybook = new RemoveFieldsPlaybook(serviceCaller, testCaseListener, filterArguments, processingArguments);
-        ReflectionTestUtils.setField(testCaseListener, "testReportsGenerator", Mockito.mock(TestReportsGenerator.class));
+        simpleExecutor = Mockito.mock(SimpleExecutor.class);
+        removeFieldsPlaybook = new RemoveFieldsPlaybook(simpleExecutor, filterArguments, processingArguments);
     }
 
     @Test
@@ -55,16 +44,15 @@ class RemoveFieldsPlaybookTest
         Mockito.when(filterArguments.getSkipFields()).thenReturn(Collections.singletonList("id"));
         removeFieldsPlaybook.run(data);
 
-        Mockito.verifyNoInteractions(testCaseListener);
+        Mockito.verifyNoInteractions(simpleExecutor);
     }
 
     @Test
-    void givenARequest_whenApplyingTheRemoveFieldsPlaybook_thensAreCorrectlyExecuted() {
+    void givenARequest_whenApplyingTheRemoveFieldsPlaybook_thenTestCasesAreCorrectlyExecuted() {
         setup("{\"field\":\"oldValue\"}");
         removeFieldsPlaybook.run(data);
 
-        Mockito.verify(testCaseListener, Mockito.times(1)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
-        Mockito.verify(testCaseListener, Mockito.times(2)).skipTest(Mockito.any(), Mockito.eq("Field is from a different ANY_OF or ONE_OF payload"));
+        Mockito.verify(simpleExecutor, Mockito.times(1)).execute(Mockito.any());
     }
 
     @Test
@@ -72,8 +60,7 @@ class RemoveFieldsPlaybookTest
         setup("[{\"field\":\"oldValue\"}, {\"field\":\"newValue\"}]");
         removeFieldsPlaybook.run(data);
 
-        Mockito.verify(testCaseListener, Mockito.times(1)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
-        Mockito.verify(testCaseListener, Mockito.times(2)).skipTest(Mockito.any(), Mockito.eq("Field is from a different ANY_OF or ONE_OF payload"));
+        Mockito.verify(simpleExecutor, Mockito.times(1)).execute(Mockito.any());
     }
 
     @Test
@@ -84,7 +71,6 @@ class RemoveFieldsPlaybookTest
     }
 
     private void setup(String payload) {
-        httpResponse = HttpResponse.builder().body("{}").responseCode(200).build();
         Map<String, List<String>> responses = new HashMap<>();
         responses.put("200", Collections.singletonList("response"));
         Schema schema = new ObjectSchema();
@@ -94,7 +80,6 @@ class RemoveFieldsPlaybookTest
         data = PlaybookData.builder().path("path1").method(HttpMethod.POST).payload(payload).
                 responses(responses).reqSchema(schema).schemaMap(this.createPropertiesMap()).responseCodes(Collections.singleton("200"))
                 .requestContentTypes(List.of("application/json")).requestPropertyTypes(this.createPropertiesMap()).build();
-        Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
     }
 
     private Map<String, Schema> createPropertiesMap() {

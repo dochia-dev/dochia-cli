@@ -1,21 +1,19 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.playbook.api.FieldPlaybook;
-import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
-import dev.dochia.cli.core.http.HttpMethod;
-import dev.dochia.cli.core.http.ResponseCodeFamily;
-import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.io.ServiceCaller;
-import dev.dochia.cli.core.io.ServiceData;
-import dev.dochia.cli.core.model.HttpResponse;
-import dev.dochia.cli.core.model.PlaybookData;
-import dev.dochia.cli.core.report.TestCaseListener;
-import dev.dochia.cli.core.util.ConsoleUtils;
-import dev.dochia.cli.core.util.JsonUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dev.dochia.cli.core.http.HttpMethod;
+import dev.dochia.cli.core.http.ResponseCodeFamily;
+import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
+import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
+import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutorContext;
+import dev.dochia.cli.core.util.ConsoleUtils;
+import dev.dochia.cli.core.util.JsonUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
 import jakarta.inject.Singleton;
@@ -29,29 +27,22 @@ import static dev.dochia.cli.core.util.DSLWords.NEW_FIELD;
 @FieldPlaybook
 public class NewFieldsPlaybook implements TestCasePlaybook {
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(NewFieldsPlaybook.class);
-    private final ServiceCaller serviceCaller;
-    private final TestCaseListener testCaseListener;
+    private final SimpleExecutor simpleExecutor;
 
     /**
      * Creates a new NewFieldsPlaybook instance.
      *
-     * @param sc the service caller
-     * @param lr the test case listener
+     * @param simpleExecutor the simple executor
      */
-    public NewFieldsPlaybook(ServiceCaller sc, TestCaseListener lr) {
-        this.serviceCaller = sc;
-        this.testCaseListener = lr;
+    public NewFieldsPlaybook(SimpleExecutor simpleExecutor) {
+        this.simpleExecutor = simpleExecutor;
     }
 
     @Override
     public void run(PlaybookData data) {
-        testCaseListener.createAndExecuteTest(logger, this, () -> process(data), data);
-    }
-
-    private void process(PlaybookData data) {
         String fuzzedJson = this.addNewField(data);
         if (JsonUtils.equalAsJson(fuzzedJson, data.getPayload())) {
-            testCaseListener.skipTest(logger, "Could not fuzz the payload");
+            logger.skip("Could not add new field to the payload. Skipping fuzzing");
             return;
         }
 
@@ -59,19 +50,15 @@ public class NewFieldsPlaybook implements TestCasePlaybook {
         if (HttpMethod.requiresBody(data.getMethod())) {
             expectedResultCode = ResponseCodeFamilyPredefined.FOURXX;
         }
-        testCaseListener.addScenario(logger, "Add new field inside the request: name [{}], value [{}]. All other details are similar to a happy flow", NEW_FIELD, NEW_FIELD);
-        testCaseListener.addExpectedResult(logger, "Should get a [{}] response code", expectedResultCode.asString());
 
-        if (!testCaseListener.shouldContinueExecution(logger, expectedResultCode)) {
-            testCaseListener.skipTest(logger, "Test skipped due to response code filtering");
-            return;
-        }
-
-        HttpResponse response = serviceCaller.call(ServiceData.builder().relativePath(data.getPath()).headers(data.getHeaders())
-                .payload(fuzzedJson).queryParams(data.getQueryParams()).httpMethod(data.getMethod()).contractPath(data.getContractPath())
-                .contentType(data.getFirstRequestContentType()).pathParamsPayload(data.getPathParamsPayload())
+        simpleExecutor.execute(SimpleExecutorContext.builder()
+                .logger(logger)
+                .testCasePlaybook(this)
+                .playbookData(data)
+                .payload(fuzzedJson)
+                .expectedResponseCode(expectedResultCode)
+                .scenario("Add new field inside the request: name [" + NEW_FIELD + "], value [" + NEW_FIELD + "]. All other details are similar to a happy flow")
                 .build());
-        testCaseListener.reportResult(logger, data, response, expectedResultCode);
     }
 
     String addNewField(PlaybookData data) {

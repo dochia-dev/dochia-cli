@@ -1,15 +1,13 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.playbook.api.FieldPlaybook;
-import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
 import dev.dochia.cli.core.generator.simple.UnicodeGenerator;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.io.ServiceCaller;
-import dev.dochia.cli.core.io.ServiceData;
-import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.PlaybookData;
-import dev.dochia.cli.core.report.TestCaseListener;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
+import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutorContext;
 import dev.dochia.cli.core.strategy.FuzzingStrategy;
 import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.ConsoleUtils;
@@ -26,18 +24,15 @@ import java.util.stream.Collectors;
 @FieldPlaybook
 public class ZeroWidthCharsInNamesFieldsPlaybook implements TestCasePlaybook {
     private final PrettyLogger logger = PrettyLoggerFactory.getLogger(ZeroWidthCharsInNamesFieldsPlaybook.class);
-    private final ServiceCaller serviceCaller;
-    private final TestCaseListener testCaseListener;
+    private final SimpleExecutor simpleExecutor;
 
     /**
      * Creates a new ZeroWidthCharsInNamesFieldsPlaybook instance.
      *
-     * @param sc the service caller
-     * @param lr the test case listener
+     * @param simpleExecutor the simple executor
      */
-    public ZeroWidthCharsInNamesFieldsPlaybook(ServiceCaller sc, TestCaseListener lr) {
-        this.serviceCaller = sc;
-        this.testCaseListener = lr;
+    public ZeroWidthCharsInNamesFieldsPlaybook(SimpleExecutor simpleExecutor) {
+        this.simpleExecutor = simpleExecutor;
     }
 
     @Override
@@ -52,7 +47,7 @@ public class ZeroWidthCharsInNamesFieldsPlaybook implements TestCasePlaybook {
                     .filter(field -> JsonUtils.isFieldInJson(data.getPayload(), field))
                     .limit(5)
                     .collect(Collectors.toSet())) {
-                testCaseListener.createAndExecuteTest(logger, this, () -> process(data, fuzzedField, fuzzValue), data);
+                process(data, fuzzedField, fuzzValue);
             }
         }
     }
@@ -60,20 +55,14 @@ public class ZeroWidthCharsInNamesFieldsPlaybook implements TestCasePlaybook {
     private void process(PlaybookData data, String fuzzedField, String fuzzValue) {
         String fuzzedPayload = getFuzzedPayload(data, fuzzedField, fuzzValue);
 
-        testCaseListener.addScenario(logger, "Insert zero-width chars in field names: field [{}], char [{}]. All other details are similar to a happy flow",
-                fuzzedField, FuzzingStrategy.formatValue(fuzzValue));
-        testCaseListener.addExpectedResult(logger, "Should get a [{}] response code", ResponseCodeFamilyPredefined.FOURXX.asString());
-
-        if (!testCaseListener.shouldContinueExecution(logger, ResponseCodeFamilyPredefined.FOURXX)) {
-            testCaseListener.skipTest(logger, "Test skipped due to response code filtering");
-            return;
-        }
-
-        HttpResponse response = serviceCaller.call(ServiceData.builder().relativePath(data.getPath()).headers(data.getHeaders())
-                .payload(fuzzedPayload).queryParams(data.getQueryParams()).httpMethod(data.getMethod()).contractPath(data.getContractPath())
-                .contentType(data.getFirstRequestContentType()).pathParamsPayload(data.getPathParamsPayload())
+        simpleExecutor.execute(SimpleExecutorContext.builder()
+                .logger(logger)
+                .testCasePlaybook(this)
+                .playbookData(data)
+                .payload(fuzzedPayload)
+                .expectedResponseCode(ResponseCodeFamilyPredefined.FOURXX)
+                .scenario("Insert zero-width chars in field names: field [" + fuzzedField + "], char [" + FuzzingStrategy.formatValue(fuzzValue) + "]. All other details are similar to a happy flow")
                 .build());
-        testCaseListener.reportResult(logger, data, response, ResponseCodeFamilyPredefined.FOURXX);
     }
 
     private static @NotNull String getFuzzedPayload(PlaybookData data, String fuzzedField, String fuzzValue) {

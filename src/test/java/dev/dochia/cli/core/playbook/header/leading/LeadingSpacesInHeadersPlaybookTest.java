@@ -19,7 +19,7 @@ class LeadingSpacesInHeadersPlaybookTest {
     @Test
     void shouldExpect2xxForOptionalAndRequiredHeaders() {
         Assertions.assertThat(leadingSpacesInHeadersPlaybook.getPlaybookContext().getExpectedHttpCodeForRequiredHeadersFuzzed()).isEqualTo(ResponseCodeFamilyPredefined.TWOXX);
-        Assertions.assertThat(leadingSpacesInHeadersPlaybook.getPlaybookContext().getExpectedHttpForOptionalHeadersFuzzed()).isEqualTo(ResponseCodeFamilyPredefined.TWOXX);
+        Assertions.assertThat(leadingSpacesInHeadersPlaybook.getPlaybookContext().getExpectedHttpForOptionalHeadersFuzzed().apply(null)).isEqualTo(ResponseCodeFamilyPredefined.TWOXX);
     }
 
     @Test

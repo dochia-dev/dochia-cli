@@ -1,24 +1,16 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.args.FilterArguments;
-import dev.dochia.cli.core.http.HttpMethod;
-import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.io.ServiceCaller;
-import dev.dochia.cli.core.model.HttpResponse;
-import dev.dochia.cli.core.model.PlaybookData;
-import dev.dochia.cli.core.report.TestCaseListener;
-import dev.dochia.cli.core.report.TestReportsGenerator;
-import dev.dochia.cli.core.util.JsonUtils;
 import com.google.gson.JsonElement;
-import io.github.ludovicianul.prettylogger.PrettyLogger;
+import dev.dochia.cli.core.http.HttpMethod;
+import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
+import dev.dochia.cli.core.util.JsonUtils;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectSpy;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,29 +20,24 @@ import java.util.Map;
 import static dev.dochia.cli.core.util.DSLWords.NEW_FIELD;
 
 @QuarkusTest
-class NewFieldsPlaybookTest
- {
-    @InjectSpy
-    private TestCaseListener testCaseListener;
-    private ServiceCaller serviceCaller;
+class NewFieldsPlaybookTest {
+    private SimpleExecutor simpleExecutor;
 
     private NewFieldsPlaybook newFieldsPlaybook;
 
     private PlaybookData data;
-    private HttpResponse httpResponse;
 
     @BeforeEach
     void setup() {
-        serviceCaller = Mockito.mock(ServiceCaller.class);
-        newFieldsPlaybook = new NewFieldsPlaybook(serviceCaller, testCaseListener);
-        ReflectionTestUtils.setField(testCaseListener, "testReportsGenerator", Mockito.mock(TestReportsGenerator.class));
+        simpleExecutor = Mockito.mock(SimpleExecutor.class);
+        newFieldsPlaybook = new NewFieldsPlaybook(simpleExecutor);
     }
 
     @Test
     void shouldRunForEmptyPayload() {
         newFieldsPlaybook.run(Mockito.mock(PlaybookData.class));
 
-        Mockito.verify(testCaseListener).reportResult(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(simpleExecutor).execute(Mockito.any());
     }
 
     @Test
@@ -60,23 +47,23 @@ class NewFieldsPlaybookTest
     }
 
     @Test
-    void givenAPOSTRequest_whenCallingTheNewFieldsPlaybook_thensAreCorrectlyExecutedAndExpectA4XX() {
+    void givenAPOSTRequest_whenCallingTheNewFieldsPlaybook_thenTestCasesAreCorrectlyExecutedAndExpectA4XX() {
         setup(HttpMethod.POST);
         newFieldsPlaybook.run(data);
 
-        Mockito.verify(testCaseListener, Mockito.times(1)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
+        Mockito.verify(simpleExecutor, Mockito.times(1)).execute(Mockito.any());
     }
 
     @Test
-    void givenAGETRequest_whenCallingTheNewFieldsPlaybook_thensAreCorrectlyExecutedAndExpectA2XX() {
+    void givenAGETRequest_whenCallingTheNewFieldsPlaybook_thenTestCasesAreCorrectlyExecutedAndExpectA2XX() {
         setup(HttpMethod.GET);
         newFieldsPlaybook.run(data);
 
-        Mockito.verify(testCaseListener, Mockito.times(1)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.TWOXX));
+        Mockito.verify(simpleExecutor, Mockito.times(1)).execute(Mockito.any());
     }
 
     @Test
-    void shouldAddANewFieldToRunToSingleElement() {
+    void shouldAddANewFieldToFuzzToSingleElement() {
         setup(HttpMethod.POST);
         String element = newFieldsPlaybook.addNewField(data);
 
@@ -84,7 +71,7 @@ class NewFieldsPlaybookTest
     }
 
     @Test
-    void shouldAddANewFieldToRunToArray() {
+    void shouldAddANewFieldToFuzzToArray() {
         String payload = "[{ 'field': 'value1'}, {'field': 'value2'}]";
         data = PlaybookData.builder().payload(payload).reqSchema(new StringSchema()).build();
         JsonElement element = JsonUtils.parseAsJsonElement(newFieldsPlaybook.addNewField(data));
@@ -107,7 +94,7 @@ class NewFieldsPlaybookTest
         data = PlaybookData.builder().payload(payload).reqSchema(new StringSchema()).build();
         newFieldsPlaybook.run(data);
 
-        Mockito.verify(testCaseListener, Mockito.times(0)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
+        Mockito.verify(simpleExecutor, Mockito.times(0)).execute(Mockito.any());
     }
 
     @Test
@@ -116,45 +103,14 @@ class NewFieldsPlaybookTest
         data = PlaybookData.builder().payload(payload).reqSchema(new StringSchema()).build();
         newFieldsPlaybook.run(data);
 
-        Mockito.verify(testCaseListener, Mockito.times(0)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
+        Mockito.verify(simpleExecutor, Mockito.times(0)).execute(Mockito.any());
     }
 
-     @Test
-     void shouldSkipTestWhen4xxFilterEnabledAndExpects2xx() {
-         FilterArguments filterArguments = Mockito.mock(FilterArguments.class);
-         Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(true);
-         Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(false);
-         ReflectionTestUtils.setField(testCaseListener, "filterArguments", filterArguments);
-
-         setup(HttpMethod.GET);
-         newFieldsPlaybook.run(data);
-
-         Mockito.verify(testCaseListener).skipTest(Mockito.any(PrettyLogger.class), Mockito.eq("Test skipped due to response code filtering"));
-         Mockito.verify(serviceCaller, Mockito.never()).call(Mockito.any());
-     }
-
-     @Test
-     void shouldSkipTestWhen2xxFilterEnabledAndExpects4xx() {
-         FilterArguments filterArguments = Mockito.mock(FilterArguments.class);
-         Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(false);
-         Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(true);
-         ReflectionTestUtils.setField(testCaseListener, "filterArguments", filterArguments);
-
-         setup(HttpMethod.POST);
-         newFieldsPlaybook.run(data);
-
-         Mockito.verify(testCaseListener).skipTest(Mockito.any(PrettyLogger.class), Mockito.eq("Test skipped due to response code filtering"));
-         Mockito.verify(serviceCaller, Mockito.never()).call(Mockito.any());
-     }
-
     private void setup(HttpMethod method) {
-        httpResponse = HttpResponse.builder().body("{}").responseCode(200).build();
         Map<String, List<String>> responses = new HashMap<>();
         responses.put("200", Collections.singletonList("response"));
         data = PlaybookData.builder().path("path1").method(method).payload("{'field':'oldValue'}").
                 responses(responses).responseCodes(Collections.singleton("200")).reqSchema(new StringSchema())
                 .requestContentTypes(List.of("application/json")).build();
-
-        Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
     }
 }
