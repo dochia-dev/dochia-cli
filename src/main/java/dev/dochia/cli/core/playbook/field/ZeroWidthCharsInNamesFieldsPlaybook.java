@@ -64,6 +64,11 @@ public class ZeroWidthCharsInNamesFieldsPlaybook implements TestCasePlaybook {
                 fuzzedField, FuzzingStrategy.formatValue(fuzzValue));
         testCaseListener.addExpectedResult(logger, "Should get a [{}] response code", ResponseCodeFamilyPredefined.FOURXX.asString());
 
+        if (!testCaseListener.shouldContinueExecution(logger, ResponseCodeFamilyPredefined.FOURXX)) {
+            testCaseListener.skipTest(logger, "Test skipped due to response code filtering");
+            return;
+        }
+
         HttpResponse response = serviceCaller.call(ServiceData.builder().relativePath(data.getPath()).headers(data.getHeaders())
                 .payload(fuzzedPayload).queryParams(data.getQueryParams()).httpMethod(data.getMethod()).contractPath(data.getContractPath())
                 .contentType(data.getFirstRequestContentType()).pathParamsPayload(data.getPathParamsPayload())

@@ -69,6 +69,10 @@ public class FilterArguments {
     @Inject
     ProfileLoader profileLoader;
 
+    enum Mode {
+        ALL, NEGATIVE, POSITIVE
+    }
+
     enum FieldType {
         STRING, NUMBER, INTEGER, BOOLEAN
     }
@@ -174,10 +178,42 @@ public class FilterArguments {
             description = "Path to custom profile configuration file (YAML)")
     private Path customProfileFile;
 
+    @CommandLine.Option(
+            names = "--mode",
+            description = "Playbook selection mode. Available values:%n" +
+                    "  @|bold ALL|@       - Run all playbooks (default).%n" +
+                    "  @|bold NEGATIVE|@  - Run only negative test scenarios (playbooks expecting 4XX responses: " +
+                    "validation, invalid values, authentication, etc). Excludes happy path playbooks.%n" +
+                    "  @|bold POSITIVE|@  - Run only positive test scenarios (playbooks expecting 2XX responses: " +
+                    "happy path, valid examples, default values). Excludes validation error playbooks.",
+            defaultValue = "ALL",
+            showDefaultValue = CommandLine.Help.Visibility.ALWAYS
+    )
+    private Mode mode;
+
 
     private Map<String, List<String>> skipPathPlaybooks = new HashMap<>();
     private Map<String, Map<String, List<String>>> skipPlaybooksForExtensionMap = new HashMap<>();
 
+
+    /**
+     * Returns if DOCHIA should run only the negative playbooks.
+     *
+     * @return true if DOCHIA should run only the negative playbooks, false otherwise
+     */
+    public boolean isOnly4xxPlaybooks() {
+        return mode == Mode.NEGATIVE;
+    }
+
+    /**
+     * Returns if DOCHIA should run only the positive playbooks.
+     *
+     * @return true if DOCHIA should run only the positive playbooks, false otherwise
+     */
+    public boolean isOnly2xxPlaybooks() {
+        return mode == Mode.POSITIVE;
+    }
+    
     /**
      * Gets the list of fields to skip during processing. If the list is not set, an empty list is returned.
      *

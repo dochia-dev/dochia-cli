@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.report;
 
+import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.args.IgnoreArguments;
 import dev.dochia.cli.core.args.ProcessingArguments;
 import dev.dochia.cli.core.args.ReportingArguments;
@@ -52,6 +53,7 @@ class TestCaseListenerTest {
     ExecutionStatisticsListener executionStatisticsListener;
     IgnoreArguments ignoreArguments;
     ReportingArguments reportingArguments;
+    FilterArguments filterArguments;
     @Inject
     GlobalContext globalContext;
     @Inject
@@ -71,7 +73,8 @@ class TestCaseListenerTest {
         Mockito.when(reportingArguments.getReportFormat()).thenReturn(List.of(ReportingArguments.ReportFormat.HTML_JS));
         executionStatisticsListener = Mockito.mock(ExecutionStatisticsListener.class);
         ignoreArguments = Mockito.mock(IgnoreArguments.class);
-        testCaseListener = new TestCaseListener(globalContext, executionStatisticsListener, testReportsGenerator, ignoreArguments, reportingArguments);
+        filterArguments = Mockito.mock(FilterArguments.class);
+        testCaseListener = new TestCaseListener(globalContext, executionStatisticsListener, testReportsGenerator, ignoreArguments, reportingArguments, filterArguments);
         globalContext.getDiscriminators().clear();
         globalContext.getPlaybooksConfiguration().clear();
         globalContext.getPostSuccessfulResponses().clear();
@@ -866,6 +869,97 @@ class TestCaseListenerTest {
         TestCaseListener testCaseListenerSpy = Mockito.spy(testCaseListener);
         testCaseListenerSpy.updateUnknownProgress(data);
         Mockito.verify(testCaseListenerSpy).notifySummaryObservers("/test");
+    }
+
+    @Test
+    void shouldContinueExecutionWhenNoFilteringEnabled() {
+        Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(false);
+        Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(false);
+
+        boolean result = testCaseListener.shouldContinueExecution(logger, ResponseCodeFamilyPredefined.FOURXX);
+
+        Assertions.assertThat(result).isTrue();
+        Mockito.verify(logger, Mockito.never()).skip(Mockito.anyString(), Mockito.any());
+    }
+
+    @Test
+    void shouldContinueExecutionWhenExpectedCodeIsNull() {
+        Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(true);
+
+        boolean result = testCaseListener.shouldContinueExecution(logger, null);
+
+        Assertions.assertThat(result).isTrue();
+        Mockito.verify(logger, Mockito.never()).skip(Mockito.anyString(), Mockito.any());
+    }
+
+    @Test
+    void shouldContinueExecutionWhen4xxFilterEnabledAnd4xxExpected() {
+        Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(true);
+        Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(false);
+
+        boolean result = testCaseListener.shouldContinueExecution(logger, ResponseCodeFamilyPredefined.FOURXX);
+
+        Assertions.assertThat(result).isTrue();
+        Mockito.verify(logger, Mockito.never()).skip(Mockito.anyString(), Mockito.any());
+    }
+
+    @Test
+    void shouldSkipExecutionWhen4xxFilterEnabledAnd2xxExpected() {
+        Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(true);
+        Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(false);
+
+        boolean result = testCaseListener.shouldContinueExecution(logger, ResponseCodeFamilyPredefined.TWOXX);
+
+        Assertions.assertThat(result).isFalse();
+        Mockito.verify(logger).skip("Skipping test - expected response code {} does not match {} (--mode enabled)",
+                ResponseCodeFamilyPredefined.TWOXX.allowedResponseCodes(), "4XX", "negative");
+    }
+
+    @Test
+    void shouldContinueExecutionWhen2xxFilterEnabledAnd2xxExpected() {
+        Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(false);
+        Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(true);
+
+        boolean result = testCaseListener.shouldContinueExecution(logger, ResponseCodeFamilyPredefined.TWOXX);
+
+        Assertions.assertThat(result).isTrue();
+        Mockito.verify(logger, Mockito.never()).skip(Mockito.anyString(), Mockito.any());
+    }
+
+    @Test
+    void shouldSkipExecutionWhen2xxFilterEnabledAnd4xxExpected() {
+        Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(false);
+        Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(true);
+
+        boolean result = testCaseListener.shouldContinueExecution(logger, ResponseCodeFamilyPredefined.FOURXX);
+
+        Assertions.assertThat(result).isFalse();
+        Mockito.verify(logger).skip("Skipping test - expected response code {} does not match {} (--mode enabled)",
+                ResponseCodeFamilyPredefined.FOURXX.allowedResponseCodes(), "2XX", "positive");
+    }
+
+    @Test
+    void shouldContinueExecutionWhen4xxFilterEnabledAndSpecific4xxExpected() {
+        Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(true);
+        Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(false);
+        ResponseCodeFamily fourZeroFour = new ResponseCodeFamilyDynamic(List.of("404"));
+
+        boolean result = testCaseListener.shouldContinueExecution(logger, fourZeroFour);
+
+        Assertions.assertThat(result).isTrue();
+        Mockito.verify(logger, Mockito.never()).skip(Mockito.anyString(), Mockito.any());
+    }
+
+    @Test
+    void shouldSkipExecutionWhen4xxFilterEnabledAnd5xxExpected() {
+        Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(true);
+        Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(false);
+
+        boolean result = testCaseListener.shouldContinueExecution(logger, ResponseCodeFamilyPredefined.FIVEXX);
+
+        Assertions.assertThat(result).isFalse();
+        Mockito.verify(logger).skip("Skipping test - expected response code {} does not match {} (--mode enabled)",
+                ResponseCodeFamilyPredefined.FIVEXX.allowedResponseCodes(), "4XX", "negative");
     }
 
     private void prepareTestCaseListenerSimpleSetup(HttpResponse build, Runnable runnable) {

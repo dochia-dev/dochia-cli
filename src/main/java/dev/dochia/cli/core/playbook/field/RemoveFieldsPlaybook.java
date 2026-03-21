@@ -3,6 +3,7 @@ package dev.dochia.cli.core.playbook.field;
 import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.args.ProcessingArguments;
 import dev.dochia.cli.core.http.HttpMethod;
+import dev.dochia.cli.core.http.ResponseCodeFamily;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.io.ServiceCaller;
 import dev.dochia.cli.core.io.ServiceData;
@@ -89,8 +90,12 @@ public class RemoveFieldsPlaybook implements TestCasePlaybook {
             testCaseListener.addScenario(logger, "Remove the following fields from request: {}", subset);
 
             boolean hasRequiredFieldsRemove = this.hasRequiredFieldsRemove(required, subset);
+            ResponseCodeFamily expectedResponseCode = ResponseCodeFamilyPredefined.getResultCodeBasedOnRequiredFieldsRemoved(hasRequiredFieldsRemove);
             testCaseListener.addExpectedResult(logger, "Should return [{}] response code as required fields [{}] removed", ResponseCodeFamilyPredefined.getExpectedWordingBasedOnRequiredFields(hasRequiredFieldsRemove));
-
+            if (!testCaseListener.shouldContinueExecution(logger, expectedResponseCode)) {
+                testCaseListener.skipTest(logger, "Test skipped due to response code filtering");
+                return;
+            }
             HttpResponse response = serviceCaller.call(ServiceData.builder().relativePath(data.getPath()).headers(data.getHeaders())
                     .payload(finalJsonPayload).queryParams(data.getQueryParams()).httpMethod(data.getMethod()).contractPath(data.getContractPath())
                     .contentType(data.getFirstRequestContentType()).pathParamsPayload(data.getPathParamsPayload()).build());

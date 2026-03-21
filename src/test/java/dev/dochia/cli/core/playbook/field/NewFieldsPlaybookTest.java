@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.playbook.field;
 
+import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.io.ServiceCaller;
@@ -9,6 +10,7 @@ import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.report.TestReportsGenerator;
 import dev.dochia.cli.core.util.JsonUtils;
 import com.google.gson.JsonElement;
+import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -116,6 +118,34 @@ class NewFieldsPlaybookTest
 
         Mockito.verify(testCaseListener, Mockito.times(0)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
     }
+
+     @Test
+     void shouldSkipTestWhen4xxFilterEnabledAndExpects2xx() {
+         FilterArguments filterArguments = Mockito.mock(FilterArguments.class);
+         Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(true);
+         Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(false);
+         ReflectionTestUtils.setField(testCaseListener, "filterArguments", filterArguments);
+
+         setup(HttpMethod.GET);
+         newFieldsPlaybook.run(data);
+
+         Mockito.verify(testCaseListener).skipTest(Mockito.any(PrettyLogger.class), Mockito.eq("Test skipped due to response code filtering"));
+         Mockito.verify(serviceCaller, Mockito.never()).call(Mockito.any());
+     }
+
+     @Test
+     void shouldSkipTestWhen2xxFilterEnabledAndExpects4xx() {
+         FilterArguments filterArguments = Mockito.mock(FilterArguments.class);
+         Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(false);
+         Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(true);
+         ReflectionTestUtils.setField(testCaseListener, "filterArguments", filterArguments);
+
+         setup(HttpMethod.POST);
+         newFieldsPlaybook.run(data);
+
+         Mockito.verify(testCaseListener).skipTest(Mockito.any(PrettyLogger.class), Mockito.eq("Test skipped due to response code filtering"));
+         Mockito.verify(serviceCaller, Mockito.never()).call(Mockito.any());
+     }
 
     private void setup(HttpMethod method) {
         httpResponse = HttpResponse.builder().body("{}").responseCode(200).build();

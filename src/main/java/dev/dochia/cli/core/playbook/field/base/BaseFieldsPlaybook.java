@@ -134,6 +134,11 @@ public abstract class BaseFieldsPlaybook implements TestCasePlaybook {
       testCaseListener.addExpectedResult(
           logger, "Should return [{}]", expectedResponseCodeBasedOnConstraints.asString());
 
+      if (!testCaseListener.shouldContinueExecution(logger, expectedResponseCodeBasedOnConstraints)) {
+        testCaseListener.skipTest(logger, "Test skipped due to response code filtering");
+        return;
+      }
+
       HttpResponse response = serviceCaller.call(serviceData);
 
       testCaseListener.reportResult(

@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.playbook.field;
 
+import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.io.ServiceCaller;
@@ -7,6 +8,7 @@ import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.report.TestCaseListener;
 import dev.dochia.cli.core.report.TestReportsGenerator;
+import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import org.junit.jupiter.api.BeforeEach;
@@ -120,6 +122,20 @@ class DuplicateKeysFieldsPlaybookTest
          Mockito.verify(testCaseListener, Mockito.times(3)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.eq(httpResponse), Mockito.eq(ResponseCodeFamilyPredefined.FOURXX));
      }
 
+     @Test
+     void shouldSkipTestWhen2xxFilterEnabledAndExpects4xx() {
+         FilterArguments filterArguments = Mockito.mock(FilterArguments.class);
+         Mockito.when(filterArguments.isOnly4xxPlaybooks()).thenReturn(false);
+         Mockito.when(filterArguments.isOnly2xxPlaybooks()).thenReturn(true);
+         ReflectionTestUtils.setField(testCaseListener, "filterArguments", filterArguments);
+
+         setup(HttpMethod.POST);
+         Mockito.when(data.getAllFieldsByHttpMethod()).thenReturn(Collections.singleton("field"));
+         duplicateKeysFieldsPlaybook.run(data);
+
+         Mockito.verify(testCaseListener).skipTest(Mockito.any(PrettyLogger.class), Mockito.eq("Test skipped due to response code filtering"));
+         Mockito.verify(serviceCaller, Mockito.never()).call(Mockito.any());
+     }
     private void setup(HttpMethod method) {
         httpResponse = HttpResponse.builder().body("{}").responseCode(200).build();
         Map<String, List<String>> responses = new HashMap<>();

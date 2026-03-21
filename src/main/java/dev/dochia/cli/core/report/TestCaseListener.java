@@ -5,6 +5,7 @@ import com.google.common.net.MediaType;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.args.IgnoreArguments;
 import dev.dochia.cli.core.args.ReportingArguments;
 import dev.dochia.cli.core.context.GlobalContext;
@@ -80,6 +81,7 @@ public class TestCaseListener {
     private final GlobalContext globalContext;
     private final IgnoreArguments ignoreArguments;
     private final ReportingArguments reportingArguments;
+    private final FilterArguments filterArguments;
     final List<TestCaseSummary> testCaseSummaryDetails = new ArrayList<>();
     final List<TestCaseExecutionSummary> testCaseExecutionDetails = new ArrayList<>();
 
@@ -98,16 +100,19 @@ public class TestCaseListener {
      * @param globalContext        the global context
      * @param er                   the listener for execution statistics
      * @param testReportsGenerator the generator for test reports
-     * @param filterArguments      the arguments for filtering test cases
+     * @param ignoreArguments      the arguments for ignoring results
      * @param reportingArguments   the arguments for reporting test cases
+     * @param filterArguments      the arguments for filtering results
      * @throws NoSuchElementException if no matching exporter is found for the specified report format
      */
-    public TestCaseListener(GlobalContext globalContext, ExecutionStatisticsListener er, TestReportsGenerator testReportsGenerator, IgnoreArguments filterArguments, ReportingArguments reportingArguments) {
+    public TestCaseListener(GlobalContext globalContext, ExecutionStatisticsListener er, TestReportsGenerator testReportsGenerator,
+                            IgnoreArguments ignoreArguments, ReportingArguments reportingArguments, FilterArguments filterArguments) {
         this.executionStatisticsListener = er;
         this.testReportsGenerator = testReportsGenerator;
-        this.ignoreArguments = filterArguments;
+        this.ignoreArguments = ignoreArguments;
         this.globalContext = globalContext;
         this.reportingArguments = reportingArguments;
+        this.filterArguments = filterArguments;
     }
 
     private static String replaceBrackets(String message, Object... params) {
@@ -856,18 +861,18 @@ public class TestCaseListener {
     /**
      * Returns the expected HTTP response code from the --fuzzConfig file
      *
-     * @param fuzzer       the name of the fuzzer
+     * @param playbook       the name of the playbook
      * @param defaultValue default value when property is not found
      * @param path         the current path being fuzzed
      * @param method       the current http method being fuzzed
      * @return the value of the property if found or null otherwise
      */
-    public ResponseCodeFamily getExpectedResponseCodeConfiguredFor(String fuzzer, String path, String method, ResponseCodeFamily defaultValue) {
+    public ResponseCodeFamily getExpectedResponseCodeConfiguredFor(String playbook, String path, String method, ResponseCodeFamily defaultValue) {
         List<String> keysToTry = new ArrayList<>();
-        keysToTry.add(fuzzer + "." + path + "." + method + ".expectedResponseCode");
-        keysToTry.add(fuzzer + "." + path + ".expectedResponseCode");
-        keysToTry.add(fuzzer + "." + method + ".expectedResponseCode");
-        keysToTry.add(fuzzer + ".expectedResponseCode");
+        keysToTry.add(playbook + "." + path + "." + method + ".expectedResponseCode");
+        keysToTry.add(playbook + "." + path + ".expectedResponseCode");
+        keysToTry.add(playbook + "." + method + ".expectedResponseCode");
+        keysToTry.add(playbook + ".expectedResponseCode");
 
         for (String key : keysToTry) {
             String value = globalContext.getExpectedResponseCodeConfigured(key);
@@ -884,6 +889,43 @@ public class TestCaseListener {
 
         logger.debug("No configuration found, using default value");
         return defaultValue;
+    }
+
+    /**
+     * Determines if playbook execution should continue based on the expected response code.
+     * This method is used to filter playbooks when --mode NEGATIVE or --mode POSITIVE is enabled.
+     * <p>
+     * When filtering is active, this method will skip execution if the expected response code
+     * doesn't match the filter criteria and log the reason for skipping.
+     * </p>
+     *
+     * @param logger               the logger to use for skip messages
+     * @param expectedResponseCode the expected response code family for the current test
+     * @return true if execution should continue, false to skip the test
+     */
+    public boolean shouldContinueExecution(PrettyLogger logger, ResponseCodeFamily expectedResponseCode) {
+        // no filtering enabled
+        if (!filterArguments.isOnly4xxPlaybooks() && !filterArguments.isOnly2xxPlaybooks()) {
+            return true;
+        }
+
+        // can't decide -> don't filter
+        if (expectedResponseCode == null) {
+            return true;
+        }
+
+        String filterType = filterArguments.isOnly2xxPlaybooks() ? "2XX" : "4XX";
+        boolean matches = expectedResponseCode.allowedResponseCodes().stream()
+                .anyMatch(code -> ResponseCodeFamily.matchAsCodeOrRange(code, filterType));
+
+        if (!matches) {
+            logger.skip("Skipping test - expected response code {} does not match {} (--mode enabled)",
+                    expectedResponseCode.allowedResponseCodes(),
+                    filterType,
+                    filterArguments.isOnly2xxPlaybooks() ? "positive" : "negative");
+        }
+
+        return matches;
     }
 
     private void recordResult(String message, Object[] params, String result, PrettyLogger logger) {
