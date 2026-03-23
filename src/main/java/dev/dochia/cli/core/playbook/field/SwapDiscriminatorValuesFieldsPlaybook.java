@@ -1,10 +1,10 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.playbook.api.FieldPlaybook;
 import dev.dochia.cli.core.context.GlobalContext;
+import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
 import dev.dochia.cli.core.playbook.executor.FieldsIteratorExecutor;
 import dev.dochia.cli.core.playbook.field.base.BaseReplaceFieldsPlaybook;
-import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.util.JsonUtils;
 import jakarta.inject.Singleton;
 
@@ -32,12 +32,15 @@ public class SwapDiscriminatorValuesFieldsPlaybook extends BaseReplaceFieldsPlay
 
     @Override
     public BaseReplaceFieldsPlaybook.BaseReplaceFieldsContext getContext(PlaybookData data) {
+        Predicate<String> isFieldInJson = field -> JsonUtils.isFieldInJson(data.getPayload(), field);
+        Predicate<String> isFieldDiscriminator = globalContext::isDiscriminator;
+
         return BaseReplaceFieldsPlaybook.BaseReplaceFieldsContext.builder()
                 .replaceWhat("discriminator")
                 .replaceWith("swapped values")
                 .skipMessage("Playbook only runs for discriminator fields")
-                .fieldFilter(globalContext::isDiscriminator)
-                .fuzzValueProducer((schema, field) -> {
+                .fieldFilter(isFieldDiscriminator.and(isFieldInJson))
+                .fuzzValueProducer((_, field) -> {
                     String oldValue = String.valueOf(JsonUtils.getVariableFromJson(data.getPayload(), field));
                     return globalContext.getDiscriminatorValues().getOrDefault(field, Set.of()).stream()
                             .filter(Predicate.not(oldValue::equals))
