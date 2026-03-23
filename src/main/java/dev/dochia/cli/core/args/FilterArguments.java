@@ -418,7 +418,7 @@ public class FilterArguments {
 
         logger.debug("Playbooks to skip for path based on extensions: {}", playbooksToSkip);
 
-        return playbooksToSkip;
+        return List.copyOf(playbooksToSkip);
     }
 
     /**

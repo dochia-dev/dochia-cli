@@ -11,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,14 +49,14 @@ class ShorthandFunctionParserTest {
         @DisplayName("Should generate current timestamp for now")
         void shouldGenerateNow() {
             String result = parser.parse("#(now)", Map.of());
-            assertThat(result).startsWith(LocalDate.now().toString());
+            assertThat(result).startsWith(LocalDate.now(ZoneOffset.UTC).toString());
         }
 
         @Test
         @DisplayName("Should generate today's date")
         void shouldGenerateToday() {
             String result = parser.parse("#(today)", Map.of());
-            assertThat(result).isEqualTo(LocalDate.now().toString());
+            assertThat(result).isEqualTo(LocalDate.now(ZoneOffset.UTC).toString());
         }
 
         @Test
@@ -135,14 +136,14 @@ class ShorthandFunctionParserTest {
         @DisplayName("Should generate todayPlus")
         void shouldGenerateTodayPlus() {
             String result = parser.parse("#(todayPlus(5))", Map.of());
-            assertThat(result).isEqualTo(LocalDate.now().plusDays(5).toString());
+            assertThat(result).isEqualTo(LocalDate.now(ZoneOffset.UTC).plusDays(5).toString());
         }
 
         @Test
         @DisplayName("Should generate todayMinus")
         void shouldGenerateTodayMinus() {
             String result = parser.parse("#(todayMinus(10))", Map.of());
-            assertThat(result).isEqualTo(LocalDate.now().minusDays(10).toString());
+            assertThat(result).isEqualTo(LocalDate.now(ZoneOffset.UTC).minusDays(10).toString());
         }
     }
 

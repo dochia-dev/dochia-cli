@@ -12,12 +12,14 @@ import org.springframework.test.util.ReflectionTestUtils;
 @QuarkusTest
 class QualityGateArgumentsTest {
 
+
     private QualityGateArguments qualityGateArguments;
 
     @BeforeEach
     void setUp() {
         qualityGateArguments = new QualityGateArguments();
     }
+
 
     @Test
     void shouldFailOnErrorsByDefault() {
@@ -79,16 +81,7 @@ class QualityGateArgumentsTest {
             "errors<5, 6, 0, true",
             "warns<10, 0, 9, false",
             "warns<10, 0, 10, true",
-            "warns<10, 0, 11, true"
-    })
-    void shouldEvaluateLessThanQualityGates(String gate, int errors, int warnings, boolean shouldFail) {
-        ReflectionTestUtils.setField(qualityGateArguments, "qualityGate", gate);
-
-        Assertions.assertThat(qualityGateArguments.shouldFailBuild(errors, warnings)).isEqualTo(shouldFail);
-    }
-
-    @ParameterizedTest
-    @CsvSource({
+            "warns<10, 0, 11, true",
             "errors>5, 6, 0, false",
             "errors>5, 5, 0, true",
             "errors>5, 4, 0, true",
@@ -96,7 +89,7 @@ class QualityGateArgumentsTest {
             "warns>10, 0, 10, true",
             "warns>10, 0, 9, true"
     })
-    void shouldEvaluateGreaterThanQualityGates(String gate, int errors, int warnings, boolean shouldFail) {
+    void shouldEvaluateLessThanAndGreaterThanQualityGates(String gate, int errors, int warnings, boolean shouldFail) {
         ReflectionTestUtils.setField(qualityGateArguments, "qualityGate", gate);
 
         Assertions.assertThat(qualityGateArguments.shouldFailBuild(errors, warnings)).isEqualTo(shouldFail);
@@ -144,27 +137,28 @@ class QualityGateArgumentsTest {
         Assertions.assertThat(qualityGateArguments.shouldFailBuild(0, 10)).isFalse();
     }
 
-    @Test
-    void shouldHandleInvalidQualityGateFormat() {
-        ReflectionTestUtils.setField(qualityGateArguments, "qualityGate", "errors=5");
+    @ParameterizedTest
+    @CsvSource({"errors=5", "invalid<5", "errors<abc", "errors<", "<5", "errors<<5"})
+    void shouldHandleInvalidQualityGate(String gate) {
+        ReflectionTestUtils.setField(qualityGateArguments, "qualityGate", gate);
 
         // Should not fail on invalid format (logs warning)
         Assertions.assertThat(qualityGateArguments.shouldFailBuild(10, 0)).isFalse();
     }
 
     @Test
-    void shouldHandleInvalidMetricName() {
-        ReflectionTestUtils.setField(qualityGateArguments, "qualityGate", "invalid<5");
+    void shouldHandleUnknownMetricInQualityGate() {
+        ReflectionTestUtils.setField(qualityGateArguments, "qualityGate", "unknownmetric<5");
 
         // Should not fail on unknown metric (logs warning)
         Assertions.assertThat(qualityGateArguments.shouldFailBuild(10, 0)).isFalse();
     }
 
     @Test
-    void shouldHandleInvalidThresholdValue() {
-        ReflectionTestUtils.setField(qualityGateArguments, "qualityGate", "errors<abc");
+    void shouldHandleInvalidOperatorInQualityGate() {
+        ReflectionTestUtils.setField(qualityGateArguments, "qualityGate", "errors=5");
 
-        // Should not fail on invalid threshold (logs warning)
+        // Should not fail on invalid operator (logs warning)
         Assertions.assertThat(qualityGateArguments.shouldFailBuild(10, 0)).isFalse();
     }
 

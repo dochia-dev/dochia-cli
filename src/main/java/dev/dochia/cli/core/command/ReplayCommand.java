@@ -160,7 +160,7 @@ public class ReplayCommand implements Runnable {
                 logger.info("Found {} failed test(s) to retry", failedIds.size());
             }
 
-            return failedIds;
+            return List.copyOf(failedIds);
         } catch (IOException e) {
             logger.error("Failed to read summary report: {}", e.getMessage());
             logger.debug("Stacktrace:", e);

@@ -553,11 +553,11 @@ class FilterArgumentsTest {
     @Test
     void shouldThrowIllegalArgumentExceptionWhenPathNotExistsInOpenAPI() {
         filterArguments.setPaths(List.of("/non-existent-path"));
-        OpenAPI spec = Mockito.mock(OpenAPI.class);
+        OpenAPI openApi = Mockito.mock(OpenAPI.class);
         Paths paths = Mockito.mock(Paths.class);
         Mockito.when(paths.containsKey("/non-existent-path")).thenReturn(false);
-        Mockito.when(spec.getPaths()).thenReturn(paths);
-        Assertions.assertThatThrownBy(() -> filterArguments.validateValidPaths(spec))
+        Mockito.when(openApi.getPaths()).thenReturn(paths);
+        Assertions.assertThatThrownBy(() -> filterArguments.validateValidPaths(openApi))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("No paths available to run. Use 'dochia list -p -c api.yml' to list available paths");
     }
@@ -565,11 +565,11 @@ class FilterArgumentsTest {
     @Test
     void shouldNotThrowExceptionWhenPathExists() {
         filterArguments.setPaths(List.of("/non-existent-path"));
-        OpenAPI spec = Mockito.mock(OpenAPI.class);
+        OpenAPI openApi = Mockito.mock(OpenAPI.class);
         Paths paths = Mockito.mock(Paths.class);
         Mockito.when(paths.containsKey("/non-existent-path")).thenReturn(true);
-        Mockito.when(spec.getPaths()).thenReturn(paths);
-        Assertions.assertThatNoException().isThrownBy(() -> filterArguments.validateValidPaths(spec));
+        Mockito.when(openApi.getPaths()).thenReturn(paths);
+        Assertions.assertThatNoException().isThrownBy(() -> filterArguments.validateValidPaths(openApi));
     }
 
     @Test

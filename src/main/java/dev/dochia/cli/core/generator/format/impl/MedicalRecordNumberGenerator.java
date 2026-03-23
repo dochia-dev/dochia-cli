@@ -33,9 +33,6 @@ public class MedicalRecordNumberGenerator implements ValidDataFormatGenerator, I
         return List.of("mrn", "medicalRecordNumber", "medical-record-number", "medical_record_number", "patient-id");
     }
 
-    public MedicalRecordNumberGenerator() {
-    }
-
     @Override
     public Object generate(Schema<?> schema) {
         int part1 = DochiaRandom.instance().nextInt(900) + 100;

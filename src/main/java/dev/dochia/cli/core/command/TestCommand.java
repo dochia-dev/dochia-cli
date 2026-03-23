@@ -345,13 +345,13 @@ public class TestCommand implements Runnable, CommandLine.IExitCodeGenerator, Au
                 AnsiUtils.blue(processingArguments.isUseSchemaExamples()),
                 AnsiUtils.blue(processingArguments.isUsePropertyExamples()),
                 AnsiUtils.blue(processingArguments.isUseResponseBodyExamples()),
-                AnsiUtils.blue((processingArguments.isUseDefaults())));
+                AnsiUtils.blue(processingArguments.isUseDefaults()));
         logger.config("self-reference-depth {}, large-strings-size {}, random-headers-number {}, limit-fuzzed-fields {}, limit-xxx-of-combinations {}",
                 AnsiUtils.blue(processingArguments.getSelfReferenceDepth()),
                 AnsiUtils.blue(processingArguments.getLargeStringsSize()),
                 AnsiUtils.blue(processingArguments.getRandomHeadersNumber()),
                 AnsiUtils.blue(processingArguments.getLimitNumberOfFields()),
-                AnsiUtils.blue((processingArguments.getLimitXxxOfCombinations())));
+                AnsiUtils.blue(processingArguments.getLimitXxxOfCombinations()));
         logger.config("How the service handles whitespaces and random unicodes: edge-spaces-strategy {}, sanitization-strategy {}",
                 AnsiUtils.blue(processingArguments.getEdgeSpacesStrategy()),
                 AnsiUtils.blue(processingArguments.getSanitizationStrategy()));

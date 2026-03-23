@@ -37,7 +37,7 @@ class VersionCheckerTest {
     void shouldNotReturnNewVersion() {
         wireMockServer.stubFor(WireMock.get("/latest").willReturn(WireMock.ok("""
                 {
-                    "tag_name": "dochia-8.0.0",
+                    "tag_name": "dochia-cli-8.0.0",
                     "body": "release notes"
                 }
                 """)));
@@ -52,7 +52,7 @@ class VersionCheckerTest {
     void shouldReturnNewVersion() {
         wireMockServer.stubFor(WireMock.get("/latest").willReturn(WireMock.ok("""
                 {
-                    "tag_name": "dochia-8.9.9",
+                    "tag_name": "dochia-cli-8.9.9",
                     "body": "release notes"
                 }
                 """)));

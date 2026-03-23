@@ -1,17 +1,13 @@
 package dev.dochia.cli.core.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.similarity.JaccardSimilarity;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -28,38 +24,6 @@ import java.util.stream.Collectors;
  * <li>areErrorsSimilar(...) uses a cheap Jaccard gate and a thresholded Levenshtein.</li>
  */
 public abstract class WordUtils {
-
-
-    // --- thresholds (keep aligned with your previous logic) ---
-    public static final double COMBINED_THRESHOLD = 0.85d;
-    public static final double JACCARD_THRESHOLD = 0.70d;  // token gate
-
-    private static final JaccardSimilarity JS = new JaccardSimilarity();
-
-    // --- caches ---
-    private static final Map<String, String> NORMALIZED_CACHE = new ConcurrentHashMap<>(8192);
-
-    // --- precompiled patterns (performance and clarity) ---
-    private static final Pattern TS = Pattern.compile(
-            "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+\\-]\\d{2}:\\d{2})?");
-    private static final Pattern UUID = Pattern.compile(
-            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
-    private static final Pattern HASH = Pattern.compile("[0-9a-fA-F]{32,}");
-    private static final Pattern URL = Pattern.compile("(?:file|https?|ftp)://\\S+");
-    private static final Pattern PATH = Pattern.compile("(?:[A-Za-z]:)?(?:/|\\\\)[\\w .\\-/_]+");
-    private static final Pattern DIGITS = Pattern.compile("\\b\\d+\\b");
-    // Base64-like / URL-safe token chunks
-    private static final Pattern BASE64ISH = Pattern.compile("\\b[A-Za-z0-9+/\\-_]{16,}={0,2}\\b");
-
-    // Uppercase/ID-like tokens (≥3 chars) – replaced with TOKEN unless in whitelist
-    private static final Pattern UPPER_TOKEN = Pattern.compile("\\b[A-Z][A-Z0-9_\\-]{2,}\\b");
-    private static final Set<String> UPPER_WHITELIST = Set.of(
-            "GET", "PUT", "POST", "PATCH", "DELETE", "HEAD", "OPTIONS",
-            "TRUE", "FALSE", "NULL",
-            "INFO", "WARN", "ERROR", "DEBUG",
-            "HTTP", "HTTPS", "TLS", "SSL",
-            "JSON", "XML", "CSV", "UTC"
-    );
 
     private static final Set<String> ERROR_KEYWORDS =
             Set.of(
@@ -257,10 +221,6 @@ public abstract class WordUtils {
                     "DivideByZero",
                     "DecodingError",
                     "KeyDecodingError");
-
-    // Remove Zs/Cs/marks and odd spaces
-    private static final Pattern ZCMS = Pattern.compile("[\\p{Z}\\p{C}\\p{So}\\p{M}\\p{Sk}]+");
-    private static final Pattern MULTI_SPACE = Pattern.compile("\\s{2,}");
 
     private static final List<String> DELIMITERS = List.of("", "-", "_");
 
