@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -249,7 +250,7 @@ public class PlaybookDataFactory {
         List<String> reqSchemaNames = this.getCurrentRequestSchemaName(mediaType);
         logger.debug("Request schema names identified for path {}, method {}: {}", path, method, reqSchemaNames);
 
-        KeyValuePair<String, Schema<?>> paramsSchema = this.createSyntheticSchemaForGet(operation);
+        KeyValuePair<String, Schema<?>> paramsSchema = this.createSyntheticSchemaForGet(item, operation);
         //we need this in order to be able to generate path params if not supplied by the user
         String pathParamsExample = this.getRequestPayloadsSamples(null, paramsSchema.getKey()).examplePayloads().getFirst();
         Set<String> queryParams = this.extractQueryParams(paramsSchema.getValue());
@@ -268,7 +269,7 @@ public class PlaybookDataFactory {
                     .map(payload -> PlaybookData.builder()
                             .method(method).path(path)
                             .contractPath(path)
-                            .headers(this.extractHeaders(operation))
+                            .headers(this.extractHeaders(item, operation))
                             .payload(payload)
                             .responseCodes(operation.getResponses().keySet())
                             .reqSchema(globalContext.getSchemaFromReference(reqSchemaName))
@@ -346,7 +347,7 @@ public class PlaybookDataFactory {
             return Collections.emptyList();
         }
 
-        KeyValuePair<String, Schema<?>> syntheticSchema = createSyntheticSchemaForGet(operation);
+        KeyValuePair<String, Schema<?>> syntheticSchema = createSyntheticSchemaForGet(item, operation);
         Set<String> queryParams = this.extractQueryParams(syntheticSchema.getValue());
         logger.debug("Query params for path {}, method {}: {}", path, method, queryParams);
 
@@ -362,7 +363,7 @@ public class PlaybookDataFactory {
                 .map(payload -> PlaybookData.builder()
                         .method(method).path(path)
                         .contractPath(path)
-                        .headers(this.extractHeaders(operation))
+                        .headers(this.extractHeaders(item, operation))
                         .payload(payload)
                         .responseCodes(operation.getResponses().keySet())
                         .reqSchema(syntheticSchema.getValue())
@@ -403,11 +404,54 @@ public class PlaybookDataFactory {
         return isNotIncluded || isSkipped;
     }
 
-    private KeyValuePair<String, Schema<?>> createSyntheticSchemaForGet(Operation operation) {
-        Schema<?> syntheticSchema = this.createSyntheticSchemaForGet(operation.getParameters());
+    private KeyValuePair<String, Schema<?>> createSyntheticSchemaForGet(PathItem pathItem, Operation operation) {
+        List<Parameter> mergedParameters = mergeParameters(pathItem, operation);
+        Schema<?> syntheticSchema = this.createSyntheticSchemaForGet(mergedParameters);
         globalContext.getSchemaMap().put(SYNTH_SCHEMA_NAME + operation.getOperationId(), syntheticSchema);
 
         return new KeyValuePair<>(SYNTH_SCHEMA_NAME + operation.getOperationId(), syntheticSchema);
+    }
+
+    /**
+     * Merges path-level parameters with operation-level parameters.
+     * Per the OpenAPI specification, parameters defined at the path item level are inherited by all operations
+     * on that path, unless overridden at the operation level. A parameter is considered overridden when
+     * the operation defines a parameter with the same {@code name} and {@code in} values.
+     *
+     * @param pathItem  the current PathItem which may contain path-level parameters
+     * @param operation the current Operation which may contain operation-level parameters
+     * @return a merged list of parameters with operation-level parameters taking precedence
+     */
+    List<Parameter> mergeParameters(PathItem pathItem, Operation operation) {
+        List<Parameter> operationParams = Optional.ofNullable(operation.getParameters()).orElse(Collections.emptyList());
+        List<Parameter> pathParams = Optional.ofNullable(pathItem.getParameters()).orElse(Collections.emptyList());
+
+        if (pathParams.isEmpty()) {
+            return operationParams;
+        }
+
+        Set<String> operationParamKeys = operationParams.stream()
+                .map(this::parameterKey)
+                .collect(Collectors.toSet());
+
+        List<Parameter> merged = new ArrayList<>(operationParams);
+        for (Parameter pathParam : pathParams) {
+            if (!operationParamKeys.contains(parameterKey(pathParam))) {
+                merged.add(pathParam);
+            }
+        }
+        return merged;
+    }
+
+    private String parameterKey(Parameter parameter) {
+        if (parameter.get$ref() != null) {
+            Parameter resolved = (Parameter) globalContext.getObjectFromPathsReference(parameter.get$ref());
+            if (resolved != null) {
+                return (resolved.getName() + "|" + resolved.getIn()).toLowerCase(Locale.ROOT);
+            }
+            return parameter.get$ref().toLowerCase(Locale.ROOT);
+        }
+        return (parameter.getName() + "|" + parameter.getIn()).toLowerCase(Locale.ROOT);
     }
 
     Set<Object> extractExamples(MediaType mediaType) {
@@ -724,18 +768,17 @@ public class PlaybookDataFactory {
     }
 
 
-    private Set<DochiaHeader> extractHeaders(Operation operation) {
+    private Set<DochiaHeader> extractHeaders(PathItem pathItem, Operation operation) {
         Set<DochiaHeader> headers = new HashSet<>();
-        if (operation.getParameters() != null) {
-            for (Parameter param : operation.getParameters()) {
-                if ("header".equalsIgnoreCase(param.getIn())) {
-                    this.inlineSchemaIfNeeded(param);
-                    try {
-                        headers.add(DochiaHeader.fromHeaderParameter(param));
-                    } catch (IllegalArgumentException _) {
-                        globalContext.recordError("A valid string could not be generated for the header '" + param.getName() + "' using the pattern '" + param.getSchema().getPattern() + "'. Please consider either changing the pattern or simplifying it.");
-                        headers.add(DochiaHeader.from(param.getName(), OpenAPIModelGenerator.DEFAULT_STRING_WHEN_GENERATION_FAILS, param.getRequired(), Optional.ofNullable(param.getSchema()).map(Schema::getFormat).orElse(null)));
-                    }
+        List<Parameter> mergedParameters = mergeParameters(pathItem, operation);
+        for (Parameter param : mergedParameters) {
+            if ("header".equalsIgnoreCase(param.getIn())) {
+                this.inlineSchemaIfNeeded(param);
+                try {
+                    headers.add(DochiaHeader.fromHeaderParameter(param));
+                } catch (IllegalArgumentException _) {
+                    globalContext.recordError("A valid string could not be generated for the header '" + param.getName() + "' using the pattern '" + param.getSchema().getPattern() + "'. Please consider either changing the pattern or simplifying it.");
+                    headers.add(DochiaHeader.from(param.getName(), OpenAPIModelGenerator.DEFAULT_STRING_WHEN_GENERATION_FAILS, param.getRequired(), Optional.ofNullable(param.getSchema()).map(Schema::getFormat).orElse(null)));
                 }
             }
         }

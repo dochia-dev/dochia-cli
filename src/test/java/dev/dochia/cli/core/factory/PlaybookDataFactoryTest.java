@@ -15,6 +15,7 @@ import dev.dochia.cli.core.model.DochiaHeader;
 import dev.dochia.cli.core.model.NoMediaType;
 import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.openapi.OpenAPIModelGenerator;
+import dev.dochia.cli.core.util.DochiaRandom;
 import dev.dochia.cli.core.util.JsonUtils;
 import dev.dochia.cli.core.util.OpenApiUtils;
 import io.quarkus.test.junit.QuarkusTest;
@@ -60,6 +61,7 @@ class PlaybookDataFactoryTest {
 
     @BeforeEach
     void setup() {
+        DochiaRandom.initRandom(0);
         filesArguments = Mockito.mock(FilesArguments.class);
         processingArguments = Mockito.mock(ProcessingArguments.class);
         filterArguments = Mockito.mock(FilterArguments.class);
@@ -1195,5 +1197,137 @@ class PlaybookDataFactoryTest {
         Assertions.assertThat(dataList.getFirst().getMethod()).isEqualTo(HttpMethod.POST);
         String example = dataList.getFirst().getPayload();
         Assertions.assertThat(example).contains("title", "deadlineDate", "locationId", "messageTemplateId", "vacancyTemplateId");
+    }
+
+    @Test
+    void shouldPickUpPathLevelParamsForGet() throws Exception {
+        List<PlaybookData> dataList = setupPlaybookData("/v1/tenants/{tenant_id}/resources/{id}",
+                "src/test/resources/petstore-path-level-params.json");
+        List<PlaybookData> getData = dataList.stream().filter(d -> d.getMethod() == HttpMethod.GET).toList();
+
+        Assertions.assertThat(getData).isNotEmpty();
+        PlaybookData first = getData.getFirst();
+        Assertions.assertThat(first.getPayload()).contains("tenant_id").contains("id");
+    }
+
+    @Test
+    void shouldPickUpPathLevelParamsForDelete() throws Exception {
+        List<PlaybookData> dataList = setupPlaybookData("/v1/tenants/{tenant_id}/resources/{id}",
+                "src/test/resources/petstore-path-level-params.json");
+        List<PlaybookData> deleteData = dataList.stream().filter(d -> d.getMethod() == HttpMethod.DELETE).toList();
+
+        Assertions.assertThat(deleteData).isNotEmpty();
+        PlaybookData first = deleteData.getFirst();
+        Assertions.assertThat(first.getPayload()).contains("tenant_id").contains("id");
+    }
+
+    @Test
+    void shouldPickUpPathLevelParamsForPut() throws Exception {
+        List<PlaybookData> dataList = setupPlaybookData("/v1/tenants/{tenant_id}/resources/{id}",
+                "src/test/resources/petstore-path-level-params.json");
+        List<PlaybookData> putData = dataList.stream().filter(d -> d.getMethod() == HttpMethod.PUT).toList();
+
+        Assertions.assertThat(putData).isNotEmpty();
+        PlaybookData first = putData.getFirst();
+        Assertions.assertThat(first.getPathParamsPayload()).contains("tenant_id").contains("id");
+    }
+
+    @Test
+    void shouldPickUpPathLevelHeaders() throws Exception {
+        List<PlaybookData> dataList = setupPlaybookData("/v1/tenants/{tenant_id}/resources/{id}",
+                "src/test/resources/petstore-path-level-params.json");
+        List<PlaybookData> getData = dataList.stream().filter(d -> d.getMethod() == HttpMethod.GET).toList();
+
+        Assertions.assertThat(getData).isNotEmpty();
+        Set<DochiaHeader> headers = getData.getFirst().getHeaders();
+        Assertions.assertThat(headers).anyMatch(h -> "X-Tenant-Header".equals(h.getName()));
+    }
+
+    @Test
+    void shouldOverridePathLevelParamWithOperationLevelParam() throws Exception {
+        List<PlaybookData> dataList = setupPlaybookData("/v1/tenants/{tenant_id}/resources/{id}/details",
+                "src/test/resources/petstore-path-level-params.json");
+        List<PlaybookData> getData = dataList.stream().filter(d -> d.getMethod() == HttpMethod.GET).toList();
+
+        Assertions.assertThat(getData).isNotEmpty();
+        PlaybookData first = getData.getFirst();
+        // The operation overrides "id" (path param) with uuid format; tenant_id inherited from path level
+        Assertions.assertThat(first.getPayload()).contains("tenant_id").contains("id");
+        // Also has the operation-level query param "verbose"
+        Assertions.assertThat(first.getPayload()).contains("verbose");
+    }
+
+    @Test
+    void shouldMergeParametersWhenPathItemHasParamsAndOperationHasNone() {
+        PathItem pathItem = new PathItem();
+        Parameter pathParam = new Parameter().name("tenant_id").in("path");
+        pathItem.setParameters(List.of(pathParam));
+
+        Operation operation = new Operation();
+
+        List<Parameter> merged = playbookDataFactory.mergeParameters(pathItem, operation);
+        Assertions.assertThat(merged).hasSize(1);
+        Assertions.assertThat(merged.getFirst().getName()).isEqualTo("tenant_id");
+    }
+
+    @Test
+    void shouldMergeParametersWhenOperationHasParamsAndPathItemHasNone() {
+        PathItem pathItem = new PathItem();
+
+        Operation operation = new Operation();
+        Parameter opParam = new Parameter().name("verbose").in("query");
+        operation.setParameters(List.of(opParam));
+
+        List<Parameter> merged = playbookDataFactory.mergeParameters(pathItem, operation);
+        Assertions.assertThat(merged).hasSize(1);
+        Assertions.assertThat(merged.getFirst().getName()).isEqualTo("verbose");
+    }
+
+    @Test
+    void shouldMergeParametersOperationOverridesPathLevel() {
+        PathItem pathItem = new PathItem();
+        Parameter pathParam = new Parameter().name("id").in("path").required(true);
+        pathParam.setSchema(new Schema<>().type("integer"));
+        pathItem.setParameters(List.of(pathParam));
+
+        Operation operation = new Operation();
+        Parameter opParam = new Parameter().name("id").in("path").required(true);
+        opParam.setSchema(new Schema<>().type("string").format("uuid"));
+        operation.setParameters(List.of(opParam));
+
+        List<Parameter> merged = playbookDataFactory.mergeParameters(pathItem, operation);
+        Assertions.assertThat(merged).hasSize(1);
+        Assertions.assertThat(merged.getFirst().getSchema().getFormat()).isEqualTo("uuid");
+    }
+
+    @Test
+    void shouldMergeParametersCombineNonOverlapping() {
+        PathItem pathItem = new PathItem();
+        Parameter pathParam1 = new Parameter().name("tenant_id").in("path");
+        Parameter pathParam2 = new Parameter().name("id").in("path");
+        pathItem.setParameters(List.of(pathParam1, pathParam2));
+
+        Operation operation = new Operation();
+        Parameter opParam = new Parameter().name("verbose").in("query");
+        operation.setParameters(List.of(opParam));
+
+        List<Parameter> merged = playbookDataFactory.mergeParameters(pathItem, operation);
+        Assertions.assertThat(merged).hasSize(3);
+        Assertions.assertThat(merged).extracting(Parameter::getName)
+                .containsExactlyInAnyOrder("verbose", "tenant_id", "id");
+    }
+
+    @Test
+    void shouldMergeParametersSameNameDifferentIn() {
+        PathItem pathItem = new PathItem();
+        Parameter pathParam = new Parameter().name("id").in("path");
+        pathItem.setParameters(List.of(pathParam));
+
+        Operation operation = new Operation();
+        Parameter opParam = new Parameter().name("id").in("query");
+        operation.setParameters(List.of(opParam));
+
+        List<Parameter> merged = playbookDataFactory.mergeParameters(pathItem, operation);
+        Assertions.assertThat(merged).hasSize(2);
     }
 }
