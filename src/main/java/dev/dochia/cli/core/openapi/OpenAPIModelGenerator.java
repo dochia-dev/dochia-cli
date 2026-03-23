@@ -6,7 +6,9 @@ import dev.dochia.cli.core.generator.format.api.ValidDataFormat;
 import dev.dochia.cli.core.generator.simple.StringGenerator;
 import dev.dochia.cli.core.util.CommonUtils;
 import dev.dochia.cli.core.util.DochiaModelUtils;
+import dev.dochia.cli.core.util.DochiaRandom;
 import dev.dochia.cli.core.util.JsonUtils;
+import dev.dochia.cli.core.util.WordUtils;
 import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.github.ludovicianul.prettylogger.PrettyLoggerFactory;
 import io.swagger.v3.core.util.Json;
@@ -191,7 +193,7 @@ public class OpenAPIModelGenerator {
 
         if (example == null) {
             example = JsonUtils.serializeWithDepthAwareSerializer(generatedExample);
-            globalContext.recordError("Generate sample it's too large to be processed in memory. dochia used a limiting depth serializer which might not include all expected fields. Re-run dochia with a smaller --selfReferenceDepth value, like --selfReferenceDepth 2");
+            globalContext.recordError("Generate sample it's too large to be processed in memory. DOCHIA used a limiting depth serializer which might not include all expected fields. Re-run DOCHIA with a smaller --selfReferenceDepth value, like --selfReferenceDepth 2");
         }
         return example;
     }
@@ -312,7 +314,13 @@ public class OpenAPIModelGenerator {
 
         recordRequestSchema(currentProperty, schema);
 
-        if (schema.getProperties() != null && !schema.getProperties().isEmpty()) {
+        boolean hasOneOfOrAnyOf = DochiaModelUtils.hasOneOf(schema) || DochiaModelUtils.hasAnyOf(schema);
+        boolean hasPropertiesAndComposed = (schema.getProperties() != null && !schema.getProperties().isEmpty()) && hasOneOfOrAnyOf;
+
+        List<Map<String, Object>> parentPropertyExamples = new ArrayList<>();
+        if (hasPropertiesAndComposed) {
+            parentPropertyExamples = traverseSchemaProperties(schema, name, true); // skip discriminator
+        } else if (schema.getProperties() != null && !schema.getProperties().isEmpty()) {
             examples.addAll(traverseSchemaProperties(schema, name));
         }
 
@@ -321,9 +329,8 @@ public class OpenAPIModelGenerator {
             examples = combineExampleLists(examples, allOfExamples);
         }
 
-        if (DochiaModelUtils.isAnyOf(schema) || DochiaModelUtils.isOneOf(schema)) {
-            List<Map<String, Object>> oneOfAnyOfExamples = resolveAnyOfOneOfSchemaProperties(name, schema);
-            examples = combineExampleLists(examples, oneOfAnyOfExamples);
+        if (hasOneOfOrAnyOf) {
+            examples = handleAnyOrOneOf(name, schema, parentPropertyExamples, examples);
         }
 
         if (DochiaModelUtils.isArraySchema(schema)) {
@@ -346,6 +353,28 @@ public class OpenAPIModelGenerator {
         return examples;
     }
 
+    private List<Map<String, Object>> handleAnyOrOneOf(String name, Schema schema, List<Map<String, Object>> parentPropertyExamples, List<Map<String, Object>> examples) {
+        List<Map<String, Object>> oneOfAnyOfExamples = resolveAnyOfOneOfSchemaProperties(name, schema);
+
+        if (!parentPropertyExamples.isEmpty()) {
+            List<Map<String, Object>> mergedExamples = new ArrayList<>();
+            for (Map<String, Object> oneOfExample : oneOfAnyOfExamples) {
+                for (Map<String, Object> parentExample : parentPropertyExamples) {
+                    Map<String, Object> merged = new HashMap<>(oneOfExample);
+
+                    for (Map.Entry<String, Object> entry : parentExample.entrySet()) {
+                        merged.putIfAbsent(entry.getKey(), entry.getValue());
+                    }
+                    mergedExamples.add(merged);
+                }
+            }
+            examples = combineExampleLists(examples, mergedExamples);
+        } else {
+            examples = combineExampleLists(examples, oneOfAnyOfExamples);
+        }
+        return examples;
+    }
+
     private Map formatExampleAsMap(Object fromExample) {
         if (!(fromExample instanceof Map)) {
             Map<String, Object> example = new HashMap<>();
@@ -356,7 +385,11 @@ public class OpenAPIModelGenerator {
     }
 
     private List<Map<String, Object>> traverseSchemaProperties(Schema schema, String currentSchemaName) {
-        logger.trace("traverseSchemaProperties for schema {}", currentSchemaName);
+        return traverseSchemaProperties(schema, currentSchemaName, false);
+    }
+
+    private List<Map<String, Object>> traverseSchemaProperties(Schema schema, String currentSchemaName, boolean skipDiscriminator) {
+        logger.trace("traverseSchemaProperties for schema {}, skipDiscriminator: {}", currentSchemaName, skipDiscriminator);
         List<Map<String, Object>> examples = new ArrayList<>();
 
         Set<Map.Entry<String, Schema>> properties = schema.getProperties().entrySet();
@@ -370,6 +403,14 @@ public class OpenAPIModelGenerator {
             if (currentPropertiesDepth > totalDepth) {
                 continue;
             }
+
+            // Skip discriminator property if requested (when parent has oneOf/anyOf)
+            if (skipDiscriminator && schema.getDiscriminator() != null &&
+                    schema.getDiscriminator().getPropertyName().equalsIgnoreCase(propertyName)) {
+                currentPropertiesDepth--;
+                continue;
+            }
+
             List<Object> propertyExamples;
             if (schema.getDiscriminator() != null && schema.getDiscriminator().getPropertyName().equalsIgnoreCase(propertyName)) {
                 propertyExamples = List.of(matchToEnumOrEmpty(currentSchemaName, property, propertyName));
@@ -394,6 +435,19 @@ public class OpenAPIModelGenerator {
         keepOriginalSchema(propertyName, schema);
         mergeRequiredProperties(schema.getAllOf());
 
+        // Check if any parent schema in allOf has a discriminator
+        String discriminatorPropertyName = null;
+        for (Object allOfSchemaObj : schema.getAllOf()) {
+            Schema allOfSchema = (Schema) allOfSchemaObj;
+            Schema resolvedSchema = allOfSchema.get$ref() != null
+                    ? globalContext.getSchemaFromReference(allOfSchema.get$ref())
+                    : allOfSchema;
+            if (resolvedSchema != null && resolvedSchema.getDiscriminator() != null) {
+                discriminatorPropertyName = resolvedSchema.getDiscriminator().getPropertyName();
+                break;
+            }
+        }
+
         List<Schema> schemas = schema.getAllOf().stream().filter(iteratingSchema -> !isNullSchema((Schema<?>) iteratingSchema)).toList();
         for (Schema subSchema : schemas) {
             List<Map<String, Object>> subExamples = generateExamplesForSchema(propertyName, subSchema);
@@ -416,6 +470,35 @@ public class OpenAPIModelGenerator {
             examples.addAll(interimExamples.stream()
                     .limit(Math.min(interimExamples.size(), LIMIT_OF_EXAMPLES))
                     .toList());
+        }
+
+        // If a discriminator was found, ensure it's populated with the correct value
+        if (discriminatorPropertyName != null && !examples.isEmpty()) {
+            // Detect casing convention and convert schema name accordingly
+            Schema parentWithDiscriminator = null;
+            for (Object allOfSchemaObj : schema.getAllOf()) {
+                Schema allOfSchema = (Schema) allOfSchemaObj;
+                Schema resolvedSchema = allOfSchema.get$ref() != null
+                        ? globalContext.getSchemaFromReference(allOfSchema.get$ref())
+                        : allOfSchema;
+                if (resolvedSchema != null && resolvedSchema.getDiscriminator() != null) {
+                    parentWithDiscriminator = resolvedSchema;
+                    break;
+                }
+            }
+
+            String detectedCasing = parentWithDiscriminator != null
+                    ? detectCasingConvention(parentWithDiscriminator, discriminatorPropertyName)
+                    : "UPPER_SNAKE_CASE";
+            String discriminatorValue = WordUtils.convertToDetectedCasing(propertyName, detectedCasing);
+
+            for (Map<String, Object> example : examples) {
+                // Only set if not already set or if it's empty
+                Object currentValue = example.get(discriminatorPropertyName);
+                if (currentValue == null || currentValue.toString().isEmpty()) {
+                    example.put(discriminatorPropertyName, discriminatorValue);
+                }
+            }
         }
 
         return examples;
@@ -455,15 +538,18 @@ public class OpenAPIModelGenerator {
         mapDiscriminator(schema, Optional.ofNullable(schema.getAnyOf()).orElse(schema.getOneOf()));
         List<Map<String, Object>> examples = new ArrayList<>();
         List<Schema> schemas = DochiaModelUtils.getInterfaces(schema).stream().filter(iteratingSchema -> !isNullSchema(iteratingSchema)).toList();
-        String previousPropertyName = propertyName;
 
         for (Schema subSchema : schemas) {
-            propertyName = previousPropertyName;
             if (hasValidRef(subSchema)) {
                 Schema resolved = globalContext.getSchemaFromReference(subSchema.get$ref());
                 if (resolved != null) {
-                    propertyName = DochiaModelUtils.getSimpleRefUsingOAT(subSchema.get$ref());
-                    examples.addAll(generateExamplesForSchema(propertyName, resolved));
+                    String schemaName = DochiaModelUtils.getSimpleRefUsingOAT(subSchema.get$ref());
+                    List<Map<String, Object>> variantExamples = generateExamplesForSchema(schemaName, resolved);
+                    for (Map<String, Object> variantExample : variantExamples) {
+                        Map<String, Object> wrappedExample = new HashMap<>();
+                        wrappedExample.put(propertyName, variantExample.getOrDefault(schemaName, variantExample));
+                        examples.add(wrappedExample);
+                    }
                 }
             } else {
                 examples.addAll(generateExamplesForSchema(propertyName, subSchema));
@@ -621,6 +707,29 @@ public class OpenAPIModelGenerator {
 
     private Object matchToEnumOrEmpty(String name, Schema innerSchema, String propertyName) {
         Schema resolveInnerSchema = Optional.ofNullable(globalContext.getSchemaFromReference(innerSchema.get$ref())).orElse(innerSchema);
+
+        // First, try to find the discriminator value using the mapping (schema name -> enum value)
+        String resultFromMapping = globalContext.getDiscriminators()
+                .stream()
+                .filter(discriminator -> discriminator.getPropertyName().equalsIgnoreCase(propertyName) && discriminator.getMapping() != null)
+                .findFirst()
+                .map(discriminator ->
+                        // Find the enum value that maps to this schema name
+                        discriminator.getMapping().entrySet().stream()
+                                .filter(entry -> {
+                                    String schemaRef = entry.getValue();
+                                    String schemaName = DochiaModelUtils.getSimpleRef(schemaRef);
+                                    return schemaName.equalsIgnoreCase(name);
+                                })
+                                .map(Map.Entry::getKey)
+                                .findFirst()
+                                .orElse(""))
+                .orElse("");
+
+        if (!resultFromMapping.isEmpty()) {
+            return resultFromMapping;
+        }
+
         String result = Optional.ofNullable(resolveInnerSchema.getEnum())
                 .orElse(List.of(""))
                 .stream()
@@ -630,7 +739,7 @@ public class OpenAPIModelGenerator {
                 .orElse("")
                 .toString();
         if (result.isEmpty()) {
-            return globalContext.getDiscriminators()
+            result = globalContext.getDiscriminators()
                     .stream()
                     .filter(discriminator -> discriminator.getPropertyName().equalsIgnoreCase(propertyName) && discriminator.getMapping() != null)
                     .findFirst()
@@ -639,8 +748,35 @@ public class OpenAPIModelGenerator {
                     .findFirst()
                     .orElse("");
         }
+
+        // If still empty, try to infer from schema name (for allOf pattern without explicit mapping)
+        // Detect casing convention from enum values or existing discriminator mappings
+        if (result.isEmpty() && name != null) {
+            String detectedCasing = detectCasingConvention(resolveInnerSchema, propertyName);
+            result = WordUtils.convertToDetectedCasing(name, detectedCasing);
+        }
+
         return result;
     }
+
+    private String detectCasingConvention(Schema schema, String propertyName) {
+        // Try to detect from enum values first
+        List<Object> enumValues = Optional.ofNullable(schema.getEnum()).orElse(List.of());
+        if (!enumValues.isEmpty()) {
+            String firstEnum = enumValues.getFirst().toString();
+            return WordUtils.detectCasingFromString(firstEnum);
+        }
+
+        // Try to detect from discriminator mappings
+        Optional<String> mappingValue = globalContext.getDiscriminators()
+                .stream()
+                .filter(discriminator -> discriminator.getPropertyName().equalsIgnoreCase(propertyName) && discriminator.getMapping() != null)
+                .findFirst()
+                .flatMap(discriminator -> discriminator.getMapping().keySet().stream().findFirst());
+
+        return mappingValue.map(WordUtils::detectCasingFromString).orElse("UPPER_SNAKE_CASE");
+    }
+
 
     /**
      * Keep the original schema in the global context for future reference. This is useful when using cross path references
@@ -756,7 +892,7 @@ public class OpenAPIModelGenerator {
                     .toList();
 
             if (!nonNullEnumValues.isEmpty()) {
-                return nonNullEnumValues.get(CommonUtils.random().nextInt(nonNullEnumValues.size()));
+                return nonNullEnumValues.get(DochiaRandom.instance().nextInt(nonNullEnumValues.size()));
             }
 
             return enumValues.getFirst(); // fallback if all were null

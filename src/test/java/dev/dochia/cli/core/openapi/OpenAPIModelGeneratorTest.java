@@ -3,6 +3,7 @@ package dev.dochia.cli.core.openapi;
 import dev.dochia.cli.core.args.ProcessingArguments;
 import dev.dochia.cli.core.context.GlobalContext;
 import dev.dochia.cli.core.generator.format.api.ValidDataFormat;
+import dev.dochia.cli.core.util.DochiaRandom;
 import dev.dochia.cli.core.util.JsonUtils;
 import dev.dochia.cli.core.util.OpenApiUtils;
 import io.quarkus.test.junit.QuarkusTest;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import jakarta.inject.Inject;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -36,6 +38,11 @@ class OpenAPIModelGeneratorTest {
     ValidDataFormat validDataFormat;
     @Inject
     ProcessingArguments processingArguments;
+
+    @BeforeEach
+    void setup() {
+        DochiaRandom.initRandom(0);
+    }
 
     @Test
     void givenASimpleOpenAPIContract_whenGeneratingAPayload_thenTheExampleIsProperlyGenerated() throws Exception {
@@ -171,6 +178,69 @@ class OpenAPIModelGeneratorTest {
         OpenAPIModelGenerator generator = setupPayloadGenerator();
         List<String> example = generator.generate(null);
         Assertions.assertThat(example).isEmpty();
+    }
+
+    @Test
+    void shouldGenerateOneOfWithParentPropertiesAndDiscriminator() throws Exception {
+        OpenAPIParser openAPIV3Parser = new OpenAPIParser();
+        ParseOptions options = new ParseOptions();
+        options.setResolve(true);
+        options.setFlatten(true);
+        OpenAPI openAPI = openAPIV3Parser.readContents(Files.readString(Paths.get("src/test/resources/test-oneof-schema.yaml")), null, options).getOpenAPI();
+        Map<String, Schema> schemas = OpenApiUtils.getSchemas(openAPI, List.of("application/json"));
+        globalContext.getSchemaMap().putAll(schemas);
+        OpenAPIModelGenerator generator = new OpenAPIModelGenerator(globalContext, validDataFormat, new ProcessingArguments.ExamplesFlags(true, true, true, true), 3, true, 2);
+
+        List<String> examples = generator.generate("AtomicValue");
+
+        Assertions.assertThat(examples).hasSize(2);
+
+        String firstExample = examples.getFirst();
+        Assertions.assertThat(firstExample).contains("\"kind\"");
+        Assertions.assertThat(firstExample).contains("\"value\"");
+        Assertions.assertThat(firstExample).contains("\"bubulel\"");
+
+        String kindValue = JsonUtils.getVariableFromJson(firstExample, "$.kind").toString();
+        Assertions.assertThat(kindValue).isNotEmpty().isNotEqualTo("");
+
+        String bubulel1 = JsonUtils.getVariableFromJson(firstExample, "$.bubulel").toString();
+        Assertions.assertThat(bubulel1).isNotEmpty();
+
+        String secondExample = examples.get(1);
+        Assertions.assertThat(secondExample).contains("\"kind\"");
+        Assertions.assertThat(secondExample).contains("\"value\"");
+        Assertions.assertThat(secondExample).contains("\"bubulel\"");
+
+        String kindValue2 = JsonUtils.getVariableFromJson(secondExample, "$.kind").toString();
+        Assertions.assertThat(kindValue2).isNotEmpty().isNotEqualTo("");
+
+        String bubulel2 = JsonUtils.getVariableFromJson(secondExample, "$.bubulel").toString();
+        Assertions.assertThat(bubulel2).isNotEmpty();
+    }
+
+    @Test
+    void shouldGenerateAllOfWithDiscriminatorParent() throws Exception {
+        OpenAPIParser openAPIV3Parser = new OpenAPIParser();
+        ParseOptions options = new ParseOptions();
+        options.setResolve(true);
+        options.setFlatten(true);
+        OpenAPI openAPI = openAPIV3Parser.readContents(Files.readString(Paths.get("src/test/resources/test-allof-discriminator-schema.yaml")), null, options).getOpenAPI();
+        Map<String, Schema> schemas = OpenApiUtils.getSchemas(openAPI, List.of("application/json"));
+        globalContext.getSchemaMap().putAll(schemas);
+        OpenAPIModelGenerator generator = new OpenAPIModelGenerator(globalContext, validDataFormat, new ProcessingArguments.ExamplesFlags(true, true, true, true), 3, true, 2);
+
+        // Generate examples for DecimalValue directly to verify discriminator is populated
+        List<String> decimalExamples = generator.generate("DecimalValue");
+
+        Assertions.assertThat(decimalExamples).isNotEmpty();
+        String decimalExample = decimalExamples.getFirst();
+
+        // Verify DecimalValue has kind field populated with correct discriminator value
+        Assertions.assertThat(decimalExample).contains("\"kind\"");
+        Object kindValue = JsonUtils.getVariableFromJson(decimalExample, "$.kind");
+        Assertions.assertThat(kindValue).isNotNull();
+        Assertions.assertThat(kindValue.toString()).isNotEmpty().isNotEqualTo("")
+                .isEqualTo("DECIMAL_VALUE");
     }
 
     private OpenAPIModelGenerator setupPayloadGenerator() throws IOException {
