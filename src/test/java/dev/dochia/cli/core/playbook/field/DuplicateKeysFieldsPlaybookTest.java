@@ -1,23 +1,14 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.args.FilterArguments;
 import dev.dochia.cli.core.http.HttpMethod;
-import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.io.ServiceCaller;
-import dev.dochia.cli.core.model.HttpResponse;
 import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.playbook.executor.SimpleExecutor;
-import dev.dochia.cli.core.report.TestCaseListener;
-import dev.dochia.cli.core.report.TestReportsGenerator;
-import io.github.ludovicianul.prettylogger.PrettyLogger;
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectSpy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
 import java.util.HashMap;

@@ -79,14 +79,14 @@ class BaseFieldsPlaybookTest {
 
     @Test
     void givenAJSonPrimitiveFieldWithAReplaceFuzzingStrategy_whenTheFieldIsFuzzedAndNoExceptionOccurs_thenTestsAreExecuted() {
-        PlaybookData data = createFuzzingData();
+        PlaybookData data = createPlaybookData();
 
         baseFieldsPlaybook.run(data);
         Mockito.verify(testCaseListener).reportResult(Mockito.any(), Mockito.eq(data), Mockito.any(), Mockito.any(), Mockito.eq(true), Mockito.eq(true));
     }
 
     @NotNull
-    private PlaybookData createFuzzingData() {
+    private PlaybookData createPlaybookData() {
         PlaybookData data = Mockito.mock(PlaybookData.class);
         Set<String> fields = Collections.singleton("field");
         Map<String, Schema> schemaMap = new HashMap<>();
@@ -113,7 +113,7 @@ class BaseFieldsPlaybookTest {
 
     @Test
     void shouldSkipWhenFuzzingNotPossibleFromPlaybook() {
-        PlaybookData data = createFuzzingData();
+        PlaybookData data = createPlaybookData();
         BaseFieldsPlaybook spyPlaybook = Mockito.spy(baseFieldsPlaybook);
         Mockito.when(spyPlaybook.isPlaybookApplicable(Mockito.eq(data), Mockito.anyString())).thenReturn(false);
         spyPlaybook.run(data);
@@ -122,7 +122,7 @@ class BaseFieldsPlaybookTest {
 
     @Test
     void shouldSkipWhenSkippedField() {
-        PlaybookData data = createFuzzingData();
+        PlaybookData data = createPlaybookData();
         BaseFieldsPlaybook spyPlaybook = Mockito.spy(baseFieldsPlaybook);
         Mockito.when(spyPlaybook.skipForFields()).thenReturn(List.of("field"));
         spyPlaybook.run(data);
@@ -137,6 +137,38 @@ class BaseFieldsPlaybookTest {
         Map<String, Schema> schemaMap = new HashMap<>();
         StringSchema schema = new StringSchema();
         schema.setPattern(pattern);
+        schemaMap.put("field", schema);
+        Mockito.when(data.getAllFieldsByHttpMethod()).thenReturn(fields);
+        Mockito.when(data.getRequestPropertyTypes()).thenReturn(schemaMap);
+        Mockito.when(data.getPayload()).thenReturn("{\"field\": 2}");
+
+        baseFieldsPlaybook = new MyBaseFieldsPlaybook(serviceCaller, testCaseListener, filesArguments, fuzzedValue);
+        Mockito.doNothing().when(testCaseListener).reportResult(Mockito.any(), Mockito.eq(data), Mockito.any(), Mockito.any());
+
+        baseFieldsPlaybook.run(data);
+        Mockito.verify(testCaseListener, Mockito.times(1)).reportResult(Mockito.any(), Mockito.eq(data), Mockito.any(), Mockito.eq(ResponseCodeFamilyPredefined.from(responseCode)), Mockito.eq(true), Mockito.eq(true));
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "2024-01-15,date,200",
+            "not-a-date,date,400",
+            "2024-13-01,date,400",
+            "2024-01-15T10:30:00+01:00,date-time,200",
+            "not-a-datetime,date-time,400",
+            "550e8400-e29b-41d4-a716-446655440000,uuid,200",
+            "not-a-uuid,uuid,400",
+            "true,boolean,200",
+            "false,boolean,200",
+            "TRUE,boolean,200",
+            "somevalue,email,200"
+    })
+    void shouldExpectDifferentCodesBasedOnFuzzedFieldMatchingFormat(String fuzzedValue, String format, String responseCode) {
+        PlaybookData data = Mockito.mock(PlaybookData.class);
+        Set<String> fields = Collections.singleton("field");
+        Map<String, Schema> schemaMap = new HashMap<>();
+        StringSchema schema = new StringSchema();
+        schema.setFormat(format);
         schemaMap.put("field", schema);
         Mockito.when(data.getAllFieldsByHttpMethod()).thenReturn(fields);
         Mockito.when(data.getRequestPropertyTypes()).thenReturn(schemaMap);

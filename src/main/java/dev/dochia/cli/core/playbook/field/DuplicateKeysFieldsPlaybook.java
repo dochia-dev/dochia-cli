@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.dochia.cli.core.http.HttpMethod;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
-import dev.dochia.cli.core.io.ServiceData;
 import dev.dochia.cli.core.model.PlaybookData;
 import dev.dochia.cli.core.playbook.api.FieldPlaybook;
 import dev.dochia.cli.core.playbook.api.TestCasePlaybook;
@@ -117,21 +116,6 @@ public class DuplicateKeysFieldsPlaybook implements TestCasePlaybook {
                 .replaceRefData(false)
                 .validJson(false)
                 .build());
-    }
-
-    private ServiceData buildServiceData(PlaybookData data, String payload) {
-        return ServiceData.builder()
-                .relativePath(data.getPath())
-                .headers(data.getHeaders())
-                .payload(payload)
-                .queryParams(data.getQueryParams())
-                .httpMethod(data.getMethod())
-                .contractPath(data.getContractPath())
-                .replaceRefData(false)
-                .contentType(data.getFirstRequestContentType())
-                .pathParamsPayload(data.getPathParamsPayload())
-                .validJson(false)
-                .build();
     }
 
     /**

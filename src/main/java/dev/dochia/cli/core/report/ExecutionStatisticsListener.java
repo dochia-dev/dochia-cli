@@ -4,7 +4,6 @@ import dev.dochia.cli.core.playbook.api.DryRun;
 import dev.dochia.cli.core.util.AnsiUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.Getter;
-import org.fusesource.jansi.Ansi;
 
 import java.util.HashMap;
 import java.util.Map;

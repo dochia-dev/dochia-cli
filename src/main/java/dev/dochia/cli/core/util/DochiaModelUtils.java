@@ -309,6 +309,14 @@ public abstract class DochiaModelUtils {
                 (schema.getMaxLength() != null && schema.getMaxLength() == 3);
     }
 
+    public static boolean hasOneOf(Schema schema) {
+        return ModelUtils.hasOneOf(schema);
+    }
+
+    public static boolean hasAnyOf(Schema schema) {
+        return ModelUtils.hasAnyOf(schema);
+    }
+
     public static boolean isAnyOf(Schema schema) {
         return ModelUtils.isAnyOf(schema);
     }

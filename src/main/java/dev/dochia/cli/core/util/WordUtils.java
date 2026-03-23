@@ -2,7 +2,6 @@ package dev.dochia.cli.core.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.JaccardSimilarity;
-import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -345,136 +343,49 @@ public abstract class WordUtils {
     }
 
     /**
-     * Normalize an error message to a structural form:
-     * - collapse \"...\" content to \"\"
-     * - replace variable-like tokens with placeholders
-     * - squash whitespace/noise
+     * Detects the casing of a string based on its format.
      *
-     * @param s the error message to normalize
-     * @return the error message normalized
+     * @param sample The string to detect the casing of.
+     * @return The detected casing as a string.
      */
-    public static String normalizeErrorMessage(String s) {
-        if (StringUtils.isBlank(s)) {
-            return "";
+    public static String detectCasingFromString(String sample) {
+        if (sample.contains("_") && sample.equals(sample.toUpperCase(Locale.ROOT))) {
+            return "UPPER_SNAKE_CASE";
+        } else if (sample.contains("_") && sample.equals(sample.toLowerCase(Locale.ROOT))) {
+            return "lower_snake_case";
+        } else if (sample.contains("-")) {
+            return "kebab-case";
+        } else if (Character.isLowerCase(sample.charAt(0)) && sample.matches(".*[A-Z].*")) {
+            return "camelCase";
+        } else if (Character.isUpperCase(sample.charAt(0)) && sample.matches(".*[a-z].*")) {
+            return "PascalCase";
+        } else if (sample.equals(sample.toLowerCase(Locale.ROOT))) {
+            return "lowercase";
         }
-
-        String r = s;
-
-        // 1) Collapse escaped, inner quoted segments so only the quotes remain.
-        r = collapseEscapedQuotedSegments(r);
-
-        // 2) Replace common highly-variable substrings with placeholders.
-        r = TS.matcher(r).replaceAll("TIMESTAMP");
-        r = UUID.matcher(r).replaceAll("UUID");
-        r = HASH.matcher(r).replaceAll("HASH");
-        r = URL.matcher(r).replaceAll("URL");
-        r = PATH.matcher(r).replaceAll("PATH");
-        r = DIGITS.matcher(r).replaceAll("NUM");
-        r = BASE64ISH.matcher(r).replaceAll("TOKEN");
-
-        // 3) Replace uppercase ID-like tokens (generic, handles DYX/XIIR... cases).
-        r = replaceUpperTokens(r);
-
-        // 4) Remove zero-width and spacing noise, normalize whitespace.
-        r = ZCMS.matcher(r).replaceAll(" ");
-        r = MULTI_SPACE.matcher(r).replaceAll(" ").trim();
-
-        return r;
-    }
-
-    // Helper: replace UPPER_TOKEN occurrences with TOKEN unless whitelisted
-    private static String replaceUpperTokens(String s) {
-        StringBuilder out = new StringBuilder(s.length());
-        Matcher m = UPPER_TOKEN.matcher(s);
-        while (m.find()) {
-            String tok = m.group();
-            if (UPPER_WHITELIST.contains(tok)) {
-                m.appendReplacement(out, tok);
-            } else {
-                m.appendReplacement(out, "TOKEN");
-            }
-        }
-        m.appendTail(out);
-        return out.toString();
-    }
-
-    // Helper: collapse occurrences of \" ... \" to \"\"
-    // (works well for messages like: ... parsing \"👩🏾false\" : invalid syntax)
-    private static String collapseEscapedQuotedSegments(String s) {
-        int i = 0;
-        int n = s.length();
-        StringBuilder sb = new StringBuilder(n);
-        while (i < n) {
-            int open = s.indexOf("\\\"", i);
-            if (open < 0) {
-                sb.append(s, i, n);
-                break;
-            }
-            // copy up to the start of the escaped quote
-            sb.append(s, i, open);
-            // write collapsed pair \"\"
-            sb.append("\\\"\\\"");
-            // find the next closing escaped quote
-            int j = open + 2;
-            int close = s.indexOf("\\\"", j);
-            if (close < 0) {
-                // no closing pair; append rest and finish
-                sb.append(s, j, n);
-                break;
-            }
-            // skip the content and the closing pair
-            i = close + 2;
-        }
-        return sb.toString();
+        return "UPPER_SNAKE_CASE"; // default
     }
 
     /**
-     * Main similarity predicate (stable and fast).
-     * <p>
-     * - Cheap Jaccard gate on normalized strings.
-     * - Thresholded Levenshtein (banded) based on what remains necessary.
+     * Coverts a string to the detected casing convention.
      *
-     * @param a the first error message
-     * @param b the second error message
-     * @return true if the error messages are similar, false otherwise
+     * @param name             the string to convert
+     * @param casingConvention the casing to convert to
+     * @return the converted string
      */
-    public static boolean areErrorsSimilar(String a, String b) {
-        if (StringUtils.isBlank(a) || StringUtils.isBlank(b)) {
-            return false;
-        }
-        if (a.equals(b)) {
-            return true;
-        }
-
-        // Normalize once with caching
-        final String na = NORMALIZED_CACHE.computeIfAbsent(a, WordUtils::normalizeErrorMessage);
-        final String nb = NORMALIZED_CACHE.computeIfAbsent(b, WordUtils::normalizeErrorMessage);
-
-        // Fast structural equality
-        if (na.equals(nb)) {
-            return true;
-        }
-
-        // Cheap token similarity gate
-        final double token = JS.apply(na, nb);
-        if (token < JACCARD_THRESHOLD) {
-            return false;
-        }
-
-        // Compute minimal LD similarity still needed to reach combined threshold.
-        // combined = (ldSim + token) / 2 >= COMBINED_THRESHOLD
-        final double minLdSim = Math.max(0.0, 2 * COMBINED_THRESHOLD - token);
-
-        // Convert to an edit-distance bound over the normalized strings:
-        final int maxLen = Math.max(na.length(), nb.length());
-        final int maxEdits = (int) Math.ceil(maxLen * (1.0 - minLdSim));
-
-        final Integer dist = new LevenshteinDistance(maxEdits).apply(na, nb);
-        if (dist < 0) {
-            return false; // exceeded bound
-        }
-        final double ldSim = 1.0 - (dist.doubleValue() / maxLen);
-
-        return (ldSim + token) / 2.0 >= COMBINED_THRESHOLD;
+    public static String convertToDetectedCasing(String name, String casingConvention) {
+        return switch (casingConvention) {
+            case "lower_snake_case" -> name.replaceAll("([a-z])([A-Z])", "$1_$2")
+                    .replaceAll("([A-Z])([A-Z][a-z])", "$1_$2")
+                    .toLowerCase(Locale.ROOT);
+            case "kebab-case" -> name.replaceAll("([a-z])([A-Z])", "$1-$2")
+                    .replaceAll("([A-Z])([A-Z][a-z])", "$1-$2")
+                    .toLowerCase(Locale.ROOT);
+            case "camelCase" -> Character.toLowerCase(name.charAt(0)) + name.substring(1);
+            case "PascalCase" -> name;
+            case "lowercase" -> name.toLowerCase(Locale.ROOT);
+            default -> name.replaceAll("([a-z])([A-Z])", "$1_$2")
+                    .replaceAll("([A-Z])([A-Z][a-z])", "$1_$2")
+                    .toUpperCase(Locale.ROOT);
+        };
     }
 }
