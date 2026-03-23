@@ -1,0 +1,121 @@
+package dev.dochia.cli.core.dsl.impl;
+
+
+import dev.dochia.cli.core.dsl.api.Parser;
+import dev.dochia.cli.core.util.DochiaRandom;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Function;
+
+/**
+ * Parser for shorthand function expressions using the {@code #(functionName(args))} syntax.
+ * <p>
+ * Provides convenient aliases for common random data generation functions,
+ * removing the need for verbose {@code T(...)} expressions.
+ * <p>
+ * Supported functions:
+ * <ul>
+ *     <li>{@code #(alphanumeric(N))} or {@code #(alphanumeric(min,max))} - random alphanumeric string</li>
+ *     <li>{@code #(alphabetic(N))} or {@code #(alphabetic(min,max))} - random alphabetic string</li>
+ *     <li>{@code #(numeric(N))} or {@code #(numeric(min,max))} - random numeric string</li>
+ *     <li>{@code #(ascii(N))} or {@code #(ascii(min,max))} - random ascii string</li>
+ *     <li>{@code #(uuid)} - random UUID</li>
+ *     <li>{@code #(email)} - random email address</li>
+ *     <li>{@code #(now)} - current OffsetDateTime</li>
+ *     <li>{@code #(today)} - current LocalDate</li>
+ *     <li>{@code #(todayPlus(N))} - current date plus N days</li>
+ *     <li>{@code #(todayMinus(N))} - current date minus N days</li>
+ * </ul>
+ */
+public class ShorthandFunctionParser implements Parser {
+
+    private static final Map<String, Function<int[], String>> PARAMETERIZED_FUNCTIONS = Map.of(
+            "alphanumeric", args -> args.length == 1 ? DochiaRandom.alphanumeric(args[0]) : DochiaRandom.alphanumeric(args[0], args[1]),
+            "alphabetic", args -> args.length == 1 ? DochiaRandom.alphabetic(args[0]) : DochiaRandom.alphabetic(args[0], args[1]),
+            "numeric", args -> args.length == 1 ? DochiaRandom.numeric(args[0]) : DochiaRandom.numeric(args[0], args[1]),
+            "ascii", args -> args.length == 1 ? DochiaRandom.ascii(args[0]) : DochiaRandom.ascii(args[0], args[1]),
+            "todayplus", args -> LocalDate.now(ZoneOffset.UTC).plusDays(args[0]).toString(),
+            "todayminus", args -> LocalDate.now(ZoneOffset.UTC).minusDays(args[0]).toString()
+    );
+
+    private static final Map<String, String> NO_ARG_FUNCTIONS = Map.of(
+            "uuid", UUID.class.getName(),
+            "email", "email",
+            "now", "now",
+            "today", "today"
+    );
+
+    @Override
+    public String parse(String expression, Map<String, String> context) {
+        String inner = extractInner(expression);
+        if (inner == null) {
+            return expression;
+        }
+
+        String noArgResult = evaluateNoArgFunction(inner);
+        if (noArgResult != null) {
+            return noArgResult;
+        }
+
+        return evaluateParameterizedFunction(inner, expression);
+    }
+
+    private String extractInner(String expression) {
+        String trimmed = expression.trim();
+        if (trimmed.startsWith("#(") && trimmed.endsWith(")")) {
+            return trimmed.substring(2, trimmed.length() - 1).trim();
+        }
+        return null;
+    }
+
+    private String evaluateNoArgFunction(String inner) {
+        String key = inner.toLowerCase(Locale.ROOT);
+        if (!NO_ARG_FUNCTIONS.containsKey(key)) {
+            return null;
+        }
+
+        return switch (key) {
+            case "uuid" -> UUID.randomUUID().toString();
+            case "email" -> DochiaRandom.email();
+            case "now" -> OffsetDateTime.now(ZoneOffset.UTC).toString();
+            case "today" -> LocalDate.now(ZoneOffset.UTC).toString();
+            default -> null;
+        };
+    }
+
+    private String evaluateParameterizedFunction(String inner, String originalExpression) {
+        int parenOpen = inner.indexOf('(');
+        if (parenOpen < 0 || !inner.endsWith(")")) {
+            return originalExpression;
+        }
+
+        String funcName = inner.substring(0, parenOpen).trim().toLowerCase(Locale.ROOT);
+        String argsStr = inner.substring(parenOpen + 1, inner.length() - 1).trim();
+
+        Function<int[], String> function = PARAMETERIZED_FUNCTIONS.get(funcName);
+        if (function == null) {
+            return originalExpression;
+        }
+
+        try {
+            int[] args = parseIntArgs(argsStr);
+            return function.apply(args);
+        } catch (NumberFormatException _) {
+            return originalExpression;
+        }
+    }
+
+    private int[] parseIntArgs(String argsStr) {
+        String[] parts = argsStr.split(",", -1);
+        int[] result = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            result[i] = Integer.parseInt(parts[i].trim());
+        }
+        return result;
+    }
+}

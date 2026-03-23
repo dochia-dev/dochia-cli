@@ -5,6 +5,7 @@ import dev.dochia.cli.core.dsl.impl.AuthScriptProviderParser;
 import dev.dochia.cli.core.dsl.impl.EnvVariableParser;
 import dev.dochia.cli.core.dsl.impl.MiniDslParser;
 import dev.dochia.cli.core.dsl.impl.NoOpParser;
+import dev.dochia.cli.core.dsl.impl.ShorthandFunctionParser;
 
 import java.util.Map;
 import java.util.Objects;
@@ -22,7 +23,8 @@ public class DSLParser {
             "$path", SPRING_EL_PARSER,
             "T(", SPRING_EL_PARSER,
             "${", SPRING_EL_PARSER,
-            "auth_script", new AuthScriptProviderParser());
+            "auth_script", new AuthScriptProviderParser(),
+            "#(", new ShorthandFunctionParser());
 
     private static final Pattern SPRING_EL_PLACEHOLDER = Pattern.compile("\\$\\{([^}]*)}");
 
