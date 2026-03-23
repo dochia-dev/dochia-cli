@@ -1,15 +1,16 @@
 package dev.dochia.cli.core.playbook.field;
 
-import dev.dochia.cli.core.playbook.api.FieldPlaybook;
 import dev.dochia.cli.core.args.ProcessingArguments;
-import dev.dochia.cli.core.playbook.executor.FieldsIteratorExecutor;
-import dev.dochia.cli.core.playbook.field.base.BaseReplaceFieldsPlaybook;
 import dev.dochia.cli.core.http.ResponseCodeFamilyPredefined;
 import dev.dochia.cli.core.model.PlaybookData;
+import dev.dochia.cli.core.playbook.api.FieldPlaybook;
+import dev.dochia.cli.core.playbook.executor.FieldsIteratorExecutor;
+import dev.dochia.cli.core.playbook.field.base.BaseReplaceFieldsPlaybook;
 import dev.dochia.cli.core.util.DochiaModelUtils;
 import dev.dochia.cli.core.util.JsonUtils;
 import io.swagger.v3.oas.models.media.Schema;
 import jakarta.inject.Singleton;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.function.BiFunction;
@@ -41,6 +42,10 @@ public class BidirectionalOverrideFieldsPlaybook extends BaseReplaceFieldsPlaybo
     public BaseReplaceFieldsContext getContext(PlaybookData data) {
         BiFunction<Schema<?>, String, List<Object>> fuzzValueProducer = (schema, field) -> {
             String original = String.valueOf(JsonUtils.getVariableFromJson(data.getPayload(), field));
+
+            if (StringUtils.isBlank(original)) {
+                return List.of(RLO);
+            }
 
             /* Variant 1 – prepend RLO to reverse entire string visually. */
             String v1 = RLO + original;
