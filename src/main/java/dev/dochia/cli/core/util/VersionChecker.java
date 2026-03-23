@@ -41,7 +41,7 @@ public class VersionChecker {
         latestVersion = String.valueOf(JsonUtils.getVariableFromJson(responseBody, "$.tag_name"));
 
         downloadLink = DOWNLOAD_URL + latestVersion;
-        latestVersion = latestVersion.replace("dochia-", "");
+        latestVersion = latestVersion.replace("dochia-cli", "");
         updateAvailable = compare(currentVersion, latestVersion) < 0;
 
         releaseNotes = String.valueOf(JsonUtils.getVariableFromJson(responseBody, "$.body"));
