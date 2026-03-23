@@ -19,6 +19,7 @@ public class DSLParser {
     private static final Map<String, Parser> PARSERS = Map.of(
             "$$", new EnvVariableParser(),
             "$request", SPRING_EL_PARSER,
+            "$path", SPRING_EL_PARSER,
             "T(", SPRING_EL_PARSER,
             "${", SPRING_EL_PARSER,
             "auth_script", new AuthScriptProviderParser());
