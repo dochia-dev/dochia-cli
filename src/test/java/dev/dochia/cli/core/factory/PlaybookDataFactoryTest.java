@@ -1330,4 +1330,23 @@ class PlaybookDataFactoryTest {
         List<Parameter> merged = playbookDataFactory.mergeParameters(pathItem, operation);
         Assertions.assertThat(merged).hasSize(2);
     }
+
+    @Test
+    void shouldNotLeakPostExampleIntoGetQueryParams() throws Exception {
+        Mockito.when(processingArguments.examplesFlags()).thenReturn(new ProcessingArguments.ExamplesFlags(false, false, false, true));
+        List<PlaybookData> dataList = setupPlaybookData("/api/products", "src/test/resources/cross-operation-example-leak.yml");
+
+        List<PlaybookData> getDataList = dataList.stream().filter(d -> d.getMethod() == HttpMethod.GET).toList();
+        Assertions.assertThat(getDataList).isNotEmpty();
+
+        PlaybookData getData = getDataList.getFirst();
+        String payload = getData.getPayload();
+
+        String postLongExample = "images,variantParameters,allCategories,flags";
+
+        Assertions.assertThat(JsonUtils.getVariableFromJson(payload, "$.include")).asString().isEqualTo("images");
+        Assertions.assertThat(JsonUtils.getVariableFromJson(payload, "$.supplierGuid")).asString().isNotEqualTo(postLongExample);
+        Assertions.assertThat(JsonUtils.getVariableFromJson(payload, "$.brandName")).asString().isNotEqualTo(postLongExample);
+        Assertions.assertThat(JsonUtils.getVariableFromJson(payload, "$.changeTimeFrom")).asString().isNotEqualTo(postLongExample);
+    }
 }
