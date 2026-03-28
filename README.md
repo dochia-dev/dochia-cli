@@ -35,12 +35,12 @@ your API, so your users don't have to.**
 
 ## Features
 
-- 🚀 **Instant Setup**: Point it at your OpenAPI spec and go
-- 🧠 **Smart Testing**: 120+ playbooks create realistic, context-aware test cases
-- 🔍 **Find Hidden Issues**: Edge cases, invalid inputs, and boundary conditions
-- 📊 **Clear Results**: Actionable reports with specific fixes
-- 🔄 **Replay Mode**: Replay and investigate specific test scenarios
-- 📋 **OpenAPI Native**: Understands your API structure automatically
+- **Instant Setup**: Point it at your OpenAPI spec and go
+- **Smart Testing**: 120+ playbooks create realistic, context-aware test cases
+- **Find Hidden Issues**: Edge cases, invalid inputs, and boundary conditions
+- **Clear Results**: Actionable reports with specific fixes
+- **Replay Mode**: Replay and investigate specific test scenarios
+- **OpenAPI Native**: Understands your API structure automatically
 
 ## About the Name
 
@@ -195,11 +195,11 @@ sdk use java 22.3.r17-grl
 ./target/dochia-runner --version
 ```
 
-## 📄 License
+## License
 
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Links
+## Links
 
 - **Documentation**: [docs.dochia.dev](https://docs.dochia.dev)
 - **Website**: [dochia.dev](https://dochia.dev)

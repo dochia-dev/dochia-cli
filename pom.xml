@@ -34,7 +34,8 @@
         <sonar.coverage.exclusions>
             **/*TestCaseExporter*.*, **/*TestCase*.*, **/*TestReport*.*, **/*Aspect*.*, **/*DochiaMain*.*,
             **/*VersionProvider*.*, **/*ReflectionConfig*.*,**/*TimeExecution*.*, **/*FormEncoder*.*,
-            **/*HttpContent*.*, **/*MultipartProcessor*.*, **Entry.*, **/*ConsoleUtils*.*, **/*Mutator*.*
+            **/*HttpContent*.*, **/*MultipartProcessor*.*, **Entry.*, **/*ConsoleUtils*.*, **/*Mutator*.*,
+            **/*AnsiUtils*.*
         </sonar.coverage.exclusions>
         <sonar.cpd.exclusions>**/*Generator*.*,**/*Playbook*.*</sonar.cpd.exclusions>
         <sonar.coverage.jacoco.xmlReportPaths>target/jacoco-report/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
