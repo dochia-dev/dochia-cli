@@ -31,6 +31,11 @@ public class ExecutionStatisticsListener {
     private final Map<String, Long> success = new HashMap<>();
 
     /**
+     * Map to track the count of requests that were skipped from reporting per path.
+     */
+    private final Map<String, Long> skippedFromReporting = new HashMap<>();
+
+    /**
      * Count of skipped tests.
      */
     @Getter
@@ -97,6 +102,15 @@ public class ExecutionStatisticsListener {
     }
 
     /**
+     * Increases the count of requests skipped from reporting for a specific path.
+     *
+     * @param path The path for which skipped requests are increased.
+     */
+    public void increaseSkippedFromReporting(String path) {
+        this.skippedFromReporting.merge(path, 1L, Long::sum);
+    }
+
+    /**
      * Gets the total count of errors across all paths.
      *
      * @return The total count of errors.
@@ -130,6 +144,24 @@ public class ExecutionStatisticsListener {
      */
     public long getAll() {
         return this.getSuccess() + this.getWarns() + this.getErrors();
+    }
+
+    /**
+     * Gets the total count of all requests made (before skip logic).
+     *
+     * @return The total count of all requests.
+     */
+    public long getTotalRequests() {
+        return this.getAll() + getSkippedFromReporting();
+    }
+
+    /**
+     * Gets the total count of requests skipped from reporting.
+     *
+     * @return The total count of skipped requests.
+     */
+    public long getSkippedFromReporting() {
+        return this.skippedFromReporting.values().stream().reduce(0L, Long::sum);
     }
 
     /**

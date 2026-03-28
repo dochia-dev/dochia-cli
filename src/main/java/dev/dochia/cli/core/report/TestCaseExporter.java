@@ -258,16 +258,22 @@ public abstract class TestCaseExporter {
      *
      */
     public void printExecutionDetails() {
-        String dochiaFinished = AnsiUtils.blue("{} tests completed in {}\n");
+        long totalRequests = executionStatisticsListener.getTotalRequests();
+        long skippedFromReporting = executionStatisticsListener.getSkippedFromReporting();
+        long reportedResults = executionStatisticsListener.getAll();
+
+        String dochiaFinished = AnsiUtils.blue("{} tests completed in {}. {} reported, {} skipped\n");
         String passed = AnsiUtils.boldGreen("  ✔ {} passed, ");
         String warnings = AnsiUtils.boldYellow("⚠ {} warnings, ");
         String errors = AnsiUtils.boldRed("‼ {} errors");
+
         String check = AnsiUtils.blue(String.format("Full Report: %s ", reportingPath.toUri() + getSummaryReportTitle()));
         String finalMessage = dochiaFinished + passed + warnings + errors;
         String duration = Duration.ofMillis(System.currentTimeMillis() - t0).toString().toLowerCase(Locale.ROOT).substring(2);
 
         ConsoleUtils.emptyLine();
-        logger.complete(finalMessage, executionStatisticsListener.getAll(), duration, executionStatisticsListener.getSuccess(), executionStatisticsListener.getWarns(), executionStatisticsListener.getErrors(), executionStatisticsListener.getSkipped());
+        logger.complete(finalMessage, totalRequests, reportedResults, skippedFromReporting,
+                executionStatisticsListener.getAll(), duration, executionStatisticsListener.getSuccess(), executionStatisticsListener.getWarns(), executionStatisticsListener.getErrors(), executionStatisticsListener.getSkipped());
 
         // Print quality gate result
         boolean qualityGatePassed = !qualityGateArguments.shouldFailBuild(executionStatisticsListener.getErrors(), executionStatisticsListener.getWarns());

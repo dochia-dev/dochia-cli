@@ -496,6 +496,7 @@ public class TestCaseListener {
         } else if (ignoreArguments.isSkipReportingForWarnings()) {
             this.logger.debug(RECEIVED_RESPONSE_IS_MARKED_AS_IGNORED_SKIPPING);
             this.skipTest(logger, replaceBrackets("Skip reporting as --hide-warnings is enabled"));
+            executionStatisticsListener.increaseSkippedFromReporting(testCase.getContractPath());
             this.recordResult(message, params, SKIP_REPORTING, logger);
         } else if (ignoreArguments.isNotIgnoredResponse(httpResponse)) {
             this.logger.debug("Received response is not marked as ignored... reporting warn!");
@@ -505,6 +506,7 @@ public class TestCaseListener {
         } else if (ignoreArguments.isSkipReportingForIgnoredArguments()) {
             this.logger.debug(RECEIVED_RESPONSE_IS_MARKED_AS_IGNORED_SKIPPING);
             this.skipTest(logger, replaceBrackets("Some response elements were marked as filtered through --filter-*** arguments."));
+            executionStatisticsListener.increaseSkippedFromReporting(testCase.getContractPath());
             this.recordResult(message, params, SKIP_REPORTING, logger);
         } else {
             testCase.setResultIgnoreDetails("warning");
@@ -579,6 +581,7 @@ public class TestCaseListener {
         } else if (ignoreArguments.isSkipReportingForIgnoredArguments()) {
             this.logger.debug(RECEIVED_RESPONSE_IS_MARKED_AS_IGNORED_SKIPPING);
             this.skipTest(logger, "Some response elements were filtered usinbg --filter-* argyments.");
+            executionStatisticsListener.increaseSkippedFromReporting(testCase.getContractPath());
             this.recordResult(message, params, SKIP_REPORTING, logger);
         } else {
             testCase.setResultIgnoreDetails(Level.ERROR.toString());
@@ -667,10 +670,12 @@ public class TestCaseListener {
         } else if (ignoreArguments.isSkipReportingForSuccess()) {
             this.logger.debug(RECEIVED_RESPONSE_IS_MARKED_AS_IGNORED_SKIPPING);
             this.skipTest(logger, replaceBrackets("Skip reporting as --hide-success is enabled"));
+            executionStatisticsListener.increaseSkippedFromReporting(testCase.getContractPath());
             this.recordResult(message, params, SKIP_REPORTING, logger);
         } else if (ignoreArguments.isIgnoredResponse(httpResponse) && ignoreArguments.isSkipReportingForIgnoredArguments()) {
             this.logger.debug(RECEIVED_RESPONSE_IS_MARKED_AS_IGNORED_SKIPPING);
             this.skipTest(logger, "Some response elements were filtered using --filter-* arguments.");
+            executionStatisticsListener.increaseSkippedFromReporting(testCase.getContractPath());
             this.recordResult(message, params, SKIP_REPORTING, logger);
         } else if (httpResponse.exceedsExpectedResponseTime(reportingArguments.getMaxResponseTime())) {
             this.logger.debug("Received response time exceeds --maxResponseTimeInMs: actual {}, max {}",
