@@ -563,7 +563,7 @@ public class PlaybookDataFactory {
 
     private GenerationResult getRequestPayloadsSamples(MediaType mediaType, String reqSchemaName) {
         OpenAPIModelGenerator generator = new OpenAPIModelGenerator(globalContext, validDataFormat, processingArguments.examplesFlags(),
-                processingArguments.getSelfReferenceDepth(), processingArguments.isUseDefaults(), REQUEST_ARRAY_SIZE);
+                processingArguments.getSelfReferenceDepth(), processingArguments.isUseDefaults(), REQUEST_ARRAY_SIZE, processingArguments.getDiscriminatorCasing());
 
         /* Event though the media type might have an example set, we still generate samples in order to properly map each field with its corresponding data type*/
         List<String> result = this.generateSample(reqSchemaName, generator);
@@ -687,7 +687,8 @@ public class PlaybookDataFactory {
     private Map<String, List<String>> getResponsePayloads(Operation operation) {
         Map<String, List<String>> responses = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         OpenAPIModelGenerator generator = new OpenAPIModelGenerator(globalContext, validDataFormat, processingArguments.examplesFlags(),
-                processingArguments.getSelfReferenceDepth(), processingArguments.isUseDefaults(), RESPONSES_ARRAY_SIZE, processingArguments.isResolveXxxOfCombinationForResponses());
+                processingArguments.getSelfReferenceDepth(), processingArguments.isUseDefaults(), RESPONSES_ARRAY_SIZE,
+                processingArguments.isResolveXxxOfCombinationForResponses(), processingArguments.getDiscriminatorCasing());
 
         for (String responseCode : operation.getResponses().keySet()) {
             List<String> openapiExamples = this.getExamplesFromApiResponseForResponseCode(operation, responseCode);
@@ -803,7 +804,7 @@ public class PlaybookDataFactory {
         parameter.setSchema(schema);
 
         List<String> examples = this.generateSample(schema.get$ref(), new OpenAPIModelGenerator(globalContext, validDataFormat, processingArguments.examplesFlags(),
-                processingArguments.getSelfReferenceDepth(), processingArguments.isUseDefaults(), REQUEST_ARRAY_SIZE));
+                processingArguments.getSelfReferenceDepth(), processingArguments.isUseDefaults(), REQUEST_ARRAY_SIZE, processingArguments.getDiscriminatorCasing()));
 
         schema.setExample(examples.getFirst());
     }

@@ -128,6 +128,10 @@ public class ProcessingArguments {
             description = "When set to @|bold true|@, runs a minimal health check using the 'health-check' profile to verify API endpoints are reachable before full testing. Default: @|bold,underline ${DEFAULT-VALUE}|@")
     private boolean healthCheck;
 
+    @Setter
+    @CommandLine.Option(names = {"--discriminator-casing"},
+            description = "The casing convention used for discriminator values when no explicit enum or mapping is defined. Supported values: @|bold PascalCase|@, @|bold camelCase|@, @|bold UPPER_SNAKE_CASE|@, @|bold lower_snake_case|@, @|bold kebab-case|@, @|bold lowercase|@. Default: @|bold,underline ${DEFAULT-VALUE}|@")
+    private String discriminatorCasing = "UPPER_SNAKE_CASE";
 
 
     /**

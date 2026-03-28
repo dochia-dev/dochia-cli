@@ -277,7 +277,7 @@ public abstract class BaseFieldsPlaybook implements TestCasePlaybook {
     try {
       LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE);
       return true;
-    } catch (DateTimeParseException e) {
+    } catch (DateTimeParseException _) {
       return false;
     }
   }
@@ -286,7 +286,7 @@ public abstract class BaseFieldsPlaybook implements TestCasePlaybook {
     try {
       OffsetDateTime.parse(value, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
       return true;
-    } catch (DateTimeParseException e) {
+    } catch (DateTimeParseException _) {
       return false;
     }
   }
@@ -295,7 +295,7 @@ public abstract class BaseFieldsPlaybook implements TestCasePlaybook {
     try {
       UUID.fromString(value);
       return true;
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException _) {
       return false;
     }
   }

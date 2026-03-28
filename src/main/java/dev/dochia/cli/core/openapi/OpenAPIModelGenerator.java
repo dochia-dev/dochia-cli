@@ -25,7 +25,21 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -76,12 +90,13 @@ public class OpenAPIModelGenerator {
     private final boolean resolveAnyOfAsMultipleSchema;
     private int currentPropertiesDepth;
     private final int totalDepth;
+    private final String discriminatorCasing;
 
     /**
-     * Constructs an OpenAPIModelGeneratorV2 with the specified configuration.
+     * Constructs an OpenAPIModelGenerator with the specified configuration.
      * The default value for {@code resolveAnyOfAsMultipleSchema=true}. The default value for {@code totalDepth=200}.
      *
-     * @param globalContext       The global context.
+     * @param globalContext   The global context for DOCHIA.
      * @param validDataFormat     The format to use for generating valid data.
      * @param useExamplesArgument Flag indicating whether to use examples from the OpenAPI specification.
      * @param selfReferenceDepth  The maximum depth for generating self-referencing models.
@@ -89,23 +104,40 @@ public class OpenAPIModelGenerator {
      * @param maxArraySize        The maximum size for arrays
      */
     public OpenAPIModelGenerator(GlobalContext globalContext, ValidDataFormat validDataFormat, ProcessingArguments.ExamplesFlags useExamplesArgument, int selfReferenceDepth, boolean useDefaults, int maxArraySize) {
+        this(globalContext, validDataFormat, useExamplesArgument, selfReferenceDepth, useDefaults, maxArraySize, "UPPER_SNAKE_CASE");
+    }
+
+    /**
+     * Constructs an OpenAPIModelGenerator with the specified configuration.
+     * The default value for {@code resolveAnyOfAsMultipleSchema=true}. The default value for {@code totalDepth=200}.
+     *
+     * @param globalContext       The global context for dochia.
+     * @param validDataFormat     The format to use for generating valid data.
+     * @param useExamplesArgument Flag indicating whether to use examples from the OpenAPI specification.
+     * @param selfReferenceDepth  The maximum depth for generating self-referencing models.
+     * @param useDefaults         Whether to use default values if available
+     * @param maxArraySize        The maximum size for arrays
+     * @param discriminatorCasing The casing convention for discriminator values
+     */
+    public OpenAPIModelGenerator(GlobalContext globalContext, ValidDataFormat validDataFormat, ProcessingArguments.ExamplesFlags useExamplesArgument, int selfReferenceDepth, boolean useDefaults, int maxArraySize, String discriminatorCasing) {
         this.globalContext = globalContext;
-        this.random = CommonUtils.random();
+        this.random = DochiaRandom.instance();
         this.examplesFlags = useExamplesArgument;
         this.selfReferenceDepth = selfReferenceDepth;
         this.validDataFormat = validDataFormat;
         this.callStackCounter = new HashMap<>();
         this.useDefaults = useDefaults;
         this.maxArraySize = maxArraySize;
+        this.discriminatorCasing = discriminatorCasing;
 
         this.resolveAnyOfAsMultipleSchema = true;
         this.totalDepth = REQUEST_TOTAL_DEPTH;
     }
 
     /**
-     * Constructs an OpenAPIModelGeneratorV2 with the specified configuration. The default value for {@code totalDepth=50}
+     * Constructs an OpenAPIModelGenerator with the specified configuration. The default value for {@code totalDepth=50}
      *
-     * @param globalContext                The global context.
+     * @param globalContext            The global context for DOCHIA.
      * @param validDataFormat              The format to use for generating valid data.
      * @param useExamplesArgument          Flag indicating whether to use examples from the OpenAPI specification.
      * @param selfReferenceDepth           The maximum depth for generating self-referencing models.
@@ -114,8 +146,24 @@ public class OpenAPIModelGenerator {
      * @param maxArraySize                 The maximum size for arrays
      */
     public OpenAPIModelGenerator(GlobalContext globalContext, ValidDataFormat validDataFormat, ProcessingArguments.ExamplesFlags useExamplesArgument, int selfReferenceDepth, boolean useDefaults, int maxArraySize, boolean resolveAnyOfAsMultipleSchema) {
+        this(globalContext, validDataFormat, useExamplesArgument, selfReferenceDepth, useDefaults, maxArraySize, resolveAnyOfAsMultipleSchema, "UPPER_SNAKE_CASE");
+    }
+
+    /**
+     * Constructs an OpenAPIModelGenerator with the specified configuration. The default value for {@code totalDepth=50}
+     *
+     * @param globalContext            The global context for DOCHIA.
+     * @param validDataFormat              The format to use for generating valid data.
+     * @param useExamplesArgument          Flag indicating whether to use examples from the OpenAPI specification.
+     * @param selfReferenceDepth           The maximum depth for generating self-referencing models.
+     * @param resolveAnyOfAsMultipleSchema If true it will resolve all combinations of oneOf/anyOf schemas
+     * @param useDefaults                  Whether to use default values if available
+     * @param maxArraySize                 The maximum size for arrays
+     * @param discriminatorCasing          The casing convention for discriminator values
+     */
+    public OpenAPIModelGenerator(GlobalContext globalContext, ValidDataFormat validDataFormat, ProcessingArguments.ExamplesFlags useExamplesArgument, int selfReferenceDepth, boolean useDefaults, int maxArraySize, boolean resolveAnyOfAsMultipleSchema, String discriminatorCasing) {
         this.globalContext = globalContext;
-        this.random = CommonUtils.random();
+        this.random = DochiaRandom.instance();
         this.examplesFlags = useExamplesArgument;
         this.selfReferenceDepth = selfReferenceDepth;
         this.validDataFormat = validDataFormat;
@@ -123,6 +171,7 @@ public class OpenAPIModelGenerator {
         this.useDefaults = useDefaults;
         this.maxArraySize = maxArraySize;
         this.resolveAnyOfAsMultipleSchema = resolveAnyOfAsMultipleSchema;
+        this.discriminatorCasing = discriminatorCasing;
         this.totalDepth = RESPONSE_TOTAL_DEPTH;
     }
 
@@ -489,7 +538,7 @@ public class OpenAPIModelGenerator {
 
             String detectedCasing = parentWithDiscriminator != null
                     ? detectCasingConvention(parentWithDiscriminator, discriminatorPropertyName)
-                    : "UPPER_SNAKE_CASE";
+                    : this.discriminatorCasing;
             String discriminatorValue = WordUtils.convertToDetectedCasing(propertyName, detectedCasing);
 
             for (Map<String, Object> example : examples) {
@@ -767,14 +816,15 @@ public class OpenAPIModelGenerator {
             return WordUtils.detectCasingFromString(firstEnum);
         }
 
-        // Try to detect from discriminator mappings
-        Optional<String> mappingValue = globalContext.getDiscriminators()
-                .stream()
-                .filter(discriminator -> discriminator.getPropertyName().equalsIgnoreCase(propertyName) && discriminator.getMapping() != null)
-                .findFirst()
-                .flatMap(discriminator -> discriminator.getMapping().keySet().stream().findFirst());
+        // Try to detect from the schema's own discriminator mapping only
+        if (schema.getDiscriminator() != null && schema.getDiscriminator().getMapping() != null) {
+            Optional<String> mappingKey = schema.getDiscriminator().getMapping().keySet().stream().findFirst();
+            if (mappingKey.isPresent()) {
+                return WordUtils.detectCasingFromString(mappingKey.get());
+            }
+        }
 
-        return mappingValue.map(WordUtils::detectCasingFromString).orElse("UPPER_SNAKE_CASE");
+        return this.discriminatorCasing;
     }
 
 
