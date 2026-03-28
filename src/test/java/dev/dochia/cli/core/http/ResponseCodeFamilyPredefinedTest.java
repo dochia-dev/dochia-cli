@@ -186,4 +186,16 @@ class ResponseCodeFamilyPredefinedTest {
     void shouldReturnTooManyHeaders(int code, boolean result) {
         Assertions.assertThat(ResponseCodeFamily.isTooManyHeaders(code)).isEqualTo(result);
     }
+
+    @Test
+    void shouldReturnIs5xxTrue() {
+        Assertions.assertThat(ResponseCodeFamily.is5xxCode(500)).isTrue();
+        Assertions.assertThat(ResponseCodeFamily.is5xxCode(503)).isTrue();
+    }
+
+    @Test
+    void shouldReturnIs5xxFalse() {
+        Assertions.assertThat(ResponseCodeFamily.is5xxCode(200)).isFalse();
+        Assertions.assertThat(ResponseCodeFamily.is5xxCode(404)).isFalse();
+    }
 }

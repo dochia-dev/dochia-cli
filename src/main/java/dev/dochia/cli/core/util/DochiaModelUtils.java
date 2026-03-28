@@ -91,6 +91,10 @@ public abstract class DochiaModelUtils {
         return schema instanceof IntegerSchema || isType(schema, SchemaTypeUtil.INTEGER_TYPE);
     }
 
+    public static boolean isUrlSchema(Schema<?> schema) {
+        return isStringSchema(schema) && "url".equals(schema.getFormat());
+    }
+
     public static boolean isDateSchema(Schema<?> schema) {
         return (schema instanceof DateSchema || isType(schema, SchemaTypeUtil.STRING_TYPE)) && SchemaTypeUtil.DATE_FORMAT.equals(schema.getFormat());
     }
