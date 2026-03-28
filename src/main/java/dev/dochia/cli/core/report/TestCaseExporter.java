@@ -272,8 +272,8 @@ public abstract class TestCaseExporter {
         String duration = Duration.ofMillis(System.currentTimeMillis() - t0).toString().toLowerCase(Locale.ROOT).substring(2);
 
         ConsoleUtils.emptyLine();
-        logger.complete(finalMessage, totalRequests, reportedResults, skippedFromReporting,
-                executionStatisticsListener.getAll(), duration, executionStatisticsListener.getSuccess(), executionStatisticsListener.getWarns(), executionStatisticsListener.getErrors(), executionStatisticsListener.getSkipped());
+        logger.complete(finalMessage, totalRequests, duration, reportedResults, skippedFromReporting,
+                executionStatisticsListener.getAll(), executionStatisticsListener.getSuccess(), executionStatisticsListener.getWarns(), executionStatisticsListener.getErrors(), executionStatisticsListener.getSkipped());
 
         // Print quality gate result
         boolean qualityGatePassed = !qualityGateArguments.shouldFailBuild(executionStatisticsListener.getErrors(), executionStatisticsListener.getWarns());

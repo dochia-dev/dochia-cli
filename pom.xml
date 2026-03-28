@@ -68,7 +68,7 @@
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
         <okhttp.version>5.3.2-dochia</okhttp.version>
-        <swagger.parser.version>2.1.37-dochia</swagger.parser.version>
+        <swagger.parser.version>2.1.39-dochia</swagger.parser.version>
         <okio.version>3.17.0</okio.version>
         <wiremock.version>3.12.1</wiremock.version>
         <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
@@ -134,13 +134,13 @@
                             <goal>install-file</goal>
                         </goals>
                         <configuration>
-                            <file>lib/swagger-parser-v3-2.1.37-dochia.jar</file>
+                            <file>lib/swagger-parser-v3-2.1.39-dochia.jar</file>
                             <groupId>io.swagger.parser.v3</groupId>
                             <artifactId>swagger-parser-v3</artifactId>
                             <version>${swagger.parser.version}</version>
-                            <sources>lib/swagger-parser-v3-2.1.37-dochia-sources.jar</sources>
-                            <javadoc>lib/swagger-parser-v3-2.1.37-dochia-javadoc.jar</javadoc>
-                            <pomFile>lib/swagger-parser-v3-2.1.37-dochia.pom</pomFile>
+                            <sources>lib/swagger-parser-v3-2.1.39-dochia-sources.jar</sources>
+                            <javadoc>lib/swagger-parser-v3-2.1.39-dochia-javadoc.jar</javadoc>
+                            <pomFile>lib/swagger-parser-v3-2.1.39-dochia.pom</pomFile>
                             <packaging>jar</packaging>
                         </configuration>
                     </execution>
