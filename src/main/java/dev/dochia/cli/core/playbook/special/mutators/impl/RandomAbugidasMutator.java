@@ -31,7 +31,7 @@ public class RandomAbugidasMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "inject field with random abugidas characters";
+        return "Inject field with random abugidas characters";
     }
 
     public static String generateRandomTeluguCharacter() {

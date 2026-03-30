@@ -82,6 +82,6 @@ public class BypassAuthenticationPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return " Check if authentication headers are supplied and attempt requests without them";
+        return "Check if authentication headers are supplied and attempt requests without them";
     }
 }

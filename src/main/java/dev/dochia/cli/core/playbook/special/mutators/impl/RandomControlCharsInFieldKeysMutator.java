@@ -21,6 +21,6 @@ public class RandomControlCharsInFieldKeysMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "insert random control chars in field keys";
+        return "Insert random control chars in field keys";
     }
 }

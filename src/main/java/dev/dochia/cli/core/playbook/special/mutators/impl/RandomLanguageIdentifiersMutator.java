@@ -64,6 +64,6 @@ public class RandomLanguageIdentifiersMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random programming languages keywords";
+        return "Replace field with random programming languages keywords";
     }
 }

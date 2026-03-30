@@ -21,6 +21,6 @@ public class RandomControlCharsMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random control chars";
+        return "Replace field with random control chars";
     }
 }

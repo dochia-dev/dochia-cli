@@ -33,6 +33,6 @@ public class RandomLargeDecimalsMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random large decimals";
+        return "Replace field with random large decimals";
     }
 }

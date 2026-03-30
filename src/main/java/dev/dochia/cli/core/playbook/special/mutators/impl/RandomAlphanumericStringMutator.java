@@ -20,6 +20,6 @@ public class RandomAlphanumericStringMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random alphanumeric characters";
+        return "Replace field with random alphanumeric characters";
     }
 }

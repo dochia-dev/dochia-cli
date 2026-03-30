@@ -22,6 +22,6 @@ public class RandomJsonMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace body with random invalid jsons";
+        return "Replace body with random invalid jsons";
     }
 }

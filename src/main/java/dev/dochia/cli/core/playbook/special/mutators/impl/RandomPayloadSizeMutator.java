@@ -18,6 +18,6 @@ public class RandomPayloadSizeMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace the payload with a substring of random length";
+        return "Replace the payload with a substring of random length";
     }
 }

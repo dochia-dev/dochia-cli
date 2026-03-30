@@ -17,6 +17,6 @@ public class UppercaseExpandingBytesMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with strings that expand bytes when uppercased";
+        return "Replace field with strings that expand bytes when uppercased";
     }
 }

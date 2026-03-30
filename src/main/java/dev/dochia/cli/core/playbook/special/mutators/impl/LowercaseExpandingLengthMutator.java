@@ -17,6 +17,6 @@ public class LowercaseExpandingLengthMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with strings that expand length when lowercased";
+        return "Replace field with strings that expand length when lowercased";
     }
 }

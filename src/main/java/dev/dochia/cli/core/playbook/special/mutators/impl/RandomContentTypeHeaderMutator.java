@@ -32,6 +32,6 @@ public class RandomContentTypeHeaderMutator implements HeadersMutator {
 
     @Override
     public String description() {
-        return "replace the content type header with random unsupported media types ";
+        return "Replace the content type header with random unsupported media types";
     }
 }

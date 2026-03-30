@@ -21,6 +21,6 @@ public class RandomWhitespacesInFieldKeysMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "insert random whitespaces in field keys";
+        return "Insert random whitespaces in field keys";
     }
 }

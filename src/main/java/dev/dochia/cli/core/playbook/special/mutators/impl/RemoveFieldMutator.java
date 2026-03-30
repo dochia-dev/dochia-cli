@@ -17,6 +17,6 @@ public class RemoveFieldMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "remove field from the body";
+        return "Remove field from the body";
     }
 }

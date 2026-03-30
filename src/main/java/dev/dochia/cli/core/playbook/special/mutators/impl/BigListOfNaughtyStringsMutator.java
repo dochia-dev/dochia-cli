@@ -47,6 +47,6 @@ public class BigListOfNaughtyStringsMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random naughty strings";
+        return "Replace field with random naughty strings";
     }
 }

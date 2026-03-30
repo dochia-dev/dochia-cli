@@ -21,6 +21,6 @@ public class RandomNumberMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random long numbers";
+        return "Replace field with random long numbers";
     }
 }

@@ -208,7 +208,7 @@ public class RandomPlaybook implements TestCasePlaybook {
 
     @Override
     public String description() {
-        return "continuously fuzz random fields with random values based on registered mutators";
+        return "Continuously fuzz random fields with random values based on registered mutators";
     }
 
     @Override

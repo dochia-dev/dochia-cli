@@ -32,6 +32,6 @@ public class RandomAcceptHeaderMutator implements HeadersMutator {
 
     @Override
     public String description() {
-        return "replace the accept header with random unsupported media types ";
+        return "Replace the accept header with random unsupported media types";
     }
 }

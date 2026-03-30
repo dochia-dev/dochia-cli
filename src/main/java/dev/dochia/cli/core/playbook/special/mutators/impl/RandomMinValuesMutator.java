@@ -23,6 +23,6 @@ public class RandomMinValuesMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random min values for int, long, float or double";
+        return "Replace field with random min values for int, long, float or double";
     }
 }

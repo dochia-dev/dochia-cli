@@ -20,6 +20,6 @@ public class RandomStringMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random unicode strings";
+        return "Replace field with random unicode strings";
     }
 }

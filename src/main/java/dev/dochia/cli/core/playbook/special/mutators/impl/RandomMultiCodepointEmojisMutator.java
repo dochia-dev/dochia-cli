@@ -37,6 +37,6 @@ public class RandomMultiCodepointEmojisMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random multi codepoint emojis";
+        return "Replace field with random multi codepoint emojis";
     }
 }

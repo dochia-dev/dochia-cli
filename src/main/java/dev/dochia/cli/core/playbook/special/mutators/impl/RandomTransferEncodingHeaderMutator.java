@@ -27,6 +27,6 @@ public class RandomTransferEncodingHeaderMutator implements HeadersMutator {
 
     @Override
     public String description() {
-        return "replace the transfer encoding header with random values";
+        return "Replace the transfer encoding header with random values";
     }
 }

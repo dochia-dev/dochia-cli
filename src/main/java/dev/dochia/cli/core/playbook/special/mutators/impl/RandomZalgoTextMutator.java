@@ -30,7 +30,7 @@ public class RandomZalgoTextMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random zalgo text";
+        return "Replace field with random zalgo text";
     }
 
     public static String generateZalgoText(String inputText) {

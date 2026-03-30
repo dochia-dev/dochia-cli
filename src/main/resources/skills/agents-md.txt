@@ -1,0 +1,60 @@
+# Dochia - API Testing & Fuzzing Tool
+
+This project uses [Dochia](https://docs.dochia.dev), a CLI tool that automatically generates and executes negative and boundary testing for APIs based on OpenAPI specifications.
+
+## Available Commands
+
+- `dochia test` — Run comprehensive API tests with 100+ fuzzing playbooks
+- `dochia fuzz` — Continuous random fuzzing with mutators
+- `dochia replay` — Re-execute specific test scenarios from previous runs
+- `dochia list` — List available playbooks, mutators, paths, and formats
+- `dochia explain` — Get detailed explanations of playbooks, mutators, response codes, and error reasons
+- `dochia info` — Display environment and version information
+
+## Quick Reference
+
+```bash
+# Basic test run (blackbox mode — only report 5XX errors)
+dochia test -c openapi.yml -s http://localhost:8080 -b
+
+# Test with authentication
+dochia test -c openapi.yml -s http://localhost:8080 -H "Authorization=Bearer $TOKEN"
+
+# Test specific paths and methods
+dochia test -c openapi.yml -s http://localhost:8080 --path "/api/users,/api/orders" --http-method "POST,PUT" -b
+
+# Fuzz a specific endpoint
+dochia fuzz -c openapi.yml -s http://localhost:8080 --path /api/users --http-method POST --stop-after-time-in-sec 300
+
+# Replay errors from a previous run
+dochia replay --errors -s http://localhost:8080
+```
+
+## Key Conventions
+
+- OpenAPI spec files are typically named `openapi.yml`, `openapi.yaml`, or `openapi.json` in the project root
+- Test reports are generated in the `./dochia-report` directory
+- Use `--config` to load options from a properties file for reproducible test runs
+- Use `--output` to specify a custom report output directory
+- Use `--json` or `-j` flag on `list` and `info` commands for machine-readable output
+
+## Report Output
+
+After running `dochia test` or `dochia fuzz`, results are in `./dochia-report/`:
+- `TestN.json` — individual test result with full request/response (headers, payload, response code, body, timing)
+- `dochia-summary-report.json` — all test results with `testCases[]` array plus summary metadata (`totalTests`, `success`, `warnings`, `errors`, `executionTime`, `timestamp`, `dochiaVersion`)
+
+```bash
+# Count errors
+cat dochia-report/dochia-summary-report.json | jq '[.testCases[] | select(.result == "error")] | length'
+
+# List failing playbooks
+cat dochia-report/dochia-summary-report.json | jq '[.testCases[] | select(.result == "error") | .playbook] | unique'
+
+# Get test IDs for replay
+cat dochia-report/dochia-summary-report.json | jq -r '[.testCases[] | select(.result == "error") | .id] | join(",")'
+```
+
+## Documentation
+
+Full documentation: https://docs.dochia.dev

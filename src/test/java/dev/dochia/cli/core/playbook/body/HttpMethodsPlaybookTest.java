@@ -136,7 +136,7 @@ class HttpMethodsPlaybookTest {
         Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
 
         httpMethodsPlaybook.run(data);
-        Mockito.verify(testCaseListener, Mockito.times(7)).reportResultWarn(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.eq("POST"), AdditionalMatchers.aryEq(new Object[]{405, "POST"}));
+        Mockito.verify(testCaseListener, Mockito.times(7)).reportResultWarn(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.anyString(), AdditionalMatchers.aryEq(new Object[]{"POST", 405, "POST"}));
     }
 
     @Test
@@ -169,6 +169,6 @@ class HttpMethodsPlaybookTest {
         Mockito.when(serviceCaller.call(Mockito.any())).thenReturn(httpResponse);
 
         httpMethodsPlaybook.run(data);
-        Mockito.verify(testCaseListener, Mockito.times(7)).reportResultWarn(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.any(), AdditionalMatchers.aryEq(new Object[]{405}));
+        Mockito.verify(testCaseListener, Mockito.times(7)).reportResultWarn(Mockito.any(), Mockito.any(), Mockito.anyString(), Mockito.any(), AdditionalMatchers.aryEq(new Object[]{"POST", 405}));
     }
 }

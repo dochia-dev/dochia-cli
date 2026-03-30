@@ -17,6 +17,6 @@ public class UppercaseExpandingLengthMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with strings that expand length when uppercased";
+        return "Replace field with strings that expand length when uppercased";
     }
 }

@@ -17,6 +17,6 @@ public class NullStringMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with null";
+        return "Replace field with null";
     }
 }

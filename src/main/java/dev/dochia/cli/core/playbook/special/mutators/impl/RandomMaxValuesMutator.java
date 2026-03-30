@@ -22,6 +22,6 @@ public class RandomMaxValuesMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random max values for int, long, float or double";
+        return "Replace field with random max values for int, long, float or double";
     }
 }

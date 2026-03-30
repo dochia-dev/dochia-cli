@@ -21,6 +21,6 @@ public class RandomWhitespaceCharsMutator implements BodyMutator {
 
     @Override
     public String description() {
-        return "replace field with random whitespace chars";
+        return "Replace field with random whitespace chars";
     }
 }
