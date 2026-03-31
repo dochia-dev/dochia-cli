@@ -131,16 +131,16 @@ Each `TestN.json` file contains the full details of a single test case:
 
 ### Summary Key Fields
 
-| Field               | Description                                               |
-|---------------------|-----------------------------------------------------------|
+| Field               | Description                                                              |
+|---------------------|--------------------------------------------------------------------------|
 | `id`                | Test identifier (e.g. "Test 1"). Filename strips the space: `Test1.json` |
-| `result`            | `"error"`, `"warning"`, `"success"`, or `"skipped"`       |
-| `playbook`          | Playbook name                                             |
-| `path`              | OpenAPI path                                              |
-| `httpMethod`        | HTTP method                                               |
-| `httpResponseCode`  | Response status code                                      |
-| `timeToExecuteInMs` | Execution time                                            |
-| `switchedResult`    | Whether the result was switched by a filter               |
+| `result`            | `"error"`, `"warning"`, `"success"`, or `"skipped"`                      |
+| `playbook`          | Playbook name                                                            |
+| `path`              | OpenAPI path                                                             |
+| `httpMethod`        | HTTP method                                                              |
+| `httpResponseCode`  | Response status code                                                     |
+| `timeToExecuteInMs` | Execution time                                                           |
+| `switchedResult`    | Whether the result was switched by a filter                              |
 
 ### Summary Metadata Fields
 

@@ -68,6 +68,27 @@ dochia list --paths -c openapi.yml --tag users
 | `--tag`           | Filter paths by OpenAPI tag                  |
 | `-j, --json`      | Output in JSON format                        |
 
+## Understanding Resource Dependencies
+
+Use `--paths` to inspect the API structure before running tests. This helps identify resource dependencies
+that require a specific testing order:
+
+```bash
+# List all paths to understand the resource hierarchy
+dochia list --paths -c openapi.yml
+
+# Inspect a specific path to see its query parameters, http headers, response codes, and methods
+dochia list --paths -c openapi.yml --path /pet/{petId}
+```
+
+Look for patterns like:
+- `POST /resource` (creates) → `GET/PUT/DELETE /resource/{id}` (needs the created ID)
+- `POST /resource/{id}/subresource` (needs parent resource ID first)
+
+This is important because Dochia is stateless. When testing endpoints that require existing resource IDs,
+you should first create resources using the `HappyPath` playbook on creation endpoints, then supply the
+IDs via `-R` or `--reference-data`. See the `dochia-test` skill for the full stateful testing workflow.
+
 ## Documentation
 
 Full reference: https://docs.dochia.dev/cli/list

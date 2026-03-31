@@ -28,9 +28,9 @@ debugging failures, and validating fixes.
 ## Prerequisites
 
 - Dochia CLI installed (any of the following):
-  - `brew install dochia-dev/tap/dochia-cli`
-  - `curl -sSL get.dochia.dev | sh`
-  - `docker pull dochiadev/dochia-cli`
+    - `brew install dochia-dev/tap/dochia-cli`
+    - `curl -sSL get.dochia.dev | sh`
+    - `docker pull dochiadev/dochia-cli`
 - A previous test run with reports in `./dochia-report` (or custom output directory)
 - A running API server
 

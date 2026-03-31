@@ -29,9 +29,9 @@ requests to discover unexpected vulnerabilities and edge cases.
 ## Prerequisites
 
 - Dochia CLI installed (any of the following):
-  - `brew install dochia-dev/tap/dochia-cli`
-  - `curl -sSL get.dochia.dev | sh`
-  - `docker pull dochiadev/dochia-cli`
+    - `brew install dochia-dev/tap/dochia-cli`
+    - `curl -sSL get.dochia.dev | sh`
+    - `docker pull dochiadev/dochia-cli`
 - An OpenAPI specification file (YAML or JSON)
 - A running API server to fuzz
 
