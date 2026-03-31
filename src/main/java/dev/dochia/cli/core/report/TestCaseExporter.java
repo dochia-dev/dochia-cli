@@ -273,7 +273,8 @@ public abstract class TestCaseExporter {
 
         ConsoleUtils.emptyLine();
         logger.complete(finalMessage, totalRequests, duration, reportedResults, skippedFromReporting,
-                executionStatisticsListener.getAll(), executionStatisticsListener.getSuccess(), executionStatisticsListener.getWarns(), executionStatisticsListener.getErrors(), executionStatisticsListener.getSkipped());
+                executionStatisticsListener.getSuccess(), executionStatisticsListener.getWarns(),
+                executionStatisticsListener.getErrors(), executionStatisticsListener.getSkipped());
 
         // Print quality gate result
         boolean qualityGatePassed = !qualityGateArguments.shouldFailBuild(executionStatisticsListener.getErrors(), executionStatisticsListener.getWarns());
