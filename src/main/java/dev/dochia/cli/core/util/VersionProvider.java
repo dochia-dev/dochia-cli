@@ -27,12 +27,12 @@ public class VersionProvider implements CommandLine.IVersionProvider {
             
             @|bold,underline Because nobody wants to debug why their "enterprise-grade" API can't handle a simple 🤷‍♀️|@
             
-            dochia automatically generates and executes negative and boundary testing so you can
-            focus on creative problem-solving. dochia lets you find bugs, security vulnerabilities,
-            and contract violations in your API without writing a single test.
+            @|magenta dochia|@ finds bugs, security vulnerabilities, and contract violations in your API - so you and your
+            AI agents can focus on building, not writing endless test cases or debugging edge-case failures.
             
-            @|yellow GitHub:|@  https://github.com/dochia-dev/dochia-cli
-            @|yellow Docs:|@    https://docs.dochia.dev
+            @|yellow GitHub:|@        https://github.com/dochia-dev/dochia-cli
+            @|yellow Docs:|@          https://docs.dochia.dev
+            @|yellow Agent Skills:|@  @|magenta dochia|@ init-skills
             """;
 
     @Override

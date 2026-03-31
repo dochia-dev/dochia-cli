@@ -9,7 +9,7 @@
 **Bringing chaos with love.**
 
 Dochia automatically generates and executes negative and boundary API testing, so you and your AI agents can focus on
-building, not breaking.
+building, not writing endless test cases or debugging edge-case failures.
 
 Because nobody wants to debug why their "enterprise-grade" API can't handle a simple 🤷‍♀️
 
