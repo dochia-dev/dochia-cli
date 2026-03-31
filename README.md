@@ -1,14 +1,13 @@
 # Dochia
 
-> **Bringing Chaos with Love** - Dochia automatically generates and executes negative and boundary testing so you can
-> focus on creative problem-solving. Because nobody wants to debug why their "enterprise-grade" API can't handle a
-> simple 🤷‍♀️
+> **Bringing Chaos with Love**. Dochia automatically generates and executes negative and boundary API testing. So you
+> and your AI agents can focus on building, not breaking. Because nobody wants to debug why their "enterprise-grade" API
+> can't handle a simple 🤷‍♀️
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java Version](https://img.shields.io/badge/Java-25+-blue.svg)](https://openjdk.org)
 [![GraalVM](https://img.shields.io/badge/GraalVM-Native-orange.svg)](https://www.graalvm.org)
 [![Release](https://img.shields.io/github/v/release/dochia-dev/dochia-cli.svg)](https://github.com/dochia-dev/dochia-cli/releases)
-
 
 ![CI](https://img.shields.io/github/actions/workflow/status/dochia-dev/dochia-cli/main.yml?style=for-the-badge&logo=git&logoColor=white)
 [![Commits](https://img.shields.io/github/commit-activity/m/dochia-dev/dochia-cli?style=for-the-badge&logo=git&logoColor=white)](https://github.com/dochia-dev/dochia-cli/pulse)
@@ -20,14 +19,12 @@
 
 ## What is Dochia?
 
-Dochia automatically generates and executes negative and boundary testing so you can
-focus on creative problem-solving. It auto-generates malicious, weird, and edge-case inputs to hammer your endpoints.
-Instead of spending 40% of your time writing repetitive test cases and missing critical edge cases, let Dochia do the
-heavy lifting while you focus on building amazing features.
+Dochia automatically generates and executes negative and boundary API testing. So you and your AI agents can focus on
+building, not breaking. It runs 120+ deterministic test playbooks that hammer your endpoints with malicious, weird, and
+edge-case inputs.
 
 **It's like throwing a tantrum at
 your API, so your users don't have to.**
-
 
 ## See it in action
 
@@ -41,11 +38,22 @@ your API, so your users don't have to.**
 - **Clear Results**: Actionable reports with specific fixes
 - **Replay Mode**: Replay and investigate specific test scenarios
 - **OpenAPI Native**: Understands your API structure automatically
+- **Agent-Readable Reports**: Structured JSON output so coding agents can read, reason, and act on results directly
+- **Agent-Ready**: Run `dochia init-skills` to expose Dochia skills to your coding agent. One command, agents test as
+  they build
 
 ## About the Name
 
-Dochia comes from Romanian folklore - a legendary figure known for testing the limits of winter's harshness. Like its
-namesake, this tool rigorously tests your APIs to ensure they can withstand any conditions.
+**Dochia is a figure from Romanian folklore, often associated with the unpredictable transition between winter and
+spring.**
+
+According to legend, she climbs the mountains believing winter has passed, only to be caught off guard when the cold
+returns. One by one, she sheds her layers, trusting the weather has changed—until it suddenly turns against her.
+
+The name reflects a simple idea: conditions are rarely as stable as they seem, and what looks safe might not be.
+
+Just like Dochia, your API might seem fine until it faces the unexpected. Dochia tests those hidden conditions so you
+can ship with confidence, no matter what the weather throws at you.
 
 ## Why Dochia?
 
@@ -54,7 +62,7 @@ namesake, this tool rigorously tests your APIs to ensure they can withstand any 
 - Engineers spend 40% of time writing repetitive test cases
 - Manual testing misses critical edge cases and boundary conditions
 - Traditional automation mostly tests the "happy path" scenarios
-- These missed edge cases become expensive production failures
+- Coding agents are capable, but miss structured playbooks. Negative testing is improvised every time
 
 **The Solution:**
 
@@ -62,11 +70,13 @@ namesake, this tool rigorously tests your APIs to ensure they can withstand any 
 - Finds the boundary conditions that would otherwise break production
 - 80% less time on manual and automation negative testing
 - 95% reduction in "how did that get through testing?" incidents
-- More time for creative problem-solving
+- Exposes skills to your coding agents so they can run tests without leaving the loop
+- Coding agents that ship validated APIs so human QA can focus on what actually matters
 
 ## Is Dochia free?
 
-Yes, the code in this repo is free and open source under the Apache 2.0 license, and Dochia as a product follows an open core model. 
+Yes, the code in this repo is free and open source under the Apache 2.0 license, and Dochia as a product follows an open
+core model.
 A Pro version will be available soon that will contain additional features and support.
 
 ## Quick Start
@@ -105,6 +115,14 @@ rm dochia.tar.gz
 dochia --version
 ```
 
+#### Agent Setup
+
+Expose Dochia skills to your coding agent. One command to close the agentic testing loop.
+
+```bash
+dochia init-skills
+```
+
 ### Basic Usage
 
 ```bash
@@ -119,6 +137,20 @@ dochia test  -c api.yaml -s http://locahost:8080 -b --path "/api/users" -H "Api-
 
 # Replay a specific test
 dochia replay Test120
+```
+
+### Agent Workflow
+
+```bash
+# Initialize Dochia skills for your coding agent
+dochia init-skills
+
+# Your agent can now trigger Dochia with natural commands like:
+# → "test my API"
+# → "check for 5XX errors"
+# → "run boundary testing"
+# → "validate my endpoints"
+# → "check input validation"
 ```
 
 ## How It Works
@@ -146,6 +178,26 @@ Discovers vulnerabilities and edge cases through:
 - Intelligent payload mutation
 - Response analysis
 - Error pattern detection
+
+### 4. **Surfaces Issues. For You or Your Agent**
+
+Results are structured so both humans and AI agents can act on them immediately:
+
+- `dochia-summary-report.json` with overall results
+- Individual `.json` test files per endpoint
+- Agent-parseable error details with suggested fixes
+
+## Dochia in Agentic Workflows
+
+As AI agents write more code, they need something to test it first. Dochia closes the agentic loop:
+
+1. Agent writes new API endpoint
+2. Agent runs: `dochia test -c api.yml -s localhost:3000`
+3. Dochia produces `dochia-summary-report.json` + individual test `.json` files
+4. Agent reads errors, fixes code, re-runs
+5. Ship with confidence. Human never touched a test
+
+Use `dochia init-skills` to expose Dochia skills to your coding agent.
 
 ## Documentation
 
@@ -177,7 +229,7 @@ java -jar target/dochia.jar test -c api.yaml -s http://localhost:8080
 
 ### Prerequisites for Development
 
-- **Java 21+**: OpenJDK or Oracle JDK
+- **Java 25+**: OpenJDK or Oracle JDK
 - **GraalVM**: For native binary compilation
 - **Maven**: Build tool (wrapper included)
 
