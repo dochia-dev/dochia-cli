@@ -791,7 +791,8 @@ public class FilterArguments {
         if (this.getPaths().isEmpty()) {
             return;
         }
-        if (this.getPaths().stream().noneMatch(path -> openAPI.getPaths().containsKey(path))) {
+        List<String> resolvedPaths = matchWildCardPaths(this.getPaths(), openAPI);
+        if (resolvedPaths.stream().noneMatch(path -> openAPI.getPaths().containsKey(path))) {
             throw new IllegalArgumentException("No paths available to run. Use 'dochia list -p -c api.yml' to list available paths");
         }
     }
