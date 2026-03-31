@@ -45,11 +45,11 @@ happy path, and coding agents lack structured playbooks for testing.
 
 ## Features
 
-- **Instant Setup**: Point it at your OpenAPI spec, no test cases required
-- **120+ Test Playbooks**: Negative, boundary, and chaos scenarios - deterministic and ready to run
-- **Context-Aware Payloads**: Understands your API structure to generate meaningful edge cases
-- **Actionable Reports**: Specific fixes, not just failure logs
-- **Replay Mode**: Replay and investigate specific test scenarios
+- **Instant setup**: Point it at your OpenAPI spec, no test cases required
+- **120+ Test playbooks**: Negative, boundary, and chaos scenarios - deterministic and ready to run
+- **Context-aware payloads**: Understands your API structure to generate meaningful edge cases
+- **Actionable reports**: Specific fixes, not just failure logs
+- **Replay mode**: Replay and investigate specific test scenarios
 - **Agent-readable Reports**: Structured JSON output so coding agents can read, reason, and act on results directly
 - **Agent-ready workflows**: Run `dochia init-skills` to expose Dochia skills to your coding agent so they can test as they build
 
