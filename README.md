@@ -69,7 +69,7 @@ confusion attacks, and authentication bypasses.
 Runs predefined playbooks with intelligent payload mutation, then analyzes responses for error patterns you wouldn't
 have thought to test.
 
-### 4. Surfaces Issues — For You or Your Agent
+### 4. Surfaces Issues - For You or Your Agent
 
 Results land in `dochia-summary-report.json` plus individual test files per endpoint, structured so both humans and
 AI agents can act on them immediately.
@@ -206,7 +206,7 @@ A Pro version with additional features and support is coming soon.
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE) for details.
+Apache 2.0 - see [LICENSE](LICENSE) for details.
 
 ## Links
 
