@@ -40,7 +40,7 @@ happy path, and coding agents waste tokens reasoning about test cases they could
 
 ## See it in action
 
-[![Demo](test)](https://github.com/dochia-dev/dochia-cli/blob/main/demo.mp4)
+https://github.com/user-attachments/assets/12829123-6f4c-4b62-bc2e-54740bda8f28
 
 ## Features
 
