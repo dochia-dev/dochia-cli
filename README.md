@@ -40,7 +40,7 @@ happy path, and coding agents waste tokens reasoning about test cases they could
 
 ## See it in action
 
-![Demo](demo2.gif)
+![Demo](dochia-demo.gif)
 
 ## Features
 
