@@ -40,7 +40,7 @@ happy path, and coding agents waste tokens reasoning about test cases they could
 
 ## See it in action
 
-<video src="demo.mp4" autoplay loop muted></video>
+![Demo](demo.mp4)
 
 ## Features
 
