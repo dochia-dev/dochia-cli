@@ -4,13 +4,11 @@
 
 ### 🤖 Agent-ready • 🧑 Human-friendly
 
-**Bringing chaos with love.**
+120+ negative and boundary playbooks plus chaos testing, all from your OpenAPI spec. No test cases to write.
+
+*Bringing chaos with love.*
+
 </div>
-
-Dochia automatically generates and executes negative and boundary API testing, so you and your AI agents can focus on
-building, not writing endless test cases or debugging edge-case failures.
-
-Because nobody wants to debug why their "enterprise-grade" API can't handle a simple 🤷‍♀️
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java Version](https://img.shields.io/badge/Java-25+-blue.svg)](https://openjdk.org)
@@ -21,6 +19,11 @@ Because nobody wants to debug why their "enterprise-grade" API can't handle a si
 ## What is Dochia?
 
 Dochia is a CLI tool for automated negative, boundary, and chaos API testing.
+
+Dochia automatically generates and executes negative and boundary API testing, so you and your AI agents can focus on
+building, not writing endless test cases or debugging edge-case failures.
+
+Because nobody wants to debug why their "enterprise-grade" API can't handle a simple 🤷‍♀️
 
 It runs 120+ deterministic test playbooks that challenge your APIs with malicious, unusual, and edge-case inputs. It
 combines negative, boundary, and chaos testing to reveal weaknesses before they surface in production.
