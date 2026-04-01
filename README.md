@@ -4,9 +4,8 @@
 
 ### 🤖 Agent-ready • 🧑 Human-friendly
 
-</div>
-
 **Bringing chaos with love.**
+</div>
 
 Dochia automatically generates and executes negative and boundary API testing, so you and your AI agents can focus on
 building, not writing endless test cases or debugging edge-case failures.
@@ -29,7 +28,7 @@ combines negative, boundary, and chaos testing to reveal weaknesses before they 
 **It's like throwing a tantrum at your API, so your users don't have to.**
 
 **The problem**. Engineers spend too much time writing repetitive test cases, traditional automation mostly covers the
-happy path, and coding agents lack structured playbooks for testing.
+happy path, and coding agents waste tokens reasoning about test cases they could just run.
 
 **The solution**. Point Dochia at your OpenAPI spec, and it handles the rest. No test cases to write.
 
@@ -50,8 +49,9 @@ happy path, and coding agents lack structured playbooks for testing.
 - **Context-aware payloads**: Understands your API structure to generate meaningful edge cases
 - **Actionable reports**: Specific fixes, not just failure logs
 - **Replay mode**: Replay and investigate specific test scenarios
-- **Agent-readable Reports**: Structured JSON output so coding agents can read, reason, and act on results directly
-- **Agent-ready workflows**: Run `dochia init-skills` to expose Dochia skills to your coding agent so they can test as they build
+- **Agent-readable reports**: Structured JSON output so coding agents can read, reason, and act on results directly
+- **Agent-ready workflows**: Run `dochia init-skills` to expose Dochia skills to your coding agent so they can test as
+  they build
 
 ## How It Works
 
@@ -83,6 +83,10 @@ As AI agents write more code, they need something to test it first. Dochia close
 3. Dochia produces `dochia-summary-report.json` + individual test `.json` files
 4. Agent reads errors, fixes code, re-runs
 5. Ship with confidence. Human never touched a test
+
+Without Dochia, agents burn tokens reading specs, reasoning about edge cases, generating payloads,
+and interpreting raw responses — often across multiple back-and-forth iterations. Dochia handles
+all of that internally. One command, structured results.
 
 Run `dochia init-skills` to expose Dochia skills to your coding agent.
 
