@@ -167,9 +167,9 @@ public abstract class ConsoleUtils {
      */
     public static void renderRow(String prefix, String path, char progressChar) {
         String withoutAnsi = ANSI_REMOVE_PATTERN.matcher(path).replaceAll("");
-        int dots = Math.max(terminalWidth - withoutAnsi.length() - 2, 1);
+        int dots = Math.max(terminalWidth - withoutAnsi.length() - 4, 1);
         String firstPart = " ".repeat(3) + path.substring(0, path.indexOf(SEPARATOR));
-        String secondPart = path.substring(path.indexOf(SEPARATOR) + 1);
+        String secondPart = path.substring(path.indexOf(SEPARATOR) + SEPARATOR.length());
         String toPrint = AnsiUtils.bold(prefix + firstPart + " " + ".".repeat(dots) + secondPart + " " + progressChar);
 
         //we just use system.out as the logger adds a new line
