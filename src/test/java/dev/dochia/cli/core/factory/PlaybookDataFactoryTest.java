@@ -735,6 +735,17 @@ class PlaybookDataFactoryTest {
     }
 
     @Test
+    void shouldGenerateValuesForPathParamsInJsonContract() throws Exception {
+        List<PlaybookData> dataList = setupPlaybookData("/customers/{customerId}/orders", "src/test/resources/openapi_31_params.json");
+        Assertions.assertThat(dataList).isNotEmpty();
+        PlaybookData getData = dataList.stream().filter(fd -> fd.getMethod() == HttpMethod.GET).findFirst().orElseThrow();
+        String payload = getData.getPayload();
+        Object customerId = JsonUtils.getVariableFromJson(payload, "$.customerId");
+        Assertions.assertThat(customerId).isNotNull();
+        Assertions.assertThat(customerId.toString()).isNotEqualTo("NOT_SET").isNotEmpty();
+    }
+
+    @Test
     void shouldGenerateRequestWhenArrayOfArrayOfString() throws Exception {
         Mockito.when(processingArguments.getSelfReferenceDepth()).thenReturn(5);
         Mockito.when(processingArguments.getDefaultContentType()).thenReturn("application/json");

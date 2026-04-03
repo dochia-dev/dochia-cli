@@ -150,11 +150,9 @@ public abstract class DochiaModelUtils {
         if (schema == null) {
             return false;
         }
-        if (schema instanceof JsonSchema jsonSchema) {
-            return Optional.ofNullable(jsonSchema.getTypes())
-                    .orElse(Set.of())
-                    .stream()
-                    .anyMatch(type -> type.equalsIgnoreCase(typeToTest));
+        Set<String> types = schema.getTypes();
+        if (types != null && !types.isEmpty()) {
+            return types.stream().anyMatch(type -> type.equalsIgnoreCase(typeToTest));
         }
 
         return typeToTest.equalsIgnoreCase(schema.getType());
