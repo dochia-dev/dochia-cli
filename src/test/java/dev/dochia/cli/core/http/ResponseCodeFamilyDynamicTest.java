@@ -96,7 +96,7 @@ class ResponseCodeFamilyDynamicTest {
     void shouldHaveConsistentHashCode() {
         ResponseCodeFamilyDynamic family = new ResponseCodeFamilyDynamic(List.of("200", "201"));
 
-        assertThat(family.hashCode()).isEqualTo(family.hashCode());
+        assertThat(family).hasSameHashCodeAs(family);
     }
 
     @Test

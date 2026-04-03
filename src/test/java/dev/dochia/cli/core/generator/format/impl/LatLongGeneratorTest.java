@@ -1,5 +1,6 @@
 package dev.dochia.cli.core.generator.format.impl;
 
+import dev.dochia.cli.core.util.DochiaRandom;
 import io.quarkus.test.junit.QuarkusTest;
 import io.swagger.v3.oas.models.media.Schema;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,7 @@ class LatLongGeneratorTest {
 
     @BeforeEach
     void setup() {
+        DochiaRandom.initRandom(0);
         latLongGenerator = new LatLongGenerator();
     }
 
@@ -58,10 +60,11 @@ class LatLongGeneratorTest {
                 .containsExactly("latlong", "latlng", "coordinate", "coordinates", "latitude", "longitude");
     }
 
-    @Test
-    void shouldGenerateLatitudeWhenSchemaNameContainsLat() {
+    @ParameterizedTest
+    @CsvSource({"latitude,-90.0,90.0", "longitude,-180.0,180.0", "lng,-180.0,180.0"})
+    void shouldGenerateLatitudeWhenSchemaNameContainsLat(String schemaName, Double min, Double max) {
         Schema<String> schema = new Schema<>();
-        schema.setName("latitude");
+        schema.setName(schemaName);
 
         String generated = (String) latLongGenerator.generate(schema);
 
@@ -69,39 +72,10 @@ class LatLongGeneratorTest {
                 .matches("-?\\d+\\.\\d{6}")
                 .satisfies(s -> {
                     double val = Double.parseDouble(s);
-                    assertThat(val).isBetween(-90.0, 90.0);
+                    assertThat(val).isBetween(min, max);
                 });
     }
 
-    @Test
-    void shouldGenerateLongitudeWhenSchemaNameContainsLon() {
-        Schema<String> schema = new Schema<>();
-        schema.setName("longitude");
-
-        String generated = (String) latLongGenerator.generate(schema);
-
-        assertThat(generated).isNotNull()
-                .matches("-?\\d+\\.\\d{6}")
-                .satisfies(s -> {
-                    double val = Double.parseDouble(s);
-                    assertThat(val).isBetween(-180.0, 180.0);
-                });
-    }
-
-    @Test
-    void shouldGenerateLongitudeWhenSchemaNameContainsLng() {
-        Schema<String> schema = new Schema<>();
-        schema.setName("lng");
-
-        String generated = (String) latLongGenerator.generate(schema);
-
-        assertThat(generated).isNotNull()
-                .matches("-?\\d+\\.\\d{6}")
-                .satisfies(s -> {
-                    double val = Double.parseDouble(s);
-                    assertThat(val).isBetween(-180.0, 180.0);
-                });
-    }
 
     @Test
     void shouldGenerateCoordinatePairWhenSchemaIsNull() {
