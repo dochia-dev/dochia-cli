@@ -63,10 +63,24 @@ class DochiaCommandTest {
     }
 
     @Test
-    void shouldReturnZeroAsExitCode() {
-        int exitCode = dochiaCommand.getExitCode();
+    void shouldReturnZeroExitCodeByDefault() {
+        assertThat(dochiaCommand.getExitCode()).isZero();
+    }
 
-        assertThat(exitCode).isZero();
+    @Test
+    void shouldReturnZeroExitCodeAfterDisplayingHelp() {
+        dochiaCommand.run();
+
+        assertThat(dochiaCommand.getExitCode()).isZero();
+    }
+
+    @Test
+    void shouldSetExitCodeAfterLicensesRun() {
+        dochiaCommand.licenses = true;
+        dochiaCommand.run();
+
+        assertThat(dochiaCommand.getExitCode()).isZero();
+        assertThat(outContent.toString(StandardCharsets.UTF_8)).isNotEmpty();
     }
 
     @Test
@@ -75,5 +89,31 @@ class DochiaCommandTest {
 
         assertThat(result).isZero();
         assertThat(outContent.toString(StandardCharsets.UTF_8)).isNotEmpty();
+    }
+
+    @Test
+    void shouldReturnNonZeroWhenLicenseFileNotFound() {
+        // Use a custom classloader that won't find the resource
+        Thread currentThread = Thread.currentThread();
+        ClassLoader original = currentThread.getContextClassLoader();
+        try {
+            currentThread.setContextClassLoader(new ClassLoader(null) {});
+            int result = dochiaCommand.displayLicenses();
+
+            assertThat(result).isEqualTo(1);
+            assertThat(errContent.toString(StandardCharsets.UTF_8))
+                    .contains("License file not found.");
+        } finally {
+            currentThread.setContextClassLoader(original);
+        }
+    }
+
+    @Test
+    void shouldNotPrintHelpWhenLicensesFlagIsSet() {
+        dochiaCommand.licenses = true;
+        dochiaCommand.run();
+
+        assertThat(outContent.toString(StandardCharsets.UTF_8))
+                .doesNotContain("dochia – Bringing chaos with love!");
     }
 }

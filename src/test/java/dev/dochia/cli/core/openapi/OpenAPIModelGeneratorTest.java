@@ -299,8 +299,7 @@ class OpenAPIModelGeneratorTest {
 
         Assertions.assertThat(decimalExamples).isNotEmpty();
         Object kindValue = JsonUtils.getVariableFromJson(decimalExamples.getFirst(), "$.kind");
-        Assertions.assertThat(kindValue).isNotNull();
-        Assertions.assertThat(kindValue).hasToString(expectedKindValue);
+        Assertions.assertThat(kindValue).isNotNull().hasToString(expectedKindValue);
     }
 
     private OpenAPIModelGenerator setupPayloadGenerator() throws IOException {

@@ -4,6 +4,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import picocli.CommandLine;
 
 import java.io.ByteArrayOutputStream;
@@ -74,6 +76,86 @@ class LegendCommandTest {
                 s -> assertThat(s).contains("Baba Dochia climbed high,")
                         .contains("Moral: never trust inputs.")
         ).doesNotContain("\u001B[");
+    }
+
+    @Test
+    void shouldPreferHaikuWhenBothHaikuAndAsciiSpecified() {
+        String out = run("--haiku", "--ascii", "--no-color");
+
+        assertThat(out)
+                .contains("Nine coats on the hill,")
+                .contains("Stone remembers all.")
+                .doesNotContain("Baba Dochia climbed high,");
+    }
+
+    @Test
+    void shouldDisplayStoryVariantWithSeedZero() {
+        String out = run("--no-color", "--seed", "0");
+
+        assertThat(out)
+                .contains("Dochia’s Legend")
+                .contains("Baba Dochia climbed the mountain,")
+                .contains("wearing nine coats")
+                .contains("Never trust the weather forecast,");
+    }
+
+    @Test
+    void shouldOutputContentWhenColorEnabled() {
+        String out = run("--seed", "0");
+
+        assertThat(out).isNotEmpty()
+                .contains("Dochia’s Legend");
+    }
+
+    @Test
+    void shouldRespectWidthOption() {
+        String out = run("--no-color", "--seed", "0", "--width", "80");
+
+        assertThat(out).isNotEmpty()
+                .contains("Dochia’s Legend");
+    }
+
+    @ParameterizedTest
+    @CsvSource({"20", "60", "120"})
+    void shouldHandleVariousWidths(String width) {
+        String out = run("--no-color", "--seed", "0", "--width", width);
+
+        assertThat(out).isNotEmpty();
+    }
+
+    @Test
+    void shouldContainLineConstant() {
+        assertThat(LegendCommand.LINE)
+                .isNotEmpty()
+                .contains("\u2500");
+    }
+
+    @Test
+    void shouldHandleAsciiWithAnsiEnabled() {
+        String out = run("--ascii");
+
+        assertThat(out).isNotEmpty()
+                .contains("Baba Dochia climbed high,");
+    }
+
+    @Test
+    void shouldHandleHaikuWithAnsiEnabled() {
+        String out = run("--haiku");
+
+        assertThat(out).isNotEmpty()
+                .contains("Nine coats on the hill,");
+    }
+
+    @Test
+    void shouldHandleRandomVariantWithoutSeed() {
+        String out = run("--no-color");
+
+        assertThat(out).isNotEmpty()
+                .satisfiesAnyOf(
+                        s -> assertThat(s).contains("Dochia’s Legend"),
+                        s -> assertThat(s).contains("Nine coats on the hill,"),
+                        s -> assertThat(s).contains("Baba Dochia climbed high,")
+                );
     }
 }
 

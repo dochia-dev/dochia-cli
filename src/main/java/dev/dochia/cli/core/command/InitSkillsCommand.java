@@ -59,9 +59,8 @@ public class InitSkillsCommand implements Runnable, CommandLine.IExitCodeGenerat
             "dochia-explain"
     );
 
-    private static final Map<String, List<String>> SKILL_EXTRA_FILES = Map.of(
-            "dochia-test", List.of("references/report-output.md")
-    );
+    private static final Map<String, List<String>> SKILL_EXTRA_FILES =
+            Map.of("dochia-test", List.of("references/report-output.md"));
 
     @Override
     public void run() {
@@ -69,63 +68,85 @@ public class InitSkillsCommand implements Runnable, CommandLine.IExitCodeGenerat
             Path baseDir = Path.of(directory).toAbsolutePath().normalize();
             logger.info("Generating Dochia agent skills in {}", baseDir);
 
-            int created = 0;
-            int skipped = 0;
+            int[] counts = processAllSkills(baseDir);
+            int created = counts[0];
+            int skipped = counts[1];
 
-            for (String skillName : SKILL_NAMES) {
-                Path skillDir = baseDir.resolve(".agents").resolve("skills").resolve(skillName);
-                Path skillFile = skillDir.resolve("SKILL.md");
-                String resourcePath = "skills/" + skillName + "/SKILL.md";
-
-                if (writeResourceFile(resourcePath, skillFile)) {
-                    created++;
-                } else {
-                    skipped++;
-                }
-
-                for (String extraFile : SKILL_EXTRA_FILES.getOrDefault(skillName, List.of())) {
-                    Path extraTarget = skillDir.resolve(extraFile);
-                    String extraResource = "skills/" + skillName + "/" + extraFile;
-                    if (writeResourceFile(extraResource, extraTarget)) {
-                        created++;
-                    } else {
-                        skipped++;
-                    }
-                }
-            }
-
-            logger.noFormat("");
-            logger.info("Done! {} files created, {} skipped (already exist).", created, skipped);
-
-            if (created > 0) {
-                logger.noFormat("");
-                logger.info("Generated files:");
-                for (String skillName : SKILL_NAMES) {
-                    Path skillFile = baseDir.resolve(".agents").resolve("skills").resolve(skillName).resolve("SKILL.md");
-                    if (Files.exists(skillFile)) {
-                        logger.noFormat("  .agents/skills/{}/SKILL.md", skillName);
-                    }
-                }
-                logger.noFormat("");
-                logger.info("These files are automatically discovered by:");
-                logger.noFormat("  - Windsurf (Cascade)");
-                logger.noFormat("  - Cursor");
-                logger.noFormat("  - Claude Code");
-                logger.noFormat("  - OpenAI Codex");
-                logger.noFormat("");
-                logger.info("Commit them to your repository so your team benefits too.");
-            }
-
-            if (skipped > 0 && !force) {
-                logger.note("Use --force to overwrite existing files.");
-            }
-
+            logSummary(baseDir, created, skipped);
             exitCode = 0;
         } catch (Exception e) {
             logger.error("Failed to generate agent skills: {}", e.getMessage());
             logger.debug("Stacktrace", e);
             exitCode = 1;
         }
+    }
+
+    private int[] processAllSkills(Path baseDir) throws IOException {
+        int created = 0;
+        int skipped = 0;
+
+        for (String skillName : SKILL_NAMES) {
+            int[] counts = processSkill(baseDir, skillName);
+            created += counts[0];
+            skipped += counts[1];
+        }
+        return new int[]{created, skipped};
+    }
+
+    private int[] processSkill(Path baseDir, String skillName) throws IOException {
+        int created = 0;
+        int skipped = 0;
+
+        Path skillDir = baseDir.resolve(".agents").resolve("skills").resolve(skillName);
+        String resourcePath = "skills/" + skillName + "/SKILL.md";
+
+        if (writeResourceFile(resourcePath, skillDir.resolve("SKILL.md"))) {
+            created++;
+        } else {
+            skipped++;
+        }
+
+        for (String extraFile : SKILL_EXTRA_FILES.getOrDefault(skillName, List.of())) {
+            String extraResource = "skills/" + skillName + "/" + extraFile;
+            if (writeResourceFile(extraResource, skillDir.resolve(extraFile))) {
+                created++;
+            } else {
+                skipped++;
+            }
+        }
+        return new int[]{created, skipped};
+    }
+
+    private void logSummary(Path baseDir, int created, int skipped) {
+        logger.noFormat("");
+        logger.info("Done! {} files created, {} skipped (already exist).", created, skipped);
+
+        if (created > 0) {
+            logGeneratedFiles(baseDir);
+        }
+
+        if (skipped > 0 && !force) {
+            logger.note("Use --force to overwrite existing files.");
+        }
+    }
+
+    private void logGeneratedFiles(Path baseDir) {
+        logger.noFormat("");
+        logger.info("Generated files:");
+        for (String skillName : SKILL_NAMES) {
+            Path skillFile = baseDir.resolve(".agents").resolve("skills").resolve(skillName).resolve("SKILL.md");
+            if (Files.exists(skillFile)) {
+                logger.noFormat("  .agents/skills/{}/SKILL.md", skillName);
+            }
+        }
+        logger.noFormat("");
+        logger.info("These files are automatically discovered by:");
+        logger.noFormat("  - Windsurf (Cascade)");
+        logger.noFormat("  - Cursor");
+        logger.noFormat("  - Claude Code");
+        logger.noFormat("  - OpenAI Codex");
+        logger.noFormat("");
+        logger.info("Commit them to your repository so your team benefits too.");
     }
 
     /**
